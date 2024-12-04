@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker build -t matchmaking-image .
+docker build --no-cache -t matchmaking-image .
 
 docker run -d \
   --name matchmaking \

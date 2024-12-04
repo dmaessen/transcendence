@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from django.http import HttpResponse
 
+#@api_view(['GET'])
 def index(request):
     return HttpResponse("HI I AM THE BANANA and THIS IS INDEX")
 

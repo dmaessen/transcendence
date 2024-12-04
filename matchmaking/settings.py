@@ -25,12 +25,13 @@ SECRET_KEY = 'django-insecure-5s16q(_!0)77fb(j!fkphgkv63_n0-9t%a20q+o3i$+er0ye--
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'matchmaking_service.apps.Matchmaking_serviceConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
