@@ -1,0 +1,54 @@
+services:
+#BECAUSE DB IS NOT SET YET, I COMMENT OUT THIS PART
+
+  # db:
+  #   image: mysql:5.7
+  #   container_name: transcendence_db
+  #   restart: always
+  #   volumes:
+  #     - data:/var/lib/mysql
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  #     MYSQL_DATABASE: $(MYSQL_DATABASE)
+  #     MYSQL_USER: $(MYSQL_USER)
+  #     MYSQL_PASSWORD: $(MYSQL_PASSWORD)
+  #   ports:
+  #     - "3306:3306"
+  #   healthcheck:
+  #     test: ["CMD", "mysql", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
+  #     timeout: 20s
+  #     retries: 10
+ 
+
+ #INSTEAD OF CONTAINERS NAMED "BACKEND", CONTAINERS WITH SPECIFIC NAMES ARE IN USE BELOW (matchmaking, x, y, etc)
+  # backend:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: project_name_backend
+  #   command: sh -c "python3 manage.py migrate --npinput && python3 manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+  #   restart: always
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - "8000:8000"
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - db
+
+    matchmaking:
+        build: ./matchmaking_/docker
+        container_name: matchmaking
+        #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+        volumes:
+            - ./matchmaking_/:/app/
+        ports:
+            - "8000:8000"
+        restart: on-failure
+
+# volumes:
+#   data:
+#     driver: local

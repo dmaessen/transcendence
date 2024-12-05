@@ -3,19 +3,15 @@ FROM python:3.11-bookworm
 WORKDIR /app
 
 COPY ./requirements.txt /app/
-COPY ./entrypoint.sh /app/
+COPY ./entrypoint.sh /usr/local/bin/
 
-RUN ls -l /app
-
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 8000
 
 RUN pip install -r requirements.txt
 
-#ENTRYPOINT ["/app/entrypoint.sh"]
-
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # The host machine makes a request to localhost:8000.
 # Docker intercepts that request and forwards it to the container on port 8000.
