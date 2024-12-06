@@ -17,6 +17,7 @@ def index(request):
 @api_view(['GET'])
 def list_players(request):
     players = PlayerQueue.objects.all()
+
     serializer = PlayerQueueSerializer(players, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -54,28 +55,44 @@ def join_queue(request):
 
 #     return Response({'status': 'Player added to queue', 'player_id': player_id})
 
-# @api_view(['POST'])
-# def record_match_result(request):
-#     data = JSONParser().parser(request)
-#     serializer = MatchSerializer(data=data)
-#     if serializer.is_valid():
-#         serializer.save()
-
-
-
 @api_view(['POST'])
 def record_match_result(request):
-    match_id = request.data['match_id']
-    winner = request.data['winner']
-    loser = request.data['loser']
+    data = JSONParser().parse(request)
+    
+    # ensure match_id is provided
+    match_id = data.get('match')
+    if not match_id:
+        return JsonResponse({"error": "Match ID is required."}, status=400)
 
-    match = Match.objects.get(id=match_id)
+    try:
+        match = Match.objects.get(id=match_id)
+    except Match.DoesNotExist:
+        return JsonResponse({"error": "Match not found."}, status=404)
 
-    #instead of this use REST
-    MatchResult.objects.create(match=match, winner=winner, loser=loser)
+    # check if a result already exists for the match
+    if MatchResult.objects.filter(match=match).exists():
+        return JsonResponse({"error": "Match result has already been recorded."}, status=status.HTTP_400_BAD_REQUEST)
 
-    match.completed_at = timezone.now()
-    match.winner = winner
-    match.save()
+    serializer = MatchResultSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data, status=201)
+    
+    return JsonResponse(serializer.errors, status=400)
 
-    return Response({'status': 'Match result recorded'})
+# @api_view(['POST'])
+# def record_match_result(request):
+#     match_id = request.data['match_id']
+#     winner = request.data['winner']
+#     loser = request.data['loser']
+
+#     match = Match.objects.get(id=match_id)
+
+#     #instead of this use REST
+#     MatchResult.objects.create(match=match, winner=winner, loser=loser)
+
+#     match.completed_at = timezone.now()
+#     match.winner = winner
+#     match.save()
+
+#     return Response({'status': 'Match result recorded'})
