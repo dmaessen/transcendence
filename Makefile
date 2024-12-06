@@ -1,7 +1,7 @@
 DOCK_COMPOSE_CMD :=	docker compose
 DOCK_COMPOSE_FILE :=	./docker-compose.yml
 
-all: build updetach
+all: build up
 
 build up down kill:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
