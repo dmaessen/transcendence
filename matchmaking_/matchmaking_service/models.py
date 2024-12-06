@@ -2,8 +2,8 @@ from django.db import models
 
 
 class PlayerQueue(models.Model):
-    player_id = models.CharField(max_length=255)  # Unique identifier from User Service
-    skill_level = models.IntegerField()  # Could represent ELO or similar ranking
+    player_id = models.CharField(max_length=255, unique=True)
+    skill_level = models.IntegerField()  
     total_wins = models.IntegerField(default=0)
     joined_at = models.DateTimeField(auto_now_add=True)
 
@@ -15,7 +15,7 @@ class Match(models.Model):
     player2 = models.CharField(max_length=255)
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-    winner = models.CharField(max_length=255, null=True, blank=True)  # Optional, updated later
+    winner = models.CharField(max_length=255, null=True, blank=True) 
 
     def __str__(self):
         return f"Match: {self.player1} vs {self.player2}"
