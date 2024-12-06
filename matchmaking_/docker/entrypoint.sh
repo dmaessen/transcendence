@@ -9,7 +9,7 @@ if [ $? -eq 0 ]; then
   echo "No migrations needed."
 else
   echo "Applying migrations..."
-  python manage.py makemigrations
+  #python manage.py makemigrations
   python manage.py migrate
 fi
 
