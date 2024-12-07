@@ -3,8 +3,7 @@ services:
     image: postgres
     restart: always
     env_file:
-      - .env
-    volumes:
+      - .env    volumes:
       - pgdata:/var/lib/postgresql/data
 
   backend:
