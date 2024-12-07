@@ -96,3 +96,20 @@ def record_match_result(request):
 #     match.save()
 
 #     return Response({'status': 'Match result recorded'})
+
+@api_view(['POST'])
+def create_matches(request):
+    players = PlayerQueue.objects.order_by('skill_level')
+
+    matches = []
+    # 
+    while len(players) > 1:
+        player1 = players[0]
+        player2 = players[1]
+        match = Match.objects.create(player1=player1.player_id, player2=player2.player_id)
+        matches.append(match)
+
+        # Remove paired players from the queue
+        players = players[2:]
+
+    return JsonResponse({"message": "Matches created.", "matches": [str(m) for m in matches]})
