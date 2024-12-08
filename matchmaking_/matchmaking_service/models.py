@@ -1,9 +1,30 @@
 from django.db import models
 
+# IS THIS NECESSARY WHEN WE HAVE PlayerQueue class?
+
+#this player will be a replacement to Django's default User model, 
+# User model is managed by the authentication system.
+#When to Use Django's User Model:
+# You would use the User model in cases where your application requires:
+# Authentication: If your app needs users to log in or register.
+# Personalization: If you want to associate data with specific users (e.g., their settings, preferences, or history).
+# Authorization: If you need to implement roles (e.g., admin, staff, user) or restrict access to certain features or views.
+
+# class Player(models.Model):
+#     username = models.CharField(max_length=255)
+#     skill_level = models.IntegerField()
+
+    #meta will be on when postgres comes in play
+    # class Meta:
+    #     managed = False  # django won't manage the external database's schema
+    #     db_table = 'postgres_player_table'
 
 class PlayerQueue(models.Model):
+    """
+    Respresents each player waiting to be matched
+    """
     player_id = models.CharField(max_length=255, unique=True)
-    skill_level = models.IntegerField()  
+    #skill_level = models.IntegerField()  
     total_wins = models.IntegerField(default=0)
     joined_at = models.DateTimeField(auto_now_add=True)
 
@@ -11,20 +32,17 @@ class PlayerQueue(models.Model):
         return f"Player {self.player_id} (Skill: {self.skill_level})"
 
 class Match(models.Model):
+    """
+    A single game with matched 2 players
+    """
     player1 = models.CharField(max_length=255)
     player2 = models.CharField(max_length=255)
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-    winner = models.CharField(max_length=255, null=True, blank=True) 
+    winner = models.CharField(max_length=255, null=True, blank=True)
+    result = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"Match: {self.player1} vs {self.player2}"
 
-class MatchResult(models.Model):
-    match = models.OneToOneField(Match, on_delete=models.CASCADE, related_name='result')
-    winner = models.CharField(max_length=255)
-    loser = models.CharField(max_length=255)
-    completed_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Winner: {self.winner}, Loser: {self.loser}"
+# class Tournament(models.Model):

@@ -5,10 +5,10 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
-from .models import PlayerQueue, Match, MatchResult
+from .models import PlayerQueue, Match
 
 from rest_framework.parsers import JSONParser
-from .serializers import PlayerQueueSerializer, MatchSerializer, MatchResultSerializer
+from .serializers import PlayerQueueSerializer, MatchSerializer
 
 #@api_view(['GET'])
 def index(request):
@@ -20,6 +20,8 @@ def list_players(request):
 
     serializer = PlayerQueueSerializer(players, many=True)
     return JsonResponse(serializer.data, safe=False)
+
+
 
 #rest api version, using serializer.
 @api_view(['POST'])
@@ -55,54 +57,13 @@ def join_queue(request):
 
 #     return Response({'status': 'Player added to queue', 'player_id': player_id})
 
-@api_view(['POST'])
-def record_match_result(request):
-    data = JSONParser().parse(request)
-    
-    # ensure match_id is provided
-    match_id = data.get('match')
-    if not match_id:
-        return JsonResponse({"error": "Match ID is required."}, status=400)
-
-    try:
-        match = Match.objects.get(id=match_id)
-    except Match.DoesNotExist:
-        return JsonResponse({"error": "Match not found."}, status=404)
-
-    # check if a result already exists for the match
-    if MatchResult.objects.filter(match=match).exists():
-        return JsonResponse({"error": "Match result has already been recorded."}, status=status.HTTP_400_BAD_REQUEST)
-
-    serializer = MatchResultSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return JsonResponse(serializer.data, status=201)
-    
-    return JsonResponse(serializer.errors, status=400)
-
-# @api_view(['POST'])
-# def record_match_result(request):
-#     match_id = request.data['match_id']
-#     winner = request.data['winner']
-#     loser = request.data['loser']
-
-#     match = Match.objects.get(id=match_id)
-
-#     #instead of this use REST
-#     MatchResult.objects.create(match=match, winner=winner, loser=loser)
-
-#     match.completed_at = timezone.now()
-#     match.winner = winner
-#     match.save()
-
-#     return Response({'status': 'Match result recorded'})
 
 @api_view(['POST'])
 def create_matches(request):
-    players = PlayerQueue.objects.order_by('skill_level')
+    #players = PlayerQueue.objects.order_by('total_wins')
+    players = PlayerQueue.objects.all()
 
     matches = []
-    # 
     while len(players) > 1:
         player1 = players[0]
         player2 = players[1]
@@ -112,4 +73,4 @@ def create_matches(request):
         # Remove paired players from the queue
         players = players[2:]
 
-    return JsonResponse({"message": "Matches created.", "matches": [str(m) for m in matches]})
+    return JsonResponse({"message": "Matches created.", "matches": [str(m) for m in matches]}, status=201)
