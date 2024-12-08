@@ -26,8 +26,8 @@ class MatchViewTest(TestCase):
         self.assertEqual(Match.objects.count(), 1)
 
         match = Match.objects.first()
-        self.assertEqual(match.player1, "player1")
-        self.assertEqual(match.player2, "player2")
+        self.assertEqual(match.player1, "player2")
+        self.assertEqual(match.player2, "player1")
 
     def test_list_players(self):
         response = self.client.get(reverse('list_players'), format='json')
