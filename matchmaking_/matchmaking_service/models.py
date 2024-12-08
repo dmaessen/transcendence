@@ -45,4 +45,15 @@ class Match(models.Model):
     def __str__(self):
         return f"Match: {self.player1} vs {self.player2}"
 
+# null=true -> can have "NULL" in the database.
+# blank=true -> will not require the field to have a value during validation
+
 # class Tournament(models.Model):
+#     """
+#     Respresents a tournament with multiple matches
+#     """
+#     name = models.CharField(max_length=255, unique=True)
+#     number_of_players = models.IntegerField(default=0)
+#     start_date = models.DateTimeField()
+#     end_date = models.DateTimeField(null=True, blank=True)
+#     winner = models.CharField(max_length=255, null=True, blank=True)

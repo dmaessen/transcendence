@@ -60,8 +60,8 @@ def join_queue(request):
 
 @api_view(['POST'])
 def create_matches(request):
-    #players = PlayerQueue.objects.order_by('total_wins')
-    players = PlayerQueue.objects.all()
+    players = PlayerQueue.objects.order_by('total_wins') #sorts ascending order
+    #players = PlayerQueue.objects.all()
 
     matches = []
     while len(players) > 1:
