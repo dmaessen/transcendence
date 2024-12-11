@@ -1,9 +1,0 @@
-services:
-    matchmaking:
-        build: .
-        container_name: matchmaking
-        volumes:
-            - ../:/app/
-        ports:
-            - "8000:8000"
-        restart: on-failure
