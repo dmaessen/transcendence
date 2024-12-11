@@ -39,12 +39,22 @@ services:
   #   depends_on:
   #     - db
 
-    matchmaking:
-        build: ./matchmaking_/docker
-        container_name: matchmaking
+    # matchmaking:
+    #     build: ./matchmaking_/docker
+    #     container_name: matchmaking
+    #     #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    #     volumes:
+    #         - ./matchmaking_/:/app/
+    #     ports:
+    #         - "8000:8000"
+    #     restart: on-failure
+
+    backend:
+        build: ./backend/docker
+        container_name: backend
         #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
         volumes:
-            - ./matchmaking_/:/app/
+            - ./backend/:/app/
         ports:
             - "8000:8000"
         restart: on-failure
