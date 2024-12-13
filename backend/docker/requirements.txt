@@ -3,4 +3,8 @@ Django==5.0.4
 requests==2.32.3
 djangorestframework==3.14.0
 django-cors-headers==4.6.0
+daphne==4.1.2
+
+websockets==14.1
+
 
