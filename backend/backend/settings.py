@@ -25,6 +25,8 @@ SECRET_KEY = 'django-insecure-)co%lac8eq8ki4lv9!&-t0&#%=(_y#(&=13b#nbilgk58rf&uz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Controls which hostnames can make requests to your Django server.
+# ensures only recognized hosts can serve your app
 ALLOWED_HOSTS = ['*']
 
 
@@ -39,8 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'channels',
+    'corsheaders',
+
 
     'matchmaking.apps.MatchmakingConfig',
+    'game_server.apps.GameServerConfig',
 
 ]
 
@@ -52,6 +57,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+
+]
+
+# governs whether your server accepts requests from different origins (domains, subdomains, or ports)
+# allows your backend to accept cross-origin requests from specific frontends. (browser thingys, not the server)
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # for local development, later change it
 ]
 
 REST_FRAMEWORK = {
