@@ -1,8 +1,12 @@
 """
+<<<<<<< HEAD:Transcendence/urls.py
 URL configuration for transcendence project.
+=======
+URL configuration for backend project.
+>>>>>>> main:backend/backend/urls.py
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
+    https://docs.djangoproject.com/en/5.0/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -15,10 +19,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+<<<<<<< HEAD:Transcendence/urls.py
 from django.urls import path
 from . import views
+=======
+from django.urls import path, include
+>>>>>>> main:backend/backend/urls.py
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.landing_page, name='landing_page'),
+    path('matchmaking/', include('matchmaking.urls'), name='matchmaking'),
+
 ]

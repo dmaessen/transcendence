@@ -1,9 +1,12 @@
 DOCK_COMPOSE_CMD :=	docker compose
-DOCK_COMPOSE_FILE :=	./docker-compose.yml
+DOCK_COMPOSE_FILE :=	docker-compose.yaml
 
 all: build up
 
-build up down kill:
+build up:
+	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
+
+down kill:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
 
 buildclean:
@@ -34,6 +37,5 @@ clean:
 
 fclean: rmi
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) down --rmi all -v --remove-orphans
-	docker system prune -af
 
 .PHONY: all build up down kill updateach buildclean show run re clean fclean
