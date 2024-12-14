@@ -1,5 +1,5 @@
 from django.db import models
-from cryptography.fields import encrypt #should we use this?  it's available 
+from cryptography.fields import encrypt #should we use this?  it's available...
 
 
 class User(models.Model):
