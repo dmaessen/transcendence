@@ -57,17 +57,25 @@ services:
             - ./backend/:/app/
         ports:
             - "8000:8000"
+        networks:
+            - transcendence
         restart: on-failure
 
-    # frontend:
-    #     build: ./frontend/docker
-    #     container_name: frontend
-    #     volumes:
-    #         - ./frontend/:/app/
-    #     ports:
-    #         - "3000:3000"
-    #     depends_on:
-    #     - backend
+    frontend:
+        build: ./frontend
+        container_name: frontend
+        volumes:
+            - ./frontend/statics/:/usr/share/nginx/html/static/
+        ports:
+            - "8080:80"
+        networks:
+            - transcendence
+        depends_on:
+        - backend
+
+networks:
+  transcendence:
+    driver: bridge
 
 # volumes:
 #   data:
