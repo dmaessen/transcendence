@@ -1,6 +1,7 @@
 // const wsHandler = new WebSocketHandler("ws://localhost:8000/ws/game/");
 // const serverUrl = "ws://your-server-address/game"; // replace with server URL
 const serverUrl = "ws://localhost:8000/ws/game/";
+
 let socket;
 
 function connectWebSocket() {

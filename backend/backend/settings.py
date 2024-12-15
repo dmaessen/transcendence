@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 
+import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -64,7 +66,8 @@ MIDDLEWARE = [
 # governs whether your server accepts requests from different origins (domains, subdomains, or ports)
 # allows your backend to accept cross-origin requests from specific frontends. (browser thingys, not the server)
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # for local development, later change it
+    "http://frontend:8080",
+    "http://localhost:8080",  # for local development, later change it
 ]
 
 REST_FRAMEWORK = {
@@ -140,6 +143,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
+
+# No need to set STATICFILES_DIRS if frontend is handling static files
+STATICFILES_DIRS = []
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
