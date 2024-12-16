@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'channels',
     'corsheaders',
+    # 'game_server',
 
 
     'matchmaking.apps.MatchmakingConfig',
