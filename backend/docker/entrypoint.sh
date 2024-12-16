@@ -15,3 +15,4 @@ fi
 
 echo "Starting Django server..."
 exec python manage.py runserver 0.0.0.0:8000
+# exec python ./backend/game_server/game_server.py
