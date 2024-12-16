@@ -61,6 +61,18 @@ services:
             - transcendence
         restart: on-failure
 
+    websocket_server:
+        build: ./backend/docker
+        ports:
+            - "8765:8765"
+        volumes:
+            - ./backend/:/app/
+        networks:
+            - transcendence
+        command: python3 ./backend/game_server/game_server.py
+        depends_on:
+            - backend
+
     frontend:
         build: ./frontend
         container_name: frontend
