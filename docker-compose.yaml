@@ -1,13 +1,18 @@
 services:
 #BECAUSE DB IS NOT SET YET, I COMMENT OUT THIS PART
     psql:
-        image: postgres:13-alpine
+        build: ./backend/database
+        container_name: postgres
         restart: always
+        networks:
+        - transcendence
+        ports:
+        - "5432:5432"
         env_file:
-        - ./dot_env/.env-exemple
+        - ./dot_env/.env
         volumes:
         - ./data/postgres/data:/var/lib/postgresql/data/
-        entrypoint: ["sh", "-c", "./init_db.sh && python manage.py runserver 0.0.0.0:8000"]
+        # entrypoint: ["sh", "-c", "./backend/database/init_database.sh && python manage.py runserver 0.0.0.0:8000"]
 
 
  #INSTEAD OF CONTAINERS NAMED "BACKEND", CONTAINERS WITH SPECIFIC NAMES ARE IN USE BELOW (matchmaking, x, y, etc)
@@ -46,6 +51,12 @@ services:
         ports:
             - "8000:8000"
         restart: on-failure
+        networks:
+            - transcendence
+
+networks:
+    transcendence:
+        driver: bridge
 
 # volumes:
 #   data:
