@@ -1,11 +1,17 @@
 #!/bin/bash
 
 # Environment variables are passed by Docker Compose
-DB_HOST=${POSTGRES_HOST:-localhost}
-DB_PORT=${POSTGRES_PORT:-5432}
-DB_USER=${POSTGRES_USER:-postgres}
+DB_ENGINE=${DB_ENGINE}
+DB_HOST=${POSTGRES_HOST}
+DB_PORT=${POSTGRES_PORT}
+DB_USER=${POSTGRES_USER}
 DB_PASSWORD=${POSTGRES_PASSWORD}
-DB_NAME=${POSTGRES_DB}
+DB_NAME="psql"
+
+until psql -h "localhost" -U "your_username" -c '\q'; do
+  echo "Postgres is unavailable - retrying in 5 seconds"
+  sleep 5
+done
 
 # Check if the database exists
 echo "Checking if database $DB_NAME exists..."
