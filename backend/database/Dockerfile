@@ -1,13 +1,14 @@
 FROM postgres:13-alpine
 
-# Copy the initialization script into the container
+#install python 
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
+
+# Copy the initialization script and wait-for-it
 COPY ./init_database.sh /init_database.sh
+# COPY ./wait_for.sh /wait_for.sh
 
-# Make the script executable
-RUN chmod +x /init_database.sh
-
-# Set the entrypoint to the init script
-ENTRYPOINT [ "/init_database.sh" ]
-
-# Default CMD to run the Django server after DB initialization
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Set the entrypoint to wait for PostgreSQL and then run the init script
+ENTRYPOINT ["sh", "/init_database.sh"]
