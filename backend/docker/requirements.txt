@@ -2,9 +2,13 @@ channels==4.0.0
 Django==5.0.4
 requests==2.32.3
 djangorestframework==3.14.0
+<<<<<<< HEAD
 django-cors-headers==4.6.0
 daphne==4.1.2
 
 websockets==14.1
 
 
+=======
+psycopg2-binary>=2.9.6,<2.10
+>>>>>>> postgress
