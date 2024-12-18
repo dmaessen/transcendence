@@ -1,26 +1,21 @@
 services:
 #BECAUSE DB IS NOT SET YET, I COMMENT OUT THIS PART
+    psql:
+        image: postgres:13-alpine
+        # build: ./backend/database
+        container_name: postgres
+        restart: always
+        networks:
+            - transcendence
+        ports:
+            - "5439:5432"
+        env_file:
+            - ./dot_env/.env
+        volumes:
+            - ./pgdata:/var/lib/postgresql/data/
+        # - ./backend/database/init_database.sh:/init_database.sh  # Ensure this is mounted correctly
+        # entrypoint: ["sh", "-c", "./backend/database/init_database.sh && python manage.py runserver 0.0.0.0:8000"]
 
-  # db:
-  #   image: mysql:5.7
-  #   container_name: transcendence_db
-  #   restart: always
-  #   volumes:
-  #     - data:/var/lib/mysql
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-  #     MYSQL_DATABASE: $(MYSQL_DATABASE)
-  #     MYSQL_USER: $(MYSQL_USER)
-  #     MYSQL_PASSWORD: $(MYSQL_PASSWORD)
-  #   ports:
-  #     - "3306:3306"
-  #   healthcheck:
-  #     test: ["CMD", "mysql", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
-  #     timeout: 20s
-  #     retries: 10
- 
 
  #INSTEAD OF CONTAINERS NAMED "BACKEND", CONTAINERS WITH SPECIFIC NAMES ARE IN USE BELOW (matchmaking, x, y, etc)
   # backend:
@@ -60,6 +55,12 @@ services:
         networks:
             - transcendence
         restart: on-failure
+        networks:
+            - transcendence
+
+networks:
+    transcendence:
+        driver: bridge
 
     frontend:
         build: ./frontend

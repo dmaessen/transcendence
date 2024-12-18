@@ -7,7 +7,6 @@ python manage.py makemigrations --check --dry-run
 
 if [ $? -eq 0 ]; then
   echo "Applying migrations..."
-  #python manage.py makemigrations
   python manage.py migrate
 else
   echo "No migrations needed."
