@@ -1,8 +1,8 @@
 services:
 #BECAUSE DB IS NOT SET YET, I COMMENT OUT THIS PART
     psql:
-        # image: postgres:13-alpine
-        build: ./backend/database
+        image: postgres:13-alpine
+        # build: ./backend/database
         container_name: postgres
         restart: always
         networks:
