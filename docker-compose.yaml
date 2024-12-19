@@ -7,7 +7,7 @@ services:
         networks:
             - transcendence
         ports:
-            - "5439:5432"
+            - "5432:5432"
         env_file:
             - ./dot_env/.env
         volumes:
@@ -20,9 +20,13 @@ services:
             - ./backend/:/app/
         ports:
             - "8000:8000"
+        env_file:
+            - ./dot_env/.env
         networks:
             - transcendence
         restart: on-failure
+        depends_on:
+        - psql
 
     frontend:
         build: ./frontend
@@ -35,6 +39,7 @@ services:
             - transcendence
         depends_on:
         - backend
+        - psql
 
 networks:
     transcendence:
