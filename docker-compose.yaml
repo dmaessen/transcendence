@@ -1,5 +1,4 @@
 services:
-#BECAUSE DB IS NOT SET YET, I COMMENT OUT THIS PART
     psql:
         image: postgres:13-alpine
         # build: ./backend/database
@@ -13,41 +12,10 @@ services:
             - ./dot_env/.env
         volumes:
             - ./pgdata:/var/lib/postgresql/data/
-        # - ./backend/database/init_database.sh:/init_database.sh  # Ensure this is mounted correctly
-        # entrypoint: ["sh", "-c", "./backend/database/init_database.sh && python manage.py runserver 0.0.0.0:8000"]
-
-
- #INSTEAD OF CONTAINERS NAMED "BACKEND", CONTAINERS WITH SPECIFIC NAMES ARE IN USE BELOW (matchmaking, x, y, etc)
-  # backend:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: project_name_backend
-  #   command: sh -c "python3 manage.py migrate --npinput && python3 manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
-  #   restart: always
-  #   volumes:
-  #     - .:/app
-  #   ports:
-  #     - "8000:8000"
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - db
-
-    # matchmaking:
-    #     build: ./matchmaking_/docker
-    #     container_name: matchmaking
-    #     #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    #     volumes:
-    #         - ./matchmaking_/:/app/
-    #     ports:
-    #         - "8000:8000"
-    #     restart: on-failure
 
     backend:
         build: ./backend/docker
         container_name: backend
-        #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
         volumes:
             - ./backend/:/app/
         ports:
@@ -55,12 +23,6 @@ services:
         networks:
             - transcendence
         restart: on-failure
-        networks:
-            - transcendence
-
-networks:
-    transcendence:
-        driver: bridge
 
     frontend:
         build: ./frontend
@@ -75,8 +37,8 @@ networks:
         - backend
 
 networks:
-  transcendence:
-    driver: bridge
+    transcendence:
+        driver: bridge
 
 # volumes:
 #   data:
