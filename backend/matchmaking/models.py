@@ -31,6 +31,9 @@ class PlayerQueue(models.Model):
     def __str__(self):
         return f"Player {self.player_id} (Skill: {self.skill_level})"
 
+#TODO: We have a users table on the data app, should we keep the queue table 
+# inside the matchmaking and just add player foreign key to grab othe info?
+
 class Match(models.Model):
     """
     A single game with matched 2 players
@@ -48,6 +51,8 @@ class Match(models.Model):
 # null=true -> can have "NULL" in the database.
 # blank=true -> will not require the field to have a value during validation
 #https://docs.djangoproject.com/en/5.1/ref/models/instances/#django.db.models.Model.clean
+#TODO: Check if match table is ok on data or if Gul need extra info
+
 class Tournament(models.Model):
     """
     Respresents a tournament with multiple matches
@@ -76,3 +81,4 @@ class Tournament(models.Model):
 
 #Note that full_clean() will not be called automatically when you call your model’s save() method. You’ll need to call it manually when you want 
 # to run one-step model validation for your own manually created models
+#TODO: talk about how our tournaments are going to happen
