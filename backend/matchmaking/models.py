@@ -27,6 +27,8 @@ class PlayerQueue(models.Model):
     #skill_level = models.IntegerField()  
     total_wins = models.IntegerField(default=0)
     joined_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)  # indicated if the player is currently in the queue (available for a match)
+
 
     def __str__(self):
         return f"Player {self.player_id} (Skill: {self.skill_level})"
