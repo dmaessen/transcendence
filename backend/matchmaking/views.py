@@ -62,7 +62,8 @@ def join_queue(request):
 def create_matches(request):
     players = PlayerQueue.objects.order_by('total_wins') #sorts ascending order
     #players = PlayerQueue.objects.all()
-
+    if len(players) <= 1:
+        return JsonResponse({"message": "Match is not created, no enough player"}, status=201)
     matches = []
     while len(players) > 1:
         player1 = players[0]
@@ -73,4 +74,14 @@ def create_matches(request):
         # Remove paired players from the queue
         players = players[2:]
 
-    return JsonResponse({"message": "Matches created.", "matches": [str(m) for m in matches]}, status=201)
+    return JsonResponse({"message": "Match is created.", "matches": [str(m) for m in matches]}, status=201)
+
+@api_view(['GET'])
+def list_matches(request):
+    """
+    display all created matches.
+    """
+    matches = Match.objects.all()
+    serializer = MatchSerializer(matches, many=True)
+
+    return JsonResponse(serializer.data, safe=False)
