@@ -60,10 +60,11 @@ def join_queue(request):
 
 @api_view(['POST'])
 def create_matches(request):
-    players = PlayerQueue.objects.order_by('total_wins') #sorts ascending order
+    players = PlayerQueue.objects.filter(is_active=True).order_by('total_wins') #sorts ascending order
     #players = PlayerQueue.objects.all()
     if len(players) <= 1:
         return JsonResponse({"message": "Match is not created, no enough player"}, status=201)
+
     matches = []
     while len(players) > 1:
         player1 = players[0]
@@ -71,8 +72,16 @@ def create_matches(request):
         match = Match.objects.create(player1=player1.player_id, player2=player2.player_id)
         matches.append(match)
 
-        # Remove paired players from the queue
-        players = players[2:]
+        # remove paired players from the queue ?? not sure? maybe add is_active to playerqueue model??
+        #players = players[2:]
+        player1.is_active = False
+        player2.is_active = False
+        player1.save()
+        player2.save()
+
+        #change players in function scope
+        players = PlayerQueue.objects.filter(is_active=True).order_by('total_wins')
+
 
     return JsonResponse({"message": "Match is created.", "matches": [str(m) for m in matches]}, status=201)
 
