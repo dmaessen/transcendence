@@ -1,95 +1,70 @@
 services:
-#BECAUSE DB IS NOT SET YET, I COMMENT OUT THIS PART
+  backend:
+    build: ./backend/docker
+    container_name: backend
+    volumes:
+      - ./backend/:/app/
+    ports:
+      - "8000:8000"
+    networks:
+      - transcendence
+    command: python3 ./backend/game_server/game_server.py
+    restart: on-failure
+    depends_on:
+      - elasticsearch
+      - logstash
 
-  # db:
-  #   image: mysql:5.7
-  #   container_name: transcendence_db
-  #   restart: always
-  #   volumes:
-  #     - data:/var/lib/mysql
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-  #     MYSQL_DATABASE: $(MYSQL_DATABASE)
-  #     MYSQL_USER: $(MYSQL_USER)
-  #     MYSQL_PASSWORD: $(MYSQL_PASSWORD)
-  #   ports:
-  #     - "3306:3306"
-  #   healthcheck:
-  #     test: ["CMD", "mysql", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
-  #     timeout: 20s
-  #     retries: 10
- 
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    volumes:
+      - ./frontend/statics/:/usr/share/nginx/html/static/
+    ports:
+      - "8080:80"
+    networks:
+      - transcendence
+    depends_on:
+      - backend
 
- #INSTEAD OF CONTAINERS NAMED "BACKEND", CONTAINERS WITH SPECIFIC NAMES ARE IN USE BELOW (matchmaking, x, y, etc)
-  # backend:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: project_name_backend
-  #   command: sh -c "python3 manage.py migrate --npinput && python3 manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
-  #   restart: always
-  #   volumes:
-  #     - .:/app
-  #   ports:
-  #     - "8000:8000"
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - db
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - transcendence
 
-    # matchmaking:
-    #     build: ./matchmaking_/docker
-    #     container_name: matchmaking
-    #     #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    #     volumes:
-    #         - ./matchmaking_/:/app/
-    #     ports:
-    #         - "8000:8000"
-    #     restart: on-failure
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.2
+    container_name: logstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    networks:
+      - transcendence
+    depends_on:
+      - elasticsearch
 
-    backend:
-        build: ./backend/docker
-        container_name: backend
-        #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-        volumes:
-            - ./backend/:/app/
-        ports:
-            - "8000:8000"
-        networks:
-            - transcendence
-        command: python3 ./backend/game_server/game_server.py
-        restart: on-failure
-
-    # websocket_server:
-    #     build: ./backend/docker
-    #     ports:
-    #         - "8765:8765"
-    #     volumes:
-    #         - ./backend/:/app/
-    #     networks:
-    #         - transcendence
-    #     command: python3 ./backend/game_server/game_server.py
-    #     depends_on:
-    #         - backend
-
-    frontend:
-        build: ./frontend
-        container_name: frontend
-        volumes:
-            - ./frontend/statics/:/usr/share/nginx/html/static/
-        ports:
-            - "8080:80"
-        networks:
-            - transcendence
-        depends_on:
-        - backend
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.2
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - transcendence
+    depends_on:
+      - elasticsearch
 
 networks:
   transcendence:
     driver: bridge
 
-# volumes:
-#   data:
-#     driver: local
+volumes:
+  es_data:
+    driver: local
