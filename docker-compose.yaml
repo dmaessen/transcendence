@@ -31,23 +31,14 @@ services:
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
+      - xpack.security.enabled=false
+    # volumes:
+    #   - es_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
+      - "9300:9300"
     networks:
       - transcendence
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.10.2
-    container_name: logstash
-    volumes:
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-    networks:
-      - transcendence
-    depends_on:
-      - elasticsearch
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.10.2
@@ -60,6 +51,22 @@ services:
       - transcendence
     depends_on:
       - elasticsearch
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.2
+    container_name: logstash
+    ports:
+      - "5044:5044"  # For Beats input
+      - "9600:9600"  # For monitoring
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - transcendence
+    environment:
+      - xpack.monitoring.elasticsearch.hosts=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
 
 networks:
   transcendence:
