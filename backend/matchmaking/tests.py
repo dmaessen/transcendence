@@ -21,13 +21,23 @@ class MatchViewTest(TestCase):
         self.assertEqual(PlayerQueue.objects.count(), 3)
 
     def test_create_match(self):
-        response = self.client.post(reverse('create_match'), {}, format='json')
+        response = self.client.post(reverse('create_matches'), {}, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Match.objects.count(), 1)
 
         match = Match.objects.first()
         self.assertEqual(match.player1, "player2")
         self.assertEqual(match.player2, "player1")
+
+    def test_create_match_fails(self):
+        PlayerQueue.objects.all().delete()
+        PlayerQueue.objects.create(player_id="player3", total_wins=8)
+
+        response = self.client.post(reverse("create_matches"), {}, format="json")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(Match.objects.count(), 0)
+
 
     def test_list_players(self):
         response = self.client.get(reverse('list_players'), format='json')
@@ -43,3 +53,16 @@ class MatchViewTest(TestCase):
         }, format='json')
 
         self.assertEqual(PlayerQueue.objects.filter(player_id="player4").exists(), True)
+
+    def test_list_matches(self):
+        #add 2 more player to test db
+        PlayerQueue.objects.create(player_id="player5", total_wins=4)
+        PlayerQueue.objects.create(player_id="player6", total_wins=5)
+        self.assertEqual(PlayerQueue.objects.count(), 4)
+        
+        response = self.client.get(reverse('matches'), format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Match.objects.count(), 2)
+
+
