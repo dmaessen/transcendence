@@ -9,10 +9,11 @@ services:
     networks:
       - transcendence
     command: python3 ./backend/game_server/game_server.py
-    restart: on-failure
-    depends_on:
-      - elasticsearch
-      - logstash
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build: ./frontend
@@ -23,25 +24,38 @@ services:
       - "8080:80"
     networks:
       - transcendence
-    depends_on:
-      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-    # volumes:
-    #   - es_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
       - "9300:9300"
     networks:
       - transcendence
 
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.17.0
+    container_name: logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - transcendence
+    depends_on:
+      - elasticsearch
+
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.10.2
+    image: docker.elastic.co/kibana/kibana:8.17.0
     container_name: kibana
     ports:
       - "5601:5601"
@@ -52,26 +66,84 @@ services:
     depends_on:
       - elasticsearch
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.10.2
-    container_name: logstash
-    ports:
-      - "5044:5044"  # For Beats input
-      - "9600:9600"  # For monitoring
-    volumes:
-      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-    networks:
-      - transcendence
-    environment:
-      - xpack.monitoring.elasticsearch.hosts=http://elasticsearch:9200
-    depends_on:
-      - elasticsearch
-
-
 networks:
   transcendence:
     driver: bridge
 
-volumes:
-  es_data:
-    driver: local
+# services:
+#   backend:
+#     build: ./backend/docker
+#     container_name: backend
+#     volumes:
+#       - ./backend/:/app/
+#     ports:
+#       - "8000:8000"
+#     networks:
+#       - transcendence
+#     command: python3 ./backend/game_server/game_server.py
+#     restart: on-failure
+#     depends_on:
+#       - elasticsearch
+#       - logstash
+
+#   frontend:
+#     build: ./frontend
+#     container_name: frontend
+#     volumes:
+#       - ./frontend/statics/:/usr/share/nginx/html/static/
+#     ports:
+#       - "8080:80"
+#     networks:
+#       - transcendence
+#     depends_on:
+#       - backend
+
+#   elasticsearch:
+#     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+#     container_name: elasticsearch
+#     environment:
+#       - discovery.type=single-node
+#       - xpack.security.enabled=false
+#     # volumes:
+#     #   - es_data:/usr/share/elasticsearch/data
+#     ports:
+#       - "9200:9200"
+#       - "9300:9300"
+#     networks:
+#       - transcendence
+
+#   kibana:
+#     image: docker.elastic.co/kibana/kibana:8.10.2
+#     container_name: kibana
+#     ports:
+#       - "5601:5601"
+#     environment:
+#       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+#     networks:
+#       - transcendence
+#     depends_on:
+#       - elasticsearch
+
+#   logstash:
+#     image: docker.elastic.co/logstash/logstash:8.10.2
+#     container_name: logstash
+#     ports:
+#       - "5044:5044"  # For Beats input
+#       - "9600:9600"  # For monitoring
+#     volumes:
+#       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#     networks:
+#       - transcendence
+#     environment:
+#       - xpack.monitoring.elasticsearch.hosts=http://elasticsearch:9200
+#     depends_on:
+#       - elasticsearch
+
+
+# networks:
+#   transcendence:
+#     driver: bridge
+
+# volumes:
+#   es_data:
+#     driver: local
