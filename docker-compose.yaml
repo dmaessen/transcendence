@@ -30,18 +30,22 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Elasticsearch: Stores all the logs
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: elasticsearch
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
+      - discovery.type=single-node    # Run as single node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m  # Set Java heap size
+      - xpack.security.enabled=false  # Disable security for dev
     ports:
       - "9200:9200"
-      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
       - transcendence
 
+  # Logstash: Processes and forwards logs
   logstash:
     image: docker.elastic.co/logstash/logstash:8.17.0
     container_name: logstash
@@ -49,27 +53,30 @@ services:
       - "5044:5044"
     volumes:
       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-    networks:
-      - transcendence
     depends_on:
       - elasticsearch
+    networks:
+      - transcendence
 
+  # Kibana: Web interface to view logs
   kibana:
     image: docker.elastic.co/kibana/kibana:8.17.0
     container_name: kibana
     ports:
       - "5601:5601"
     environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-    networks:
-      - transcendence
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
       - elasticsearch
+    networks:
+      - transcendence
 
 networks:
   transcendence:
     driver: bridge
 
+volumes:
+  elasticsearch_data:
 # services:
 #   backend:
 #     build: ./backend/docker
