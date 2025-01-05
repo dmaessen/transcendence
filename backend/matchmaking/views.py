@@ -63,7 +63,7 @@ def create_matches(request):
     players = PlayerQueue.objects.filter(is_active=True).order_by('total_wins') #sorts ascending order
     #players = PlayerQueue.objects.all()
     if len(players) <= 1:
-        return JsonResponse({"message": "Match is not created, no enough player"}, status=201)
+        return JsonResponse({"message": "Match is not created, no enough player"}, status=404)
 
     matches = []
     while len(players) > 1:
@@ -88,7 +88,7 @@ def create_matches(request):
 @api_view(['GET'])
 def list_matches(request):
     """
-    display all created matches.
+    Displays all created matches.
     """
     matches = Match.objects.all()
     serializer = MatchSerializer(matches, many=True)
