@@ -60,6 +60,8 @@ class MatchViewTest(TestCase):
         PlayerQueue.objects.create(player_id="player6", total_wins=5)
         self.assertEqual(PlayerQueue.objects.count(), 4)
         
+        self.client.post(reverse('create_matches'), {}, format='json')
+
         response = self.client.get(reverse('matches'), format='json')
 
         self.assertEqual(response.status_code, 200)
