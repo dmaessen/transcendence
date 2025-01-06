@@ -10,6 +10,11 @@ from .models import PlayerQueue, Match
 from rest_framework.parsers import JSONParser
 from .serializers import PlayerQueueSerializer, MatchSerializer
 
+import logging
+logger = logging.getLogger('django')
+logger.info('Test log---------BANANA')
+
+
 #@api_view(['GET'])
 def index(request):
     return HttpResponse("HI I AM THE BANANA and THIS IS INDEX")
