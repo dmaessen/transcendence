@@ -2,9 +2,10 @@ from django.db import models
 from cryptography.fields import encrypt  # Assuming this is a custom field for encryption
 
 class User(models.Model):
+    #field for status 
     name = models.CharField(max_length=30)
     location = models.CharField(max_length=30, blank=True, null=True)
-    score = models.IntegerField(default=0)
+    score = models.IntegerField(default=0) #ratio to rank people
     victories = models.IntegerField(default=0)
     oauth_tokens = encrypt(models.JSONField(null=True, blank=True))  # Encrypting oauth tokens
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)  # Many-to-many relationship with Tournament
