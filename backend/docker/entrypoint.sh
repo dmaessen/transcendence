@@ -7,7 +7,7 @@ python manage.py makemigrations --check --dry-run
 
 if [ $? -eq 0 ]; then
   echo "Applying migrations..."
-  python manage.py migrate
+  python manage.py migrate --run-syncdb
 else
   echo "No migrations needed."
 fi
