@@ -1,0 +1,15 @@
+filebeat.inputs:
+- type: filestream
+  enabled: true
+  paths:
+    - /var/log/django/*.json
+  json.keys_under_root: true
+  json.add_error_key: true
+  tags: ["app-logs"]
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+logging.level: debug
+
+setup.ilm.enabled: false

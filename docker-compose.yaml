@@ -4,6 +4,7 @@ services:
     container_name: backend
     volumes:
       - ./backend/:/app/
+      - ./logs:/var/log/django
     ports:
       - "8000:8000"
     networks:
@@ -68,6 +69,19 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
       - elasticsearch
+    networks:
+      - transcendence
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.17.0
+    container_name: filebeat
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/var/log/django:ro
+    user: root  # Might be needed for file permissions
+    command: ["filebeat", "run", "-e", "--strict.perms=false"]  # Fixed command syntax
+    depends_on:
+      - logstash
     networks:
       - transcendence
 

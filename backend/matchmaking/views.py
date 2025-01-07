@@ -12,8 +12,8 @@ from .serializers import PlayerQueueSerializer, MatchSerializer
 
 import logging
 logger = logging.getLogger('django')
-logger.info('Test log', extra={'logger_name': 'django'})
-#logger.info('Test log---------BANANA')
+#logger.info('Test log---------', extra={'logger_name': 'django'})
+logger.info('Test log---------BANANA')
 
 
 #@api_view(['GET'])
