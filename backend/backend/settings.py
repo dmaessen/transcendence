@@ -159,24 +159,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    #'disable_existing_loggers': False,
     'formatters': {
         'json': {
             'class': 'pythonjsonlogger.jsonlogger.JsonFormatter',
-            'format': '{"@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "logger_name": "%(name)s", "message": "%(message)s", "module": "%(module)s", "pathname": "%(pathname)s", "funcName": "%(funcName)s"}' 
+            'format': '{"name": "%(name)s", "@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "message": "%(message)s", "module": "%(module)s", "pathname": "%(pathname)s", "funcName": "%(funcName)s"}' 
         }
     },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+        'json_file': {
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/django/django.json',  # Make sure this directory exists
             'formatter': 'json'
         }
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['json_file'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         }
     }
 }
@@ -187,7 +188,7 @@ LOGGING = {
 #     'formatters': {
 #         'json': {
 #             'class': 'pythonjsonlogger.jsonlogger.JsonFormatter',
-#             'format': '{"logger_name": "%(name)s", "type": "backend", "message": "%(message)s", "level": "%(levelname)s", "@timestamp": "%(asctime)s"}',
+#             'format': '{"@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "logger_name": "%(name)s", "message": "%(message)s", "module": "%(module)s", "pathname": "%(pathname)s", "funcName": "%(funcName)s"}' 
 #         }
 #     },
 #     'handlers': {
