@@ -14,6 +14,11 @@ class User(models.Model):
 
     def __str__(self):
         return self.name
+    def clean(self):
+        if self.score < 0:
+            raise ValueError("Score cannot be negative.")
+        if self.victories < 0:
+            raise ValueError("Victories cannot be negative.")
 
 
 class Match(models.Model):
@@ -30,14 +35,12 @@ class Match(models.Model):
 
 
 class Tournament(models.Model):
-    MATCH_TYPES = [
-        ("F", "Final"),
-        ("S", "Semi-Final"),
-        ("Q", "Quarter-Final"),
-    ]
-    match_type = models.CharField(max_length=1, choices=MATCH_TYPES)
+    first_place = models.ForeignKey(User)
+    second_place = models.ForeignKey(User)
+    third_place = models.ForeignKey(User)
+    fourth_place = models. ForeignKey(User)
     number_of_players = models.IntegerField(default=0)
-    start_date = models.DateTimeField()
+    start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
