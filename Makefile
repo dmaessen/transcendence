@@ -1,7 +1,7 @@
 DOCK_COMPOSE_CMD :=	docker compose
 DOCK_COMPOSE_FILE :=	docker-compose.yaml
 
-all: build updetach
+all: buildclean updetach
 
 build up:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
