@@ -1,4 +1,5 @@
-// NEW VERSION WITH BACKEND
+//import { connectWebSocket, sendPlayerAction } from "../websocket_handler.js";
+
 const gameMenuElement = document.getElementById("gameMenu");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
@@ -32,7 +33,8 @@ function startGame(mode) {
     if (mode === "One Player") {
         alert(`${mode} mode will use backend logic. Initializing connection...`);
         instructions1.style.display = "block";
-        initializeGameConnection();
+        //initializeGameConnection();
+        connectWebSocket(mode);
     } if (mode === "Two Players (hot seat)") {
         alert(`${mode} mode is not yet implemented.`);
         instructions2.style.display = "block";
@@ -60,50 +62,54 @@ window.onload = () => {
 };
 
 // placeholder for initializing server communication
-function initializeGameConnection() {
-    // const serverUrl = "ws://your-server-address/game";
-    const serverUrl = "ws://localhost:8000"; // not 8765
-    const socket = new WebSocket(serverUrl);
+// function initializeGameConnection() {
+//     //const serverUrl = "wss://localhost:8000/ws/game_server/";
+//     const serverUrl = "ws://localhost:8000/ws/game_server/"; // or backend??
+//     const socket = new WebSocket(serverUrl);
+//     // const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+//     // const wsUrl = `${wsScheme}://${window.location.host}/ws/game/`;
+//     // const socket = new WebSocket(wsUrl);
 
-    socket.onopen = () => {
-        console.log("Connected to the game server.");
-        // Inform server about the game mode
-        socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
-    };
 
-    socket.onmessage = (event) => {
-        const serverMessage = JSON.parse(event.data);
-        handleServerMessage(serverMessage);
-    };
+//     socket.onopen = () => {
+//         console.log("Connected to the game server.");
+//         // Inform server about the game mode
+//         socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+//     };
 
-    socket.onclose = () => {
-        console.log("Disconnected from the game server.");
-        gameState.running = false;
-    };
+//     socket.onmessage = (event) => {
+//         const serverMessage = JSON.parse(event.data);
+//         handleServerMessage(serverMessage);
+//     };
 
-    socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        alert("An error occurred with the game server connection.");
-    };
+//     socket.onclose = () => {
+//         console.log("Disconnected from the game server.");
+//         gameState.running = false;
+//     };
 
-    gameState.socket = socket;
-}
+//     socket.onerror = (error) => {
+//         console.error("WebSocket error:", error);
+//         alert("An error occurred with the game server connection."); // errors here
+//     };
+
+//     gameState.socket = socket;
+// }
 
 // handles messages from the server
-function handleServerMessage(message) {
-    switch (message.type) {
-        case "update":
-            // updates game state based on server data
-            updateGameState(message.data);
-            break;
-        case "end":
-            alert(`Game over: ${message.reason}`);
-            gameState.running = false;
-            break;
-        default:
-            console.warn("Unknown message type:", message.type);
-    }
-}
+// function handleServerMessage(message) {
+//     switch (message.type) {
+//         case "update":
+//             // updates game state based on server data
+//             updateGameState(message.data);
+//             break;
+//         case "end":
+//             alert(`Game over: ${message.reason}`);
+//             gameState.running = false;
+//             break;
+//         default:
+//             console.warn("Unknown message type:", message.type);
+//     }
+// }
 
 // update game state and redraws the canvas based on server updates
 function updateGameState(data) {
@@ -123,8 +129,24 @@ function updateGameState(data) {
     gameContext.fill();
 }
 
+// paddle movement to the server
+document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowUp") {
+        sendPlayerAction("move", { direction: "up" });
+    } else if (event.key === "ArrowDown") {
+        sendPlayerAction("move", { direction: "down" });
+    } else if (event.key === "s") { // needed??
+        sendPlayerAction("move", { direction: "down" });
+    } else if (event.key === "w") { // needed??
+        sendPlayerAction("move", { direction: "up" });
+    }
+});
 
 
+
+
+
+//export { updateGameState };
 
 
 // VERSION 4 -- GAME
@@ -489,4 +511,3 @@ function updateGameState(data) {
 
 
 // const Pong = Object.assign({}, Game);
-
