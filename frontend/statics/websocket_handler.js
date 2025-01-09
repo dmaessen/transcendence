@@ -1,7 +1,10 @@
 //import { handleServerMessage } from "./statics/script.js";
 
-const serverUrl = "ws://localhost:8000/ws/game_server/";
+//const serverUrl = "ws://localhost:8000/ws/game_server/";
 //const serverUrl = "ws://localhost/ws/game_server/";
+const wsUrl = `ws://${window.location.host}/ws/game_server/`;
+
+//const serverUrl = `ws://${window.location.host}/ws/game_server/`;
 
 let socket;
 
@@ -11,13 +14,13 @@ function connectWebSocket() {
         return;
     }
 
-    socket = new WebSocket(serverUrl);
+    socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
         console.log("Connected to the game server.");
         //initializeGame(); // Perform any necessary setup
-        if (gameMode) {
-            socket.send(JSON.stringify({action: "start", mode: gameMode}));
+        if (gameState) {
+            socket.send(JSON.stringify({action: "start", mode: gameState.mode}));
         }
     };
 

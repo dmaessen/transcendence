@@ -1,13 +1,14 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .game_logic import Game
+from game_server.game_logic import Game
 
 games = {}  # active games by game_id -- laura??
 players = {}  # active players by player_id -- laura??
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.player_id = self.channel_name  # unique player ID -- laura??
+        self.player_id = self.channel_name if hasattr(self, 'channel_name') else None
+        #self.player_id = self.channel_name  # unique player ID -- laura??
         players[self.player_id] = self
         print(f"Player {self.player_id} connected.")
 
