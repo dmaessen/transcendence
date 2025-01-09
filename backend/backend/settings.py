@@ -49,7 +49,8 @@ INSTALLED_APPS = [
 
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
-    'data.apps.DataConfig'
+    'data.apps.DataConfig',
+	'users.apps.UsersConfig'
 
 ]
 
