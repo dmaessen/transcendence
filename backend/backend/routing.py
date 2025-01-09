@@ -1,7 +1,9 @@
 # routing.py
-from django.urls import re_path
-from .game_server.websocker_client import GameConsumer
+from django.urls import re_path # remove?
+from django.urls import path
+from game_server.websocket_client import GameConsumer
 
 websocket_urlpatterns = [
-    re_path(r'ws/game_server/$', GameConsumer.as_asgi()),
+    #re_path(r'ws/game_server/$', GameConsumer.as_asgi()),
+    path('ws/game_server/', GameConsumer.as_asgi()),
 ]
