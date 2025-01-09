@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'channels',
     'corsheaders',
 
-
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
     'data.apps.DataConfig',
