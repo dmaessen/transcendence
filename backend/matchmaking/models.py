@@ -1,3 +1,5 @@
+#NOT IN USE, INSTEAD OF THIS models.py WE HAVE data.models
+
 from django.db import models
 
 # IS THIS NECESSARY WHEN WE HAVE PlayerQueue class?

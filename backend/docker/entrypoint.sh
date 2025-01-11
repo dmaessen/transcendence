@@ -5,8 +5,6 @@
 echo "Checking for pending migrations..."
 python manage.py makemigrations
 
-<<<<<<< HEAD
-
 echo "Applying migrations..."
 #python manage.py makemigrations
 python manage.py migrate
@@ -18,14 +16,6 @@ python manage.py migrate
 # else
 #   echo "No migrations needed."
 # fi
-=======
-if [ $? -eq 0 ]; then
-  echo "Applying migrations..."
-  python manage.py migrate --run-syncdb
-else
-  echo "No migrations needed."
-fi
->>>>>>> origin/postmtchfront
 
 echo "Starting Django server..."
 exec python manage.py runserver 0.0.0.0:8000

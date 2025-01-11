@@ -5,7 +5,7 @@ from django.db import models
 
 class User(models.Model):
     # Field for status
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
     location = models.CharField(max_length=30, blank=True, null=True)
     score = models.IntegerField(default=0)  # Ratio to rank people
     victories = models.IntegerField(default=0)
@@ -35,10 +35,14 @@ class Match(models.Model):
 
 
 class Tournament(models.Model):
-    first_place = models.ForeignKey(User)
-    second_place = models.ForeignKey(User)
-    third_place = models.ForeignKey(User)
-    fourth_place = models. ForeignKey(User)
+    first_place = models.ForeignKey(User, related_name="first_place_tournaments", on_delete=models.SET_NULL, null=True, blank=True)
+    second_place = models.ForeignKey(User, related_name="second_place_tournaments", on_delete=models.SET_NULL, null=True, blank=True)
+    third_place = models.ForeignKey(User, related_name="third_place_tournaments", on_delete=models.SET_NULL, null=True, blank=True)
+    fourth_place = models.ForeignKey(User, related_name="fourth_place_tournaments", on_delete=models.SET_NULL, null=True, blank=True)
+    # first_place = models.ForeignKey(User)
+    # second_place = models.ForeignKey(User)
+    # third_place = models.ForeignKey(User)
+    # fourth_place = models. ForeignKey(User)
     number_of_players = models.IntegerField(default=0)
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
