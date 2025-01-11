@@ -7,6 +7,8 @@ players = {}  # active players by player_id -- laura??
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        #The GameConsumer class uses channel_name to:
+        #Assign a unique ID to each player when they connect.
         self.player_id = self.channel_name if hasattr(self, 'channel_name') else None
         #self.player_id = self.channel_name  # unique player ID -- laura??
         players[self.player_id] = self
@@ -44,6 +46,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             del players[self.player_id]
             await self.close()
 
+    #this one channel layer
     async def broadcast_game_state(self, game_id):
         if game_id in games:
             game_state = games[game_id].get_state()
