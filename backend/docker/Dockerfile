@@ -10,6 +10,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 EXPOSE 8000
 
 RUN pip install -r requirements.txt
+RUN pip install python-decouple
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
