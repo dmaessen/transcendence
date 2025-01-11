@@ -22,7 +22,6 @@ def list_players(request):
     return JsonResponse(serializer.data, safe=False)
 
 
-
 #rest api version, using serializer.
 @api_view(['POST'])
 def join_queue(request):

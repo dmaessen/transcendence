@@ -1,78 +1,33 @@
 services:
-#BECAUSE DB IS NOT SET YET, I COMMENT OUT THIS PART
-
-  # db:
-  #   image: mysql:5.7
-  #   container_name: transcendence_db
-  #   restart: always
-  #   volumes:
-  #     - data:/var/lib/mysql
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-  #     MYSQL_DATABASE: $(MYSQL_DATABASE)
-  #     MYSQL_USER: $(MYSQL_USER)
-  #     MYSQL_PASSWORD: $(MYSQL_PASSWORD)
-  #   ports:
-  #     - "3306:3306"
-  #   healthcheck:
-  #     test: ["CMD", "mysql", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
-  #     timeout: 20s
-  #     retries: 10
- 
-
- #INSTEAD OF CONTAINERS NAMED "BACKEND", CONTAINERS WITH SPECIFIC NAMES ARE IN USE BELOW (matchmaking, x, y, etc)
-  # backend:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: project_name_backend
-  #   command: sh -c "python3 manage.py migrate --npinput && python3 manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
-  #   restart: always
-  #   volumes:
-  #     - .:/app
-  #   ports:
-  #     - "8000:8000"
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - db
-
-    # matchmaking:
-    #     build: ./matchmaking_/docker
-    #     container_name: matchmaking
-    #     #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    #     volumes:
-    #         - ./matchmaking_/:/app/
-    #     ports:
-    #         - "8000:8000"
-    #     restart: on-failure
+    psql:
+        image: postgres:13-alpine
+        # build: ./backend/database
+        container_name: postgres
+        restart: always
+        networks:
+            - transcendence
+        ports:
+            - "5432:5432"
+        env_file:
+            - ./dot_env/.env
+        volumes:
+            - ./pgdata:/var/lib/postgresql/data/
 
     backend:
         build: ./backend/docker
         container_name: backend
-        #command: sh -c "python3 manage.py migrate && python manage.py runserver 0.0.0.0:8000"
         volumes:
             - ./backend/:/app/
         ports:
             - "8000:8000"
+        env_file:
+            - ./dot_env/.env
         networks:
             - transcendence
         command: python3 ./backend/game_server/game_server.py
         restart: on-failure
-
-    # websocket_server:
-    #     build: ./backend/docker
-    #     ports:
-    #         - "8765:8765"
-    #     volumes:
-    #         - ./backend/:/app/
-    #     networks:
-    #         - transcendence
-    #     command: python3 ./backend/game_server/game_server.py
-    #     depends_on:
-    #         - backend
+        depends_on:
+        - psql
 
     frontend:
         build: ./frontend
@@ -85,10 +40,11 @@ services:
             - transcendence
         depends_on:
         - backend
+        - psql
 
 networks:
-  transcendence:
-    driver: bridge
+    transcendence:
+        driver: bridge
 
 # volumes:
 #   data:
