@@ -2,23 +2,22 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from .models import PlayerQueue, Match
+from data.models import User, Match
 
 class MatchViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         
-        PlayerQueue.objects.create(player_id="player1", total_wins=10)
-        PlayerQueue.objects.create(player_id="player2", total_wins=8)
+        User.objects.create(name="player1")
+        User.objects.create(name="player2")
 
     def test_join_queue(self):
         response = self.client.post(reverse('join_queue'), {
-            'player_id': 'player3',
-            'total_wins': 3
+            'name': 'player3',
         }, format='json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(PlayerQueue.objects.count(), 3)
+        self.assertEqual(User.objects.count(), 3)
 
     def test_create_match(self):
         response = self.client.post(reverse('create_matches'), {}, format='json')
@@ -26,12 +25,12 @@ class MatchViewTest(TestCase):
         self.assertEqual(Match.objects.count(), 1)
 
         match = Match.objects.first()
-        self.assertEqual(match.player1, "player2")
-        self.assertEqual(match.player2, "player1")
+        self.assertEqual(match.player_1.name, "player1")
+        self.assertEqual(match.player_2.name, "player2")
 
     def test_create_match_fails(self):
-        PlayerQueue.objects.all().delete()
-        PlayerQueue.objects.create(player_id="player3", total_wins=8)
+        User.objects.all().delete()
+        User.objects.create(name="player3")
 
         response = self.client.post(reverse("create_matches"), {}, format="json")
 
@@ -43,22 +42,21 @@ class MatchViewTest(TestCase):
         response = self.client.get(reverse('list_players'), format='json')
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(PlayerQueue.objects.count(), 2)
-        self.assertEqual(PlayerQueue.objects.filter(player_id="player1").exists(), True)
-        self.assertEqual(PlayerQueue.objects.filter(player_id="player2").exists(), True)
+        self.assertEqual(User.objects.count(), 2)
+        self.assertEqual(User.objects.filter(name="player1").exists(), True)
+        self.assertEqual(User.objects.filter(name="player2").exists(), True)
 
         self.client.post(reverse('join_queue'), {
-            'player_id': 'player4',
-            'total_wins': 3
+            'name': 'player4',
         }, format='json')
 
-        self.assertEqual(PlayerQueue.objects.filter(player_id="player4").exists(), True)
+        self.assertEqual(User.objects.filter(name="player4").exists(), True)
 
     def test_list_matches(self):
         #add 2 more player to test db
-        PlayerQueue.objects.create(player_id="player5", total_wins=4)
-        PlayerQueue.objects.create(player_id="player6", total_wins=5)
-        self.assertEqual(PlayerQueue.objects.count(), 4)
+        User.objects.create(name="player5")
+        User.objects.create(name="player6")
+        self.assertEqual(User.objects.count(), 4)
         
         self.client.post(reverse('create_matches'), {}, format='json')
 
