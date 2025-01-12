@@ -56,7 +56,7 @@ def join_queue(request):
 
 @api_view(['POST'])
 def create_matches(request):
-    players = USer.objects.filter(score__gte=0).order_by('victories') #sorts ascending order
+    players = User.objects.filter(score__gte=0).order_by('victories') #sorts ascending order
     #players = PlayerQueue.objects.all()
     if len(players) <= 1:
         return JsonResponse({"message": "Match is not created, no enough player"}, status=404)
@@ -65,7 +65,7 @@ def create_matches(request):
     while len(players) > 1:
         player1 = players[0]
         player2 = players[1]
-        match = Match.objects.create(player1=player1, player2=player2, match_time=timezone.now())
+        match = Match.objects.create(player_1=player1, player_2=player2, match_time=timezone.now())
         matches.append(match)
 
         # # remove paired players from the queue ?? not sure? maybe add is_active to playerqueue model??
