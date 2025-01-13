@@ -61,58 +61,13 @@ window.onload = () => {
     gameMenu.show();
 };
 
-// placeholder for initializing server communication
-// function initializeGameConnection() {
-//     //const serverUrl = "wss://localhost:8000/ws/game_server/";
-//     const serverUrl = "ws://localhost:8000/ws/game_server/"; // or backend??
-//     const socket = new WebSocket(serverUrl);
-//     // const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-//     // const wsUrl = `${wsScheme}://${window.location.host}/ws/game/`;
-//     // const socket = new WebSocket(wsUrl);
-
-
-//     socket.onopen = () => {
-//         console.log("Connected to the game server.");
-//         // Inform server about the game mode
-//         socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
-//     };
-
-//     socket.onmessage = (event) => {
-//         const serverMessage = JSON.parse(event.data);
-//         handleServerMessage(serverMessage);
-//     };
-
-//     socket.onclose = () => {
-//         console.log("Disconnected from the game server.");
-//         gameState.running = false;
-//     };
-
-//     socket.onerror = (error) => {
-//         console.error("WebSocket error:", error);
-//         alert("An error occurred with the game server connection."); // errors here
-//     };
-
-//     gameState.socket = socket;
-// }
-
-// handles messages from the server
-// function handleServerMessage(message) {
-//     switch (message.type) {
-//         case "update":
-//             // updates game state based on server data
-//             updateGameState(message.data);
-//             break;
-//         case "end":
-//             alert(`Game over: ${message.reason}`);
-//             gameState.running = false;
-//             break;
-//         default:
-//             console.warn("Unknown message type:", message.type);
-//     }
-// }
-
 // update game state and redraws the canvas based on server updates
 function updateGameState(data) {
+    if (!data || !data.player || !data.opponent || !data.ball) {
+        console.error("Invalid game state received:", data);
+        return;
+    }
+    
     const { player, opponent, ball } = data;
 
     // clear the canvas
