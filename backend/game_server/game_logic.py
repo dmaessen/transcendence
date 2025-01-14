@@ -74,6 +74,10 @@ class Game:
         elif self.ball["y"] > self.opponent["y"] + self.opponent["height"] // 2:
             self.opponent["y"] += 5
 
+    def stop_game(self, winner):
+        self.running = False
+        print(f"Game ended. Winner: {winner}")
+
 #ex.game loop for WebSocket server
 def handle_message(game, message):
     data = json.loads(message)
@@ -97,5 +101,8 @@ def websocket_game_handler(socket, mode):
         if response:
             socket.send(json.dumps({"type": "update", "data": response})) # to client
 
+        if game.score["player"] >= 10 or game.score["opponent"] >= 10:
+            game.stop_game("Player" if game.score["player"] >= 10 else "Opponent")
+            socket.send(json.dumps({"type": "end", "reason": "Game Over"}))
     # updates client of game over
-    socket.send(json.dumps({"type": "end", "reason": "Game stopped by player."}))
+    #socket.send(json.dumps({"type": "end", "reason": "Game stopped by player."}))
