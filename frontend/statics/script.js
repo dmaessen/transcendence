@@ -29,12 +29,23 @@ function startGame(mode) {
     gameMenu.hide();
 
     gameCanvas.style.display = "block"; // shows the element
+    gameCanvas.width = 800; // Set the width of the canvas
+    gameCanvas.height = 400; // Set the height of the canvas
 
     if (mode === "One Player") {
         alert(`${mode} mode will use backend logic. Initializing connection...`);
         instructions1.style.display = "block";
         //initializeGameConnection();
         connectWebSocket(mode);
+
+        setTimeout(() => {
+            if (!gameState.gameId) {
+                alert("Failed to initialize game. Please try again.");
+            } else {
+                console.log("Game successfully initialized.");
+            }
+        }, 1000); // Wait a moment for the server to respond
+
     } if (mode === "Two Players (hot seat)") {
         alert(`${mode} mode is not yet implemented.`);
         instructions2.style.display = "block";
@@ -63,6 +74,7 @@ window.onload = () => {
 
 // update game state and redraws the canvas based on server updates
 function updateGameState(data) {
+    console.log("Updating game state:", data);
     if (!data || !data.player || !data.opponent || !data.ball) {
         console.error("Invalid game state received:", data);
         return;
@@ -71,6 +83,7 @@ function updateGameState(data) {
     const { player, opponent, ball } = data;
 
     // clear the canvas
+    gameContext.fillStyle = "black";
     gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 
     // draw paddles
@@ -81,7 +94,15 @@ function updateGameState(data) {
     // draw ball
     gameContext.beginPath();
     gameContext.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    gameContext.fillStyle = "white";
     gameContext.fill();
+}
+
+function showEndMenu(reason) {
+    gameState.running = false;
+    gameCanvas.style.display = "none"; // hide game canvas
+    alert(reason);
+    showStartMenu(); // return to start menu
 }
 
 // paddle movement to the server

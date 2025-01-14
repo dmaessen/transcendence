@@ -15,13 +15,20 @@ function connectWebSocket(mode) {
         console.log("Connected to the game server.");
         //initializeGame(); // Perform any necessary setup
         if (gameState) {
-            socket.send(JSON.stringify({action: "start", mode}));
+            console.log("WebSocket readyState before sending start:", socket.readyState);
+            socket.send(JSON.stringify({ action: "start", mode }));
+            console.log("WebSocket message sent to start game.");
         }
+        console.log("Connected to the game server #2.");
     };
 
     socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        handleServerMessage(message);
+        try {
+            const message = JSON.parse(event.data);
+            handleServerMessage(message);
+        } catch (error) {
+            console.error("Error parsing WebSocket message:", error, event.data);
+        }
     };
 
     socket.onclose = () => {
@@ -51,15 +58,16 @@ function sendPlayerAction(action, data) {
 function handleServerMessage(message) {
     switch (message.type) {
         case "started":
-            gameState.gameId = message.gameId;
+            gameState.gameId = message.game_id;
             console.log(`Game initialized with ID: ${gameState.gameId}`);
-            updateGameState(message.data);
+            //updateGameState(message.data);
             break;
         case "update":
             updateGameState(message.data);
             break;
         case "end":
-            alert(`Game Over: ${message.reason}`);
+            showEndMenu(`Game Over: ${message.reason}`);
+            //alert(`Game Over: ${message.reason}`);
             break;
         default:
             console.warn("Unknown message type received:", message.type);
