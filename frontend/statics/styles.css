@@ -25,7 +25,7 @@
 
 body {
     text-align: center;
-    background-color: ghostwhite;
+    background-color: rgb(245, 245, 248);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -40,7 +40,7 @@ canvas {
     display: none;
     border: 1px solid #ccc; /* Optional border for the game canvas */
     margin: auto;
-    background-color: #f0f0f0;
+    background-color: #040202;
 }
 
 h1 {
