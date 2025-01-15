@@ -1,4 +1,5 @@
 //import { connectWebSocket, sendPlayerAction } from "../websocket_handler.js";
+//let gameReady = false;
 
 const gameMenuElement = document.getElementById("gameMenu");
 const instructions1 = document.getElementById("game-instruction1");
@@ -14,8 +15,14 @@ const gameMenu = new bootstrap.Modal(gameMenuElement, {
     keyboard: false,
 });
 
-const gameState = {
+const gameState = { 
     mode: null,
+    // gameId: null,
+    // player: null,
+    // opponent: null,
+    // ball: null,
+    // net: null,
+    // score: { player: 0, opponent: 0 },
     running: false,
     playerId: null, // assigned by the server -- alex/Laura??
 };
@@ -23,14 +30,16 @@ const gameState = {
 // handle starting the game based on mode
 function startGame(mode) {
     gameState.mode = mode;
-    gameState.running = true;
+    //gameState.running = true;
 
     console.log(`Game started in ${mode} mode.`);
     gameMenu.hide();
 
     gameCanvas.style.display = "block"; // shows the element
-    gameCanvas.width = 800; // Set the width of the canvas
-    gameCanvas.height = 400; // Set the height of the canvas
+    gameCanvas.width = 1400;
+    gameCanvas.height = 1000;
+    gameCanvas.style.width = gameCanvas.width / 2 + "px";
+    gameCanvas.style.height = gameCanvas.height / 2 + "px";
 
     if (mode === "One Player") {
         alert(`${mode} mode will use backend logic. Initializing connection...`);
@@ -38,13 +47,13 @@ function startGame(mode) {
         //initializeGameConnection();
         connectWebSocket(mode);
 
-        setTimeout(() => {
-            if (!gameState.gameId) {
-                alert("Failed to initialize game. Please try again.");
-            } else {
-                console.log("Game successfully initialized.");
-            }
-        }, 1000); // Wait a moment for the server to respond
+        // setTimeout(() => {
+        //     if (!gameState.gameId) {
+        //         alert("Failed to initialize game. Please try again.");
+        //     } else {
+        //         console.log("Game successfully initialized.");
+        //     }
+        // }, 1000); // Wait a moment for the server to respond
 
     } if (mode === "Two Players (hot seat)") {
         alert(`${mode} mode is not yet implemented.`);
@@ -80,10 +89,9 @@ function updateGameState(data) {
         return;
     }
     
-    const { player, opponent, ball } = data;
+    const { player, opponent, ball, net, score } = data;
 
     // clear the canvas
-    gameContext.fillStyle = "black";
     gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 
     // draw paddles
@@ -96,6 +104,32 @@ function updateGameState(data) {
     gameContext.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     gameContext.fillStyle = "white";
     gameContext.fill();
+
+    //d draw net 
+    for (let i = 1; i < gameCanvas.height; i += net.height + net.gap) {
+        gameContext.fillStyle = "white"; // Set net color
+        gameContext.fillRect(net.x, i, net.width, net.height); // Draw each segment
+    }
+
+    // Draw scores (if needed)
+    gameContext.font = "60px Arial";
+    gameContext.fillText(score.player, gameCanvas.width / 4, 50);
+    gameContext.fillText(score.opponent, (gameCanvas.width * 3) / 4, 50);
+}
+
+
+function displayStartPrompt() {
+    gameContext.font = "50px Courier New";
+    gameContext.fillStyle = "#000000";
+    gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
+    gameContext.fillStyle = "#ffffff";
+    gameContext.textAlign = "center";
+    gameContext.fillText("Press any key to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
+}
+
+function startGameMenu() {
+    gameState.running = false;
+    displayStartPrompt();
 }
 
 function showEndMenu(reason) {
@@ -105,19 +139,24 @@ function showEndMenu(reason) {
     showStartMenu(); // return to start menu
 }
 
-// paddle movement to the server
 document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowUp") {
-        sendPlayerAction("move", { direction: "up" });
-    } else if (event.key === "ArrowDown") {
-        sendPlayerAction("move", { direction: "down" });
-    } else if (event.key === "s") { // needed??
-        sendPlayerAction("move", { direction: "down" });
-    } else if (event.key === "w") { // needed??
-        sendPlayerAction("move", { direction: "up" });
+    if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+        console.log("Key pressed. Starting the game...");
+        gameState.running = true;
+        
+        socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+    } else {
+        if (event.key === "ArrowUp") {
+            sendPlayerAction("move", { direction: "up" });
+        } else if (event.key === "ArrowDown") {
+            sendPlayerAction("move", { direction: "down" });
+        } else if (event.key === "s") { // needed??
+            sendPlayerAction("move", { direction: "down" });
+        } else if (event.key === "w") { // needed??
+            sendPlayerAction("move", { direction: "up" });
+        }
     }
 });
-
 
 
 

@@ -6,9 +6,12 @@ import json
 class Game:
     def __init__(self, mode):
         self.mode = mode
-        self.player = {"x": 10, "y": 200, "width": 10, "height": 100}
-        self.opponent = {"x": 780, "y": 200, "width": 10, "height": 100}
-        self.ball = {"x": 400, "y": 300, "radius": 10, "dir_x": 4, "dir_y": 3}
+        self.width = 1400
+        self.height = 1000
+        self.player = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100}
+        self.opponent = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100}
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
+        self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = True
 
@@ -18,7 +21,7 @@ class Game:
         self.ball["y"] += self.ball["dir_y"]
 
         # Ball collision with top/bottom walls
-        if self.ball["y"] - self.ball["radius"] <= 0 or self.ball["y"] + self.ball["radius"] >= 600:
+        if self.ball["y"] - self.ball["radius"] <= 0 or self.ball["y"] + self.ball["radius"] >= self.height:
             self.ball["dir_y"] *= -1
 
         # Ball collision with paddles
@@ -31,7 +34,7 @@ class Game:
         if self.ball["x"] < 0:
             self.score["opponent"] += 1
             self._reset_ball(direction=1)
-        elif self.ball["x"] > 800:
+        elif self.ball["x"] > self.width:
             self.score["player"] += 1
             self._reset_ball(direction=-1)
 
@@ -43,7 +46,7 @@ class Game:
         paddle = self.player if player_id == "player" else self.opponent
         if direction == "up" and paddle["y"] > 0:
             paddle["y"] -= 10
-        elif direction == "down" and paddle["y"] + paddle["height"] < 600:
+        elif direction == "down" and paddle["y"] + paddle["height"] < self.height:
             paddle["y"] += 10
 
     def get_state(self):
@@ -51,7 +54,10 @@ class Game:
             "player": self.player,
             "opponent": self.opponent,
             "ball": self.ball,
-            "score": self.score
+            "score": self.score,
+            "net": self.net,
+            "width": self.width,
+            "height": self.height
         }
 
     def _check_collision(self, paddle):
@@ -63,7 +69,7 @@ class Game:
         )
 
     def _reset_ball(self, direction):
-        self.ball["x"] = 400
+        self.ball["x"] = self.height / 2
         self.ball["y"] = 300
         self.ball["dir_x"] = direction * 4
         self.ball["dir_y"] = 3
@@ -73,6 +79,12 @@ class Game:
             self.opponent["y"] -= 5
         elif self.ball["y"] > self.opponent["y"] + self.opponent["height"] // 2:
             self.opponent["y"] += 5
+        
+        # Prevent the opponent from going out of bounds
+        self.opponent["y"] = max(0, min(self.height - self.opponent["height"], self.opponent["y"]))
+
+    def start_game(self):
+        self.running = True
 
     def stop_game(self, winner):
         self.running = False

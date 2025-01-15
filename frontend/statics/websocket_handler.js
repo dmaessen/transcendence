@@ -16,9 +16,10 @@ function connectWebSocket(mode) {
         //initializeGame(); // Perform any necessary setup
         if (gameState) {
             console.log("WebSocket readyState before sending start:", socket.readyState);
-            socket.send(JSON.stringify({ action: "start", mode }));
+            //socket.send(JSON.stringify({ action: "start", mode }));
             console.log("WebSocket message sent to start game.");
         }
+        startGameMenu();
         console.log("Connected to the game server #2.");
     };
 
@@ -48,7 +49,6 @@ function sendPlayerAction(action, data) {
             console.warn("No game ID available. Cannot send action.");
             return;
         }
-
         socket.send(JSON.stringify({ action, game_id: gameState.gameId, data, }));
     } else {
         console.warn("WebSocket is not open. Unable to send data.");
@@ -60,7 +60,7 @@ function handleServerMessage(message) {
         case "started":
             gameState.gameId = message.game_id;
             console.log(`Game initialized with ID: ${gameState.gameId}`);
-            //updateGameState(message.data);
+            //startGameMenu();
             break;
         case "update":
             updateGameState(message.data);
