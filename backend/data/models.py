@@ -1,16 +1,49 @@
 from django.db import models
 # from cryptography.fields import encrypt  # Assuming this is a custom field for encryption
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-class User(models.Model):
-    # Field for status
-    name = models.CharField(max_length=30)
+class UserManager(BaseUserManager):
+
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("The Email field must be set")
+        email = self.normalize_email(email)
+        extra_fields.setdefault('is_active', True)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
+        return self.create_user(email, password, **extra_fields)
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)  # Unique email for login
+    name = models.CharField(max_length=30)  # Non-unique name field
     location = models.CharField(max_length=30, blank=True, null=True)
-    #score = models.IntegerField(default=0)  # Ratio to rank people can be calculated rertrieving data from the tables
-    #victories = models.IntegerField(default=0) #This can be retrived from serching on the matches table
-    oauth_tokens = models.JSONField(null=True, blank=True)  # Encrypting oauth tokens
-    tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)  # Many-to-many relationship with Tournament
+    oauth_tokens = models.JSONField(null=True, blank=True)
+    tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)
 
-    def _str_(self):
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    # User manager
+    objects = UserManager()
+
+    # Use email for authentication
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name']  # Name is required when creating a superuser
+
+    def __str__(self):
         return self.name
     def clean(self):
         if self.score < 0:
@@ -28,7 +61,7 @@ class Match(models.Model):
     winner = models.ForeignKey(User, related_name="match_winner", on_delete=models.SET_NULL, null=True, blank=True)
     tournament = models.ForeignKey('Tournament', related_name="matches", on_delete=models.SET_NULL, null=True, blank=True)  # Tournament for match, null if not part of any
 
-    def _str_(self):
+    def __str__(self):
         return f"Match: {self.player_1} vs {self.player_2}"
 
 
@@ -41,7 +74,7 @@ class Tournament(models.Model):
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"Tournament: {self.get_match_type_display()}"
 
 
