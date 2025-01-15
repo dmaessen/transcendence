@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
     'data.apps.DataConfig',
-	'authentication.apps.AuthenticationConfig',
+    'authentication.apps.AuthenticationConfig'
+
 
 ]
 
@@ -105,7 +106,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE'),  # Default to PostgreSQL
+        'ENGINE': os.getenv('DB_ENGINE'),
         'NAME': os.getenv('POSTGRES_DB'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
@@ -161,3 +162,9 @@ STATICFILES_DIRS = []
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom user model
+AUTH_USER_MODEL = 'data.User'
+
+
+
