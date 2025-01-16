@@ -29,7 +29,7 @@ function startGame(mode) {
 
     gameCanvas.style.display = "block"; // shows the element
 
-    if (mode === "One Player") {
+    if (mode === "One Player") {0
         alert(`${mode} mode will use backend logic. Initializing connection...`);
         instructions1.style.display = "block";
         initializeGameConnection();
