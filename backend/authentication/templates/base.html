@@ -4,21 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>login</title>
+    <title>Home</title>
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
   </head>
   <body>
+    <header>
+      {%if request.user.is_authenticated %}
+        <span>Hi {{ request.user.username | title }}</span>
+        <a href="{% url 'sign_out' %}">Logout</a>
+      {%else%}
+        <a href=" {% url 'sign_in' %}">Login</a>
+      {%endif%}
+    </header>
     <main>
-		{% block content %}
-		<form method="POST" novalidate>
-			{% csrf_token %}
-			<h2>Login</h2>
-			{{form.as_p}}
-			<input type="submit" value="Login" />
-		</form>
-		{% endblock content%}
-        {% comment %} <h1>Welcome to My Website</h1>   {% endcomment %}
+		  this is a temporary homepage
     </main>
     <script src="index.js"></script>
   </body>

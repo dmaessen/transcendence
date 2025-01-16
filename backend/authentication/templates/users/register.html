@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>login</title>
+    <title>Register</title>
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
   </head>
@@ -13,9 +13,20 @@
 		{% block content %}
 		<form method="POST" novalidate>
 			{% csrf_token %}
-			<h2>Login</h2>
-			{{form.as_p}}
-			<input type="submit" value="Login" />
+			<h2>Register</h2>
+			{% for field in form %}
+			<p>
+				{% if field.errors %}
+				<u1 class="errorlist">
+					{% for error in filed.errors %}
+					<li>{{ error }}</li>
+					{% endfor %}
+				</u1>
+				{% endif %}
+				{{ field.label_tag}} {{ field}}
+			</p>
+			{% endfor %}
+			<input type="submit" value="Register" />
 		</form>
 		{% endblock content%}
         {% comment %} <h1>Welcome to My Website</h1>   {% endcomment %}
