@@ -15,7 +15,7 @@ def index(request):
 
 @api_view(['GET'])
 def list_players(request):
-    players = User.objects.all().order_by('score')
+    players = User.objects.all()
     serializer = UserSerializer(players, many=True)
     return Response(serializer.data)
 
@@ -56,7 +56,7 @@ def join_queue(request):
 
 @api_view(['POST'])
 def create_matches(request):
-    players = User.objects.filter(score__gte=0).order_by('victories') #sorts ascending order
+    players = User.objects.all() #sorts ascending order
     #players = PlayerQueue.objects.all()
     if len(players) <= 1:
         return JsonResponse({"message": "Match is not created, no enough player"}, status=404)
