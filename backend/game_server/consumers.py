@@ -24,6 +24,9 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         # Add the player to the game
         game.add_player(self.player_id)
+
+        self.scope["player_id"] = self.player_id
+
         await self.accept()  # Accept socket connection
 
 # Also adjust the 'disconnect' logic for game removal:
@@ -89,11 +92,18 @@ class GameConsumer(AsyncWebsocketConsumer):
             #asyncio.create_task(self.broadcast_game_state(game_id))
 
         elif action == "move":
-            direction = data["data"]["direction"]
+            direction = data.get("direction")  # Get direction directly from the message
+            player_id = self.scope["player_id"]  # Retrieve player_id from the WebSocket session
+            if not direction or not game_id in games:
+                print(f"Invalid move action: Missing 'direction' or 'game_id'. Data: {data}")
+                return
+
             if game_id in games:
                 game = games[game_id]
-                game.move_player(self.player_id, direction)
+                game.move_player(player_id, direction)
                 await self.broadcast_game_state(game_id)
+            else:
+                print(f"Game {game_id} not found.")
 
         elif action == "stop":
             if game_id in games:

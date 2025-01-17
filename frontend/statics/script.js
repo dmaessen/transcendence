@@ -133,10 +133,10 @@ document.addEventListener("keydown", (event) => {
         gameState.running = true;
         socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
     }
-    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-        const direction = event.key === "ArrowUp" ? "up" : "down";
-        sendPlayerAction("move", { direction });
-    }
+    // if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+    //     const direction = event.key === "ArrowUp" ? "up" : "down";
+    //     sendPlayerAction("move", { direction });
+    // }
 
     // if (event.key === "ArrowUp") {
     //     sendPlayerAction("move", { direction: "up" });
@@ -147,6 +147,13 @@ document.addEventListener("keydown", (event) => {
     // } else if (event.key === "w") { // needed??
     //     sendPlayerAction("move", { direction: "up" });
     // }
+});
+
+document.addEventListener("keydown", (event) => {
+    const direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
+    if (direction) {
+        socket.send(JSON.stringify({ action: "move", direction: direction, game_id: gameState.gameId }));
+    }
 });
 
 
