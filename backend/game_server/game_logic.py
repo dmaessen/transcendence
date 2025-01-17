@@ -55,10 +55,18 @@ class Game:
         if self.ball["y"] - self.ball["radius"] <= 0 or self.ball["y"] + self.ball["radius"] >= self.height:
             self.ball["dir_y"] *= -1
 
-        # Ball collision with paddles (check for all players)
+        # Ball collision with paddles
         for player_id, player in self.players.items():
             if self._check_collision(player):
-                self.ball["dir_x"] = abs(self.ball["dir_x"])
+                # Invert direction of the ball based on the paddle's side
+                if player["x"] < self.width // 2:  # Left paddle
+                    self.ball["dir_x"] = abs(self.ball["dir_x"])
+                else:  # Right paddle
+                    self.ball["dir_x"] = -abs(self.ball["dir_x"])
+
+                # Optionally adjust ball speed slightly (e.g., increase difficulty over time)
+                self.ball["dir_x"] *= 1.05
+                self.ball["dir_y"] *= 1.05
 
         # Ball out of bounds
         if self.ball["x"] < 0:
@@ -67,6 +75,10 @@ class Game:
         elif self.ball["x"] > self.width:
             self.score["player"] += 1
             self._reset_ball(direction=-1)
+
+        if self.score["player"] >= 10 or self.score["opponent"] >= 10:
+            winner = "Player" if self.score["player"] >= 10 else "Opponent"
+            self.stop_game(winner)
 
         # Opponent AI movement (only in single-player mode)
         if self.mode == "One Player" and len(self.players) > 1:
@@ -91,16 +103,20 @@ class Game:
         }
 
     def _check_collision(self, paddle):
+        # Predictive collision detection based on ball's direction
+        next_x = self.ball["x"] + self.ball["dir_x"]
+        next_y = self.ball["y"] + self.ball["dir_y"]
+
         return (
-            self.ball["x"] - self.ball["radius"] <= paddle["x"] + paddle["width"]
-            and self.ball["x"] + self.ball["radius"] >= paddle["x"]
-            and self.ball["y"] >= paddle["y"]
-            and self.ball["y"] <= paddle["y"] + paddle["height"]
+            next_x + self.ball["radius"] >= paddle["x"]  # Ball will be at or past left edge of paddle
+            and next_x - self.ball["radius"] <= paddle["x"] + paddle["width"]  # Ball will be at or before right edge
+            and next_y + self.ball["radius"] >= paddle["y"]  # Ball will be at or below top edge of paddle
+            and next_y - self.ball["radius"] <= paddle["y"] + paddle["height"]  # Ball will be at or above bottom edge
         )
 
     def _reset_ball(self, direction):
-        self.ball["x"] = self.height / 2
-        self.ball["y"] = 300
+        self.ball["x"] = self.width // 2
+        self.ball["y"] = self.height // 2
         self.ball["dir_x"] = direction * 4
         self.ball["dir_y"] = 3
 
@@ -140,18 +156,53 @@ def handle_message(game, message):
         game.running = False
 
 # ex.WebSocket communication (implementation depends on the WebSocket library)
-def websocket_game_handler(socket, mode):
-    game = Game(mode)
+# def websocket_game_handler(socket, mode):
+#     game = Game(mode)
+#     game.start_game()
 
-    while game.running:
-        message = socket.receive() # from client
-        response = handle_message(game, message)
+#     while game.running:
+#         message = socket.receive() # from client
+#         response = handle_message(game, message)
 
-        if response:
-            socket.send(json.dumps({"type": "update", "data": response})) # to client
+#         if response:
+#             socket.send(json.dumps({"type": "update", "data": response})) # to client
 
-        if game.score["player"] >= 10 or game.score["opponent"] >= 10:
-            game.stop_game("Player" if game.score["player"] >= 10 else "Opponent")
-            socket.send(json.dumps({"type": "end", "reason": "Game Over"}))
+#         if not game.running:
+#             winner = "Player" if game.score["player"] >= 10 else "Opponent"
+#             socket.send(json.dumps({"type": "end", "reason": f"Game Over: {winner} wins"}))
+#             break
     # updates client of game over
     #socket.send(json.dumps({"type": "end", "reason": "Game stopped by player."}))
+
+
+def websocket_game_handler(socket, mode):
+    try:
+        game = Game(mode)
+        game.start_game()
+
+        while game.running:
+            try:
+                message = socket.receive(timeout=5)  # Add a timeout to prevent indefinite waiting
+                if message is None:
+                    break
+
+                response = handle_message(game, message)
+
+                if response:
+                    socket.send(json.dumps({"type": "update", "data": response}))
+
+                # Check for game-ending condition
+                if not game.running:
+                    winner = "Player" if game.score["player"] >= 10 else "Opponent"
+                    socket.send(json.dumps({"type": "end", "reason": f"Game Over: {winner} wins"}))
+                    break
+            except TimeoutError:
+                print("No message received; continuing loop...")
+            except Exception as e:
+                print(f"Error in WebSocket handler: {e}")
+                break
+    except Exception as e:
+        print(f"WebSocket connection error: {e}")
+    finally:
+        print("WebSocket connection closed.")
+        socket.close()
