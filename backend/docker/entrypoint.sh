@@ -9,6 +9,10 @@ echo "Applying migrations..."
 #python manage.py makemigrations
 python manage.py migrate
 
+# Start Daphne with custom timeout settings
+# echo "Starting Daphne server..."
+# exec python daphne_run.py
+
 # if [ $? -eq 0 ]; then
 #   echo "Applying migrations..."
 #   #python manage.py makemigrations

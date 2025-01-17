@@ -8,12 +8,43 @@ class Game:
         self.mode = mode
         self.width = 1400
         self.height = 1000
-        self.player = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100}
-        self.opponent = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100}
+        self.players = {}  # Use a dictionary to store players by player_id
         self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
-        self.running = True
+        self.running = False
+
+    def add_player(self, player_id):
+        if player_id not in self.players:
+            self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100}
+            print(f"Player {player_id} added.")
+            
+            if len(self.players) == 1:
+                self.players[player_id]["role"] = "player"
+            elif len(self.players) == 2:
+                self.players[player_id]["role"] = "opponent"
+                print(f"Opponent assigned to Player {player_id}")
+
+        # Automatically add a bot if only one player (in One Player mode)
+        if self.mode == "One Player" and len(self.players) == 1:
+            bot_id = "bot"
+            self.players[bot_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
+            print(f"Bot added as opponent: {bot_id}")
+
+    def remove_player(self, player_id):
+        if player_id in self.players:
+            del self.players[player_id]
+            print(f"Player {player_id} removed.")
+            if len(self.players) == 0:
+                self.running = False  # Stop game if no players are left
+
+    def reset_game(self, mode):
+        self.mode = mode
+        self.players = {}  # Reset players for a fresh start
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
+        self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
+        self.score = {"player": 0, "opponent": 0}
+        self.running = False
 
     def update_state(self):
         # Update ball position
@@ -24,11 +55,10 @@ class Game:
         if self.ball["y"] - self.ball["radius"] <= 0 or self.ball["y"] + self.ball["radius"] >= self.height:
             self.ball["dir_y"] *= -1
 
-        # Ball collision with paddles
-        if self._check_collision(self.player):
-            self.ball["dir_x"] = abs(self.ball["dir_x"])
-        if self._check_collision(self.opponent):
-            self.ball["dir_x"] = -abs(self.ball["dir_x"])
+        # Ball collision with paddles (check for all players)
+        for player_id, player in self.players.items():
+            if self._check_collision(player):
+                self.ball["dir_x"] = abs(self.ball["dir_x"])
 
         # Ball out of bounds
         if self.ball["x"] < 0:
@@ -39,20 +69,20 @@ class Game:
             self._reset_ball(direction=-1)
 
         # Opponent AI movement (only in single-player mode)
-        if self.mode == "One Player":
+        if self.mode == "One Player" and len(self.players) > 1:
             self._move_ai()
 
     def move_player(self, player_id, direction):
-        paddle = self.player if player_id == "player" else self.opponent
-        if direction == "up" and paddle["y"] > 0:
-            paddle["y"] -= 10
-        elif direction == "down" and paddle["y"] + paddle["height"] < self.height:
-            paddle["y"] += 10
+        if player_id in self.players:
+            paddle = self.players[player_id]
+            if direction == "up" and paddle["y"] > 0:
+                paddle["y"] -= 10
+            elif direction == "down" and paddle["y"] + paddle["height"] < self.height:
+                paddle["y"] += 10
 
     def get_state(self):
         return {
-            "player": self.player,
-            "opponent": self.opponent,
+            "players": self.players,
             "ball": self.ball,
             "score": self.score,
             "net": self.net,
@@ -75,13 +105,20 @@ class Game:
         self.ball["dir_y"] = 3
 
     def _move_ai(self):
-        if self.ball["y"] < self.opponent["y"] + self.opponent["height"] // 2:
-            self.opponent["y"] -= 5
-        elif self.ball["y"] > self.opponent["y"] + self.opponent["height"] // 2:
-            self.opponent["y"] += 5
+        opponent = None
+        for player_id, player in self.players.items():
+            if player.get("role") == "opponent":
+                opponent = player
+                break
+
+        if opponent:  # Ensure the opponent exists before moving the AI
+            if self.ball["y"] < opponent["y"] + opponent["height"] // 2:
+                opponent["y"] -= 5
+            elif self.ball["y"] > opponent["y"] + opponent["height"] // 2:
+                opponent["y"] += 5
         
-        # Prevent the opponent from going out of bounds
-        self.opponent["y"] = max(0, min(self.height - self.opponent["height"], self.opponent["y"]))
+            # Prevent the opponent from going out of bounds
+            opponent["y"] = max(0, min(self.height - opponent["height"], opponent["y"]))
 
     def start_game(self):
         self.running = True
