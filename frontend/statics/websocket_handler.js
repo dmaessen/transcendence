@@ -2,6 +2,8 @@
 const wsUrl = `ws://${window.location.host}/ws/game_server/`;
 
 let socket;
+let reconnecting = false;
+let resetting = false;
 
 function connectWebSocket(mode) {
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -9,18 +11,19 @@ function connectWebSocket(mode) {
         return;
     }
 
+    if (reconnecting) {
+        console.warn("Reconnection already in progress.");
+        return;
+    }
+
+    reconnecting = true;
+    console.log("Attempting to connect to websocket...");
     socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
         console.log("Connected to the game server.");
-        //initializeGame(); // Perform any necessary setup
-        if (gameState) {
-            console.log("WebSocket readyState before sending start:", socket.readyState);
-            //socket.send(JSON.stringify({ action: "start", mode }));
-            console.log("WebSocket message sent to start game.");
-        }
+        reconnecting = false;
         startGameMenu();
-        console.log("Connected to the game server #2.");
     };
 
     socket.onmessage = (event) => {
@@ -35,11 +38,15 @@ function connectWebSocket(mode) {
     socket.onclose = () => {
         console.log("Disconnected from the game server.");
         alert("Connection to the game server lost.");
+        reconnecting = false;
+        //location.reload();
+        setTimeout(() => connectWebSocket(mode), 2000); // Reconnect after 2 seconds
     };
 
     socket.onerror = (error) => {
         console.error("WebSocket error:", error);
         alert(`WebSocket error: ${error.message}`);
+        reconnecting = false;
     };
 }
 
@@ -55,12 +62,25 @@ function sendPlayerAction(action, data) {
     }
 }
 
+function resetGame(mode) {
+    console.log("---- in restGame() ------"); // to rm
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ action: "reset", gameId: gameState.gameId, mode }));
+    }
+    gameState.running = false;
+    displayStartPrompt();
+}
+
 function handleServerMessage(message) {
     switch (message.type) {
-        case "started":
+        case "started": // to rm
             gameState.gameId = message.game_id;
             console.log(`Game initialized with ID: ${gameState.gameId}`);
-            //startGameMenu();
+            gameState.running = true;
+            break;
+        case "reset":
+            gameState.gameId = message.game_id;
+            console.log(`RESTING GAME Game initialized with ID: ${gameState.gameId}`);
             break;
         case "update":
             updateGameState(message.data);

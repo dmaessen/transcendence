@@ -17,25 +17,22 @@ const gameMenu = new bootstrap.Modal(gameMenuElement, {
 
 const gameState = { 
     mode: null,
-    // gameId: null,
-    // player: null,
-    // opponent: null,
-    // ball: null,
-    // net: null,
-    // score: { player: 0, opponent: 0 },
+    gameId: null,
+    players: [],
     running: false,
     playerId: null, // assigned by the server -- alex/Laura??
 };
 
 // handle starting the game based on mode
 function startGame(mode) {
-    gameState.mode = mode;
-    //gameState.running = true;
+    gameState.running = false;
+    gameState.mode = mode; 
+    resetGame(mode);
 
     console.log(`Game started in ${mode} mode.`);
     gameMenu.hide();
 
-    gameCanvas.style.display = "block"; // shows the element
+    gameCanvas.style.display = "block";
     gameCanvas.width = 1400;
     gameCanvas.height = 1000;
     gameCanvas.style.width = gameCanvas.width / 2 + "px";
@@ -44,29 +41,19 @@ function startGame(mode) {
     if (mode === "One Player") {
         alert(`${mode} mode will use backend logic. Initializing connection...`);
         instructions1.style.display = "block";
-        //initializeGameConnection();
         connectWebSocket(mode);
-
-        // setTimeout(() => {
-        //     if (!gameState.gameId) {
-        //         alert("Failed to initialize game. Please try again.");
-        //     } else {
-        //         console.log("Game successfully initialized.");
-        //     }
-        // }, 1000); // Wait a moment for the server to respond
-
     } if (mode === "Two Players (hot seat)") {
         alert(`${mode} mode is not yet implemented.`);
         instructions2.style.display = "block";
-        // initializeGameConnection();
+        // connectWebSocket(mode);
     } if (mode === "Two Players (remote)") {
         alert(`${mode} mode is not yet implemented.`);
         instructions1.style.display = "block";
-        // initializeGameConnection();
+        // connectWebSocket(mode);
     } if (mode === "Tournament") {
         alert(`${mode} mode is not yet implemented.`);
         instructions2.style.display = "block";
-        // initializeGameConnection();
+        // connectWebSocket(mode);
     }
 }
 
@@ -83,21 +70,23 @@ window.onload = () => {
 
 // update game state and redraws the canvas based on server updates
 function updateGameState(data) {
-    console.log("Updating game state:", data);
-    if (!data || !data.player || !data.opponent || !data.ball) {
+    const { players, ball, score, net, width, height } = data;
+
+    // Ensure data validation before using it
+    if (!players || !ball || !score || !net || !width || !height) {
         console.error("Invalid game state received:", data);
         return;
     }
-    
-    const { player, opponent, ball, net, score } = data;
 
     // clear the canvas
     gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 
-    // draw paddles
-    gameContext.fillStyle = "white";
-    gameContext.fillRect(player.x, player.y, player.width, player.height);
-    gameContext.fillRect(opponent.x, opponent.y, opponent.width, opponent.height);
+    // Draw paddles for each player
+    for (let playerId in players) {
+        const player = players[playerId];
+        gameContext.fillStyle = "white";
+        gameContext.fillRect(player.x, player.y, player.width, player.height);
+    }
 
     // draw ball
     gameContext.beginPath();
@@ -112,11 +101,10 @@ function updateGameState(data) {
     }
 
     // Draw scores (if needed)
-    gameContext.font = "60px Arial";
-    gameContext.fillText(score.player, gameCanvas.width / 4, 50);
-    gameContext.fillText(score.opponent, (gameCanvas.width * 3) / 4, 50);
+    gameContext.font = "60px Courier New";
+    gameContext.fillText(score.player, gameCanvas.width / 4, 80);
+    gameContext.fillText(score.opponent, (gameCanvas.width * 3) / 4, 80);
 }
-
 
 function displayStartPrompt() {
     gameContext.font = "50px Courier New";
@@ -136,27 +124,42 @@ function showEndMenu(reason) {
     gameState.running = false;
     gameCanvas.style.display = "none"; // hide game canvas
     alert(reason);
-    showStartMenu(); // return to start menu
+    startGameMenu(); // return to start menu
 }
 
 document.addEventListener("keydown", (event) => {
     if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
         console.log("Key pressed. Starting the game...");
         gameState.running = true;
-        
         socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
-    } else {
-        if (event.key === "ArrowUp") {
-            sendPlayerAction("move", { direction: "up" });
-        } else if (event.key === "ArrowDown") {
-            sendPlayerAction("move", { direction: "down" });
-        } else if (event.key === "s") { // needed??
-            sendPlayerAction("move", { direction: "down" });
-        } else if (event.key === "w") { // needed??
-            sendPlayerAction("move", { direction: "up" });
-        }
+    }
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        const direction = event.key === "ArrowUp" ? "up" : "down";
+        sendPlayerAction("move", { direction });
+    }
+
+    // if (event.key === "ArrowUp") {
+    //     sendPlayerAction("move", { direction: "up" });
+    // } else if (event.key === "ArrowDown") {
+    //     sendPlayerAction("move", { direction: "down" });
+    // } else if (event.key === "s") { // needed??
+    //     sendPlayerAction("move", { direction: "down" });
+    // } else if (event.key === "w") { // needed??
+    //     sendPlayerAction("move", { direction: "up" });
+    // }
+});
+
+
+//window.addEventListener("beforeunload", resetGame);
+
+window.addEventListener("beforeunload", () => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        console.log("Closing WebSocket before page unload.");
+        gameState.running = false;
+        socket.close();
     }
 });
+
 
 
 
