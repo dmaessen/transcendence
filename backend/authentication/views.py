@@ -1,4 +1,4 @@
-from data.models import User
+from data.models import User, UserManager
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
@@ -42,15 +42,17 @@ def register(request):
 		form = RegisterForm(request.POST)
 		if form.is_valid():
 			user = form.save(commit=False)
-			user.username = user.username.lower()
+			user.username = form.cleaned_data['username']
+			user.email = form.cleaned_data['email']
+			user.password = form.cleaned_data['password']
 			# TODO: store other info, create JWT token and send it insted of using login method
-			# UserManager.create_user(UserManager, form.)
 			user.save()
 			messages.success(request, 'you have signed up sucesfully.')
 			login(request, user)
-			return redirect('post')
+			return redirect('sign_in')
 		else:
-			return render(request, 'users/register.html', {'form: form'})
+			form = RegisterForm()
+			return render(request, 'users/register.html', {'form': form})
 
 def home(request):
 	return render(request, 'base.html')

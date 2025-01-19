@@ -10,12 +10,14 @@
   </head>
   <body>
     <header>
-      {%if request.user.is_authenticated %}
-        <span>Hi {{ request.user.username | title }}</span>
+      {% csrf_token %}
+      {% comment %} {% if request.user.is_authenticated %} {% endcomment %}
+        {% comment %} <span>Hi {{ request.user.username | title }}</span> {% endcomment %}
         <a href="{% url 'sign_out' %}">Logout</a>
-      {%else%}
+      {% comment %} {% else %} {% endcomment %}
         <a href=" {% url 'sign_in' %}">Login</a>
-      {%endif%}
+        <a href=" {% url 'register' %}">Register</a>
+      {% comment %} {% endif %} {% endcomment %}
     </header>
     <main>
 		  this is a temporary homepage
