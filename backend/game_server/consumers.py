@@ -10,7 +10,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.player_id = self.channel_name
         players[self.player_id] = self
-        print(f"Player {self.player_id} connected.")
+        print(f"Player {self.player_id} connected.", flush=True)
         
         game_id = f"game_{self.player_id}"
         if game_id in games:
@@ -29,7 +29,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.accept()  # accept socket connection
 
     async def disconnect(self, close_code):
-        print(f"Player {self.player_id} disconnected.")
+        print(f"Player {self.player_id} disconnected.", flush=True)
         if self.player_id in players:
             del players[self.player_id]
         
@@ -82,19 +82,19 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         elif action == "move":
             direction = data.get("direction")  # Get direction directly from the message
-            print(f"Data: {data}")
+            print(f"Data: {data}", flush=True)
             print(f"player_id: {self.player_id}")
             if not direction or not game_id in games:
-                print(f"Invalid move action: Missing 'direction' or 'game_id'. Data: {data}")
+                print(f"Invalid move action: Missing 'direction' or 'game_id'. Data: {data}", flush=True)
                 return
             if game_id in games:
                 game = games[game_id]
                 if self.player_id in game.players:
-                    print(f"player_id: {self.player_id} SENDING TO MOVE_PLAYER")
+                    print(f"player_id: {self.player_id} SENDING TO MOVE_PLAYER", flush=True)
                     game.move_player(self.player_id, direction)
                     await self.broadcast_game_state(game_id)
             else:
-                print(f"Game {game_id} not found.")
+                print(f"Game {game_id} not found.", flush=True)
 
         elif action == "stop":
             if game_id in games:
@@ -108,7 +108,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         elif action == "disconnect":
             del players[self.player_id]
             await self.close()
-            print(f"WebSocket disconnected: {close_code}")
+            print(f"WebSocket disconnected: {close_code}", flush=True)
             await self.channel_layer.group_discard(
                 "game_group",
                 self.channel_name
