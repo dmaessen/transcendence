@@ -24,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-)co%lac8eq8ki4lv9!&-t0&#%=(_y#(&=13b#nbilgk58rf&uz'
+#TODO send this shit to .env
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -34,7 +35,6 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,13 +46,17 @@ INSTALLED_APPS = [
     'channels',
     'corsheaders',
 
-
+    #allauth apps for Oauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'authentication.providers.forty_two',
+    
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
     'data.apps.DataConfig',
     'authentication.apps.AuthenticationConfig'
-
-
 ]
 
 MIDDLEWARE = [
@@ -64,7 +68,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 # governs whether your server accepts requests from different origins (domains, subdomains, or ports)
@@ -164,7 +168,45 @@ STATICFILES_DIRS = []
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
-AUTH_USER_MODEL = 'data.User'
+AUTH_USER_MODEL = 'data.CustomUser'
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    },
+
+    '42': {
+        'APP': {
+            'client_id': os.getenv('42_ID'),
+            'secret': os.getenv('42_SECRET'),
+            'key': os.getenv('42_KEY'),
+        },
+    }
+
+}
+
+# Django allauth config
+SITE_ID = 1
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+
+
 
 
 
