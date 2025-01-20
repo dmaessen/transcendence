@@ -14,6 +14,7 @@ class Game:
         self.score = {"player": 0, "opponent": 0}
         self.running = False
 
+
     def add_player(self, player_id):
         if player_id not in self.players:
             self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100}
@@ -85,12 +86,16 @@ class Game:
             self._move_ai()
 
     def move_player(self, player_id, direction):
+        print(f"inside moveplayer")
         if player_id in self.players:
+            print(f"inside moveplayer 2")
             paddle = self.players[player_id]
             if direction == "up" and paddle["y"] > 0:
                 paddle["y"] -= 10
+                print(f"inside moveplayer UP")
             elif direction == "down" and paddle["y"] + paddle["height"] < self.height:
                 paddle["y"] += 10
+                print(f"inside moveplayer DOWN")
 
     def get_state(self):
         return {
@@ -143,66 +148,36 @@ class Game:
         self.running = False
         print(f"Game ended. Winner: {winner}")
 
-#ex.game loop for WebSocket server
-def handle_message(game, message):
-    data = json.loads(message)
+# rm this function
+# def websocket_game_handler(socket, mode, player_id):
+#     try:
+#         game = Game(mode)
+#         game.add_player(player_id)
+#         game.start_game()
 
-    if data["action"] == "move":
-        game.move_player(data["player"], data["direction"])
-    elif data["action"] == "update":
-        game.update_state()
-        return game.get_state()
-    elif data["action"] == "stop":
-        game.running = False
+#         while game.running:
+#             try:
+#                 message = socket.receive(timeout=5)  # Add a timeout to prevent indefinite waiting
+#                 if message is None:
+#                     break
 
-# ex.WebSocket communication (implementation depends on the WebSocket library)
-# def websocket_game_handler(socket, mode):
-#     game = Game(mode)
-#     game.start_game()
+#                 response = handle_message(game, message, player_id)
 
-#     while game.running:
-#         message = socket.receive() # from client
-#         response = handle_message(game, message)
+#                 if response:
+#                     socket.send(json.dumps({"type": "update", "data": response}))
 
-#         if response:
-#             socket.send(json.dumps({"type": "update", "data": response})) # to client
-
-#         if not game.running:
-#             winner = "Player" if game.score["player"] >= 10 else "Opponent"
-#             socket.send(json.dumps({"type": "end", "reason": f"Game Over: {winner} wins"}))
-#             break
-    # updates client of game over
-    #socket.send(json.dumps({"type": "end", "reason": "Game stopped by player."}))
-
-
-def websocket_game_handler(socket, mode):
-    try:
-        game = Game(mode)
-        game.start_game()
-
-        while game.running:
-            try:
-                message = socket.receive(timeout=5)  # Add a timeout to prevent indefinite waiting
-                if message is None:
-                    break
-
-                response = handle_message(game, message)
-
-                if response:
-                    socket.send(json.dumps({"type": "update", "data": response}))
-
-                # Check for game-ending condition
-                if not game.running:
-                    winner = "Player" if game.score["player"] >= 10 else "Opponent"
-                    socket.send(json.dumps({"type": "end", "reason": f"Game Over: {winner} wins"}))
-                    break
-            except TimeoutError:
-                print("No message received; continuing loop...")
-            except Exception as e:
-                print(f"Error in WebSocket handler: {e}")
-                break
-    except Exception as e:
-        print(f"WebSocket connection error: {e}")
-    finally:
-        print("WebSocket connection closed.")
-        socket.close()
+#                 if not game.running:
+#                     winner = "Player" if game.score["player"] >= 10 else "Opponent"
+#                     socket.send(json.dumps({"type": "end", "reason": f"Game Over: {winner} wins"}))
+#                     break
+#             except TimeoutError:
+#                 print("No message received; continuing loop...")
+#             except Exception as e:
+#                 print(f"Error in WebSocket handler: {e}")
+#                 break
+#     except Exception as e:
+#         print(f"WebSocket connection error: {e}")
+#     finally:
+#         #game.remove_connection(socket)
+#         print("WebSocket connection closed.")
+#         socket.close()
