@@ -16,10 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+# from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
+from authentication.providers.forty_two.provider import FortyTwoProvider
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('matchmaking/', include('matchmaking.urls'), name='matchmaking'),
     path('game_server/', include('game_server.urls'), name='game_server'),
-	path('authentication/', include('authentication.urls'), name='authentication'),
+    path('accounts/', include('allauth.urls')),
+    path('authentication/', include('authentication.urls'), name='authentication'),
+    # *default_urlpatterns(FortyTwoProvider),
 ]
