@@ -2,7 +2,7 @@ from django.db import models
 # from cryptography.fields import encrypt  # Assuming this is a custom field for encryption
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-class UserManager(BaseUserManager):
+class CustomUserManager(BaseUserManager):
 
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -26,7 +26,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, username, password, **extra_fields)
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)  # Unique email for login
     name = models.CharField(max_length=30)  # Non-unique name field
     username = models.CharField(max_length=150, unique=True)
@@ -38,7 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     # User manager
-    objects = UserManager()
+    objects = CustomUserManager()
 
     # Use email for authentication
     USERNAME_FIELD = 'email'
@@ -54,12 +54,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Match(models.Model):
-    player_1 = models.ForeignKey(User, related_name="player_1_matches", on_delete=models.SET_NULL, null=True)
-    player_2 = models.ForeignKey(User, related_name="player_2_matches", on_delete=models.SET_NULL, null=True)
+    player_1 = models.ForeignKey(CustomUser, related_name="player_1_matches", on_delete=models.SET_NULL, null=True)
+    player_2 = models.ForeignKey(CustomUser, related_name="player_2_matches", on_delete=models.SET_NULL, null=True)
     player_1_points = models.IntegerField(default=0)
     player_2_points = models.IntegerField(default=0)
     match_time = models.DurationField()
-    winner = models.ForeignKey(User, related_name="match_winner", on_delete=models.SET_NULL, null=True, blank=True)
+    winner = models.ForeignKey(CustomUser, related_name="match_winner", on_delete=models.SET_NULL, null=True, blank=True)
     tournament = models.ForeignKey('Tournament', related_name="matches", on_delete=models.SET_NULL, null=True, blank=True)  # Tournament for match, null if not part of any
 
     def __str__(self):
@@ -67,10 +67,10 @@ class Match(models.Model):
 
 
 class Tournament(models.Model):
-    first_place = models.ForeignKey(User, related_name="first_place", on_delete=models.SET_NULL, null=True, blank=True)
-    second_place = models.ForeignKey(User, related_name="second_place", on_delete=models.SET_NULL, null=True, blank=True)
-    third_place = models.ForeignKey(User, related_name="third_place", on_delete=models.SET_NULL, null=True, blank=True)
-    fourth_place = models. ForeignKey(User, related_name="fourth_place", on_delete=models.SET_NULL, null=True, blank=True)
+    first_place = models.ForeignKey(CustomUser, related_name="first_place", on_delete=models.SET_NULL, null=True, blank=True)
+    second_place = models.ForeignKey(CustomUser, related_name="second_place", on_delete=models.SET_NULL, null=True, blank=True)
+    third_place = models.ForeignKey(CustomUser, related_name="third_place", on_delete=models.SET_NULL, null=True, blank=True)
+    fourth_place = models. ForeignKey(CustomUser, related_name="fourth_place", on_delete=models.SET_NULL, null=True, blank=True)
     number_of_players = models.IntegerField(default=0)
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)

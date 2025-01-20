@@ -1,5 +1,5 @@
 from django import forms
-from data.models import User, UserManager
+from data.models import CustomUser, CustomUserManager
 # from django.contrib.auth.models import User, UserManager
 
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
@@ -31,7 +31,7 @@ class RegisterForm(forms.Form):
 		email = cleaned_data['email']
 		password = cleaned_data['password']
         
-		user = User(username = username, email = email)
+		user = CustomUser(username = username, email = email)
 		user.set_password(password)
 
 		if commit:
