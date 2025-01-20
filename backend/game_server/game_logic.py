@@ -14,28 +14,27 @@ class Game:
         self.score = {"player": 0, "opponent": 0}
         self.running = False
 
-
     def add_player(self, player_id):
         if player_id not in self.players:
             self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100}
-            print(f"Player {player_id} added.")
+            print(f"Player {player_id} added.", flush=True)
             
             if len(self.players) == 1:
                 self.players[player_id]["role"] = "player"
             elif len(self.players) == 2:
                 self.players[player_id]["role"] = "opponent"
-                print(f"Opponent assigned to Player {player_id}")
+                print(f"Opponent assigned to Player {player_id}", flush=True)
 
         # Automatically add a bot if only one player (in One Player mode)
         if self.mode == "One Player" and len(self.players) == 1:
             bot_id = "bot"
             self.players[bot_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
-            print(f"Bot added as opponent: {bot_id}")
+            print(f"Bot added as opponent: {bot_id}", flush=True)
 
     def remove_player(self, player_id):
         if player_id in self.players:
             del self.players[player_id]
-            print(f"Player {player_id} removed.")
+            print(f"Player {player_id} removed.", flush=True)
             if len(self.players) == 0:
                 self.running = False  # Stop game if no players are left
 
@@ -86,16 +85,15 @@ class Game:
             self._move_ai()
 
     def move_player(self, player_id, direction):
-        print(f"inside moveplayer")
         if player_id in self.players:
-            print(f"inside moveplayer 2")
+            print(f"inside moveplayer 2 {player_id}", flush=True)
             paddle = self.players[player_id]
             if direction == "up" and paddle["y"] > 0:
                 paddle["y"] -= 10
-                print(f"inside moveplayer UP")
+                print(f"inside moveplayer UP", flush=True)
             elif direction == "down" and paddle["y"] + paddle["height"] < self.height:
                 paddle["y"] += 10
-                print(f"inside moveplayer DOWN")
+                print(f"inside moveplayer DOWN", flush=True)
 
     def get_state(self):
         return {
@@ -137,7 +135,6 @@ class Game:
                 opponent["y"] -= 5
             elif self.ball["y"] > opponent["y"] + opponent["height"] // 2:
                 opponent["y"] += 5
-        
             # Prevent the opponent from going out of bounds
             opponent["y"] = max(0, min(self.height - opponent["height"], opponent["y"]))
 
@@ -146,7 +143,7 @@ class Game:
 
     def stop_game(self, winner):
         self.running = False
-        print(f"Game ended. Winner: {winner}")
+        print(f"Game ended. Winner: {winner}", flush=True)
 
 # rm this function
 # def websocket_game_handler(socket, mode, player_id):
