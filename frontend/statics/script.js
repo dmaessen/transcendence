@@ -152,6 +152,7 @@ document.addEventListener("keydown", (event) => {
 document.addEventListener("keydown", (event) => {
     const direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
     if (direction) {
+        console.log("ARROWS PRESSED");
         socket.send(JSON.stringify({ action: "move", direction: direction, game_id: gameState.gameId }));
     }
 });
