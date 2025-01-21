@@ -86,14 +86,14 @@ class Game:
 
     def move_player(self, player_id, direction):
         if player_id in self.players:
-            print(f"inside moveplayer 2 {player_id}", flush=True)
+            print(f"Moving player {player_id} with direction {direction}", flush=True)
             paddle = self.players[player_id]
             if direction == "up" and paddle["y"] > 0:
                 paddle["y"] -= 10
-                print(f"inside moveplayer UP", flush=True)
+                print(f"Player {player_id} moved up to {paddle['y']}", flush=True)
             elif direction == "down" and paddle["y"] + paddle["height"] < self.height:
                 paddle["y"] += 10
-                print(f"inside moveplayer DOWN", flush=True)
+                print(f"Player {player_id} moved down to {paddle['y']}", flush=True)
 
     def get_state(self):
         return {
@@ -101,6 +101,8 @@ class Game:
             "ball": self.ball,
             "score": self.score,
             "net": self.net,
+            "running": self.running,
+            "mode": self.mode,
             "width": self.width,
             "height": self.height
         }
