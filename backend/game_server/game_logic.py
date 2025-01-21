@@ -2,6 +2,7 @@
 # Backend logic for handling game state, including ball and paddle movements
 
 import json
+import random
 
 class Game:
     def __init__(self, mode):
@@ -76,8 +77,8 @@ class Game:
             self.score["player"] += 1
             self._reset_ball(direction=-1)
 
-        if self.score["player"] >= 10 or self.score["opponent"] >= 10:
-            winner = "Player" if self.score["player"] >= 10 else "Opponent"
+        if self.score["player"] >= 1 or self.score["opponent"] >= 1:
+            winner = "Player" if self.score["player"] >= 1 else "Opponent"
             self.stop_game(winner)
 
         # Opponent AI movement (only in single-player mode)
@@ -119,11 +120,21 @@ class Game:
             and next_y - self.ball["radius"] <= paddle["y"] + paddle["height"]  # Ball will be at or above bottom edge
         )
 
+    # def _reset_ball(self, direction):
+    #     self.ball["x"] = self.width // 2
+    #     self.ball["y"] = self.height // 2
+    #     self.ball["dir_x"] = direction * 4
+    #     self.ball["dir_y"] = 3
     def _reset_ball(self, direction):
         self.ball["x"] = self.width // 2
         self.ball["y"] = self.height // 2
-        self.ball["dir_x"] = direction * 4
-        self.ball["dir_y"] = 3
+        # Randomize the angle of the ball while ensuring a consistent direction
+        angle = random.uniform(0.2, 0.8)  # Angle multiplier (range between 0.2 and 0.8 for variation)
+        speed = 8  # Base speed of the ball
+        
+        # Calculate random directional speeds based on angle
+        self.ball["dir_x"] = direction * speed * angle
+        self.ball["dir_y"] = speed * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
 
     def _move_ai(self):
         opponent = None
@@ -145,6 +156,9 @@ class Game:
 
     def stop_game(self, winner):
         self.running = False
+        self.players = {}  # Clear players
+        self.score = {"player": 0, "opponent": 0}  # Reset scores
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}  # Reset ball
         print(f"Game ended. Winner: {winner}", flush=True)
 
 # rm this function
