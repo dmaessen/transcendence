@@ -1,6 +1,3 @@
-//import { connectWebSocket, sendPlayerAction } from "../websocket_handler.js";
-//let gameReady = false;
-
 const gameMenuElement = document.getElementById("gameMenu");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
@@ -23,7 +20,6 @@ const gameState = {
     playerId: null, // assigned by the server -- alex/Laura??
 };
 
-// handle starting the game based on mode
 function startGame(mode) {
     gameState.running = false;
     gameState.mode = mode; 
@@ -57,31 +53,25 @@ function startGame(mode) {
     }
 }
 
-// Event listeners for menu buttons
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
 document.getElementById("tournamentBtn").addEventListener("click", () => startGame("Tournament"));
 
-// Show the menu on page load
 window.onload = () => {
     gameMenu.show();
 };
 
-// update game state and redraws the canvas based on server updates
 function updateGameState(data) {
     const { players, ball, score, net, width, height } = data;
-
-    // Ensure data validation before using it
     if (!players || !ball || !score || !net || !width || !height) {
         console.error("Invalid game state received:", data);
         return;
     }
 
-    // clear the canvas
     gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 
-    // Draw paddles for each player
+    // draw paddles for each player
     for (let playerId in players) {
         const player = players[playerId];
         gameContext.fillStyle = "white";
@@ -94,13 +84,13 @@ function updateGameState(data) {
     gameContext.fillStyle = "white";
     gameContext.fill();
 
-    //d draw net 
+    // draw net
     for (let i = 1; i < gameCanvas.height; i += net.height + net.gap) {
-        gameContext.fillStyle = "white"; // Set net color
-        gameContext.fillRect(net.x, i, net.width, net.height); // Draw each segment
+        gameContext.fillStyle = "white";
+        gameContext.fillRect(net.x, i, net.width, net.height);
     }
 
-    // Draw scores (if needed)
+    // draw scores
     gameContext.font = "60px Courier New";
     gameContext.fillText(score.player, gameCanvas.width / 4, 80);
     gameContext.fillText(score.opponent, (gameCanvas.width * 3) / 4, 80);
@@ -120,11 +110,32 @@ function startGameMenu() {
     displayStartPrompt();
 }
 
+function sleep(milliseconds) { // helper fucntion
+    const date = Date.now();
+    let currentDate = null;
+    do {
+      currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+}
+
 function showEndMenu(reason) {
     gameState.running = false;
-    gameCanvas.style.display = "none"; // hide game canvas
-    alert(reason);
-    startGameMenu(); // return to start menu
+
+    gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+    gameContext.font = "50px Courier New";
+    gameContext.fillStyle = "#000000";
+    gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
+    gameContext.fillStyle = "#ffffff";
+    gameContext.textAlign = "center";
+    gameContext.fillText(reason, gameCanvas.width / 2, gameCanvas.height / 2 + 15);
+
+    // if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+    //     console.log("Disconnecting the game...");
+    //     socket.send(JSON.stringify({ action: "disconnect"}));
+    // }
+
+    //sleep(20000);
+    //gameMenu.show();
 }
 
 document.addEventListener("keydown", (event) => {
@@ -157,9 +168,6 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-
-//window.addEventListener("beforeunload", resetGame);
-
 window.addEventListener("beforeunload", () => {
     if (socket && socket.readyState === WebSocket.OPEN) {
         console.log("Closing WebSocket before page unload.");
@@ -168,11 +176,6 @@ window.addEventListener("beforeunload", () => {
     }
 });
 
-
-
-
-
-//export { updateGameState };
 
 
 // VERSION 4 -- GAME

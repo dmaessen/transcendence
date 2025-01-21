@@ -49,22 +49,19 @@ class GameConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get("action")
         game_id = data.get("game_id")
-        #player_id = self.player_id
 
         if action == "move":
             direction = data.get("direction")
             if game_id in games:
                 game = games[game_id]
                 game.move_player(self.player_id, direction)
-
-                # Optionally send immediate feedback to the client
                 await self.send_json({
-                    "type": "player_move_ack",
+                    "type": "player_move",
                     "player_id": self.player_id,
                     "direction": direction
                 })
 
-        if action == "reset":
+        elif action == "reset":
             mode = data.get("mode")
             if game_id in games:
                 games[game_id].reset_game(mode)
@@ -96,21 +93,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "game_id": game_id,
                 }))
 
-        # elif action == "move":
-        #     direction = data.get("direction")  # Get direction directly from the message
-        #     print(f"Data: {data}", flush=True)
-        #     print(f"player_id: {self.player_id}")
-        #     if game_id not in games:
-        #         print(f"Invalid game_id: {game_id}", flush=True)
-        #         return
-        #     if direction and game_id in games:
-        #         game = games[game_id]
-        #         if self.player_id in game.players:
-        #             game.move_player(self.player_id, direction)
-        #             await self.broadcast_game_state(game_id)
-        #     else:
-        #         print(f"Invalid move action: Missing 'direction' or 'game_id'. Data: {data}", flush=True)
-
         elif action == "stop":
             if game_id in games:
                 del games[game_id]
@@ -123,7 +105,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         elif action == "disconnect":
             del players[self.player_id]
             await self.close()
-            print(f"WebSocket disconnected: {close_code}", flush=True)
+            print(f"WebSocket disconnected", flush=True)
             await self.channel_layer.group_discard(
                 "game_group",
                 self.channel_name
@@ -140,6 +122,15 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "type": "update",
                     "data": game.get_state()
                 })
+
+                # TO TEST
+                if not game.running: 
+                    winner = "Player" if game.score["player"] >= 1 else "Opponent"
+                    # improve the below with data/name from laura about the player_id
+                    await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+    
+                    break
+                    # socket.close() ???
 
                 # Yield control to the event loop
                 await asyncio.sleep(0.05)  # Adjust delay as needed
