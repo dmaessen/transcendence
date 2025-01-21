@@ -17,12 +17,12 @@ def sign_in(request):
 		form = LoginForm(request.POST)
 
 		if form.is_valid():
-			username = form.cleaned_data['username']
+			name = form.cleaned_data['name']
 			password = form.cleaned_data['password']
-			user = authenticate(request,username=username,password=password)
+			user = authenticate(request,username=name,password=password)
 			if user:
 				login(request, user)
-				messages.success(request,f'Hi {username.title()}, welcome back!')
+				messages.success(request,f'Hi {name.title()}, welcome back!')
 				return redirect('game_server') #this should probably be home, also SPA?
 	
 	messages.error(request,f'Invalid username or password')
@@ -42,7 +42,7 @@ def register(request):
 		form = RegisterForm(request.POST)
 		if form.is_valid():
 			user = form.save(commit=False)
-			user.username = form.cleaned_data['username']
+			user.name = form.cleaned_data['name']
 			user.email = form.cleaned_data['email']
 			user.password = form.cleaned_data['password']
 			# TODO: store other info, create JWT token and send it insted of using login method
