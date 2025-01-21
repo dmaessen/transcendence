@@ -41,12 +41,28 @@ class GameConsumer(AsyncWebsocketConsumer):
                     game.stop_game("No players")
                     del games[game_id]
         await self.close()
+    
+    async def send_json(self, content):
+        await self.send(text_data=json.dumps(content))
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
         game_id = data.get("game_id")
         #player_id = self.player_id
+
+        if action == "move":
+            direction = data.get("direction")
+            if game_id in games:
+                game = games[game_id]
+                game.move_player(self.player_id, direction)
+
+                # Optionally send immediate feedback to the client
+                await self.send_json({
+                    "type": "player_move_ack",
+                    "player_id": self.player_id,
+                    "direction": direction
+                })
 
         if action == "reset":
             mode = data.get("mode")
@@ -80,21 +96,20 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "game_id": game_id,
                 }))
 
-        elif action == "move":
-            direction = data.get("direction")  # Get direction directly from the message
-            print(f"Data: {data}", flush=True)
-            print(f"player_id: {self.player_id}")
-            if not direction or not game_id in games:
-                print(f"Invalid move action: Missing 'direction' or 'game_id'. Data: {data}", flush=True)
-                return
-            if game_id in games:
-                game = games[game_id]
-                if self.player_id in game.players:
-                    print(f"player_id: {self.player_id} SENDING TO MOVE_PLAYER", flush=True)
-                    game.move_player(self.player_id, direction)
-                    await self.broadcast_game_state(game_id)
-            else:
-                print(f"Game {game_id} not found.", flush=True)
+        # elif action == "move":
+        #     direction = data.get("direction")  # Get direction directly from the message
+        #     print(f"Data: {data}", flush=True)
+        #     print(f"player_id: {self.player_id}")
+        #     if game_id not in games:
+        #         print(f"Invalid game_id: {game_id}", flush=True)
+        #         return
+        #     if direction and game_id in games:
+        #         game = games[game_id]
+        #         if self.player_id in game.players:
+        #             game.move_player(self.player_id, direction)
+        #             await self.broadcast_game_state(game_id)
+        #     else:
+        #         print(f"Invalid move action: Missing 'direction' or 'game_id'. Data: {data}", flush=True)
 
         elif action == "stop":
             if game_id in games:
@@ -119,19 +134,38 @@ class GameConsumer(AsyncWebsocketConsumer):
             game = games[game_id]
             while game.running:
                 game.update_state()
-                game_state = game.get_state()
-                message = json.dumps({"type": "update", "data": game_state})
+
+                # Send updated state to clients
+                await self.send_json({
+                    "type": "update",
+                    "data": game.get_state()
+                })
+
+                # Yield control to the event loop
+                await asyncio.sleep(0.05)  # Adjust delay as needed
+
+
+
+
+                # game.update_state()
+                # game_state = game.get_state()
+                # message = json.dumps({"type": "update", "data": game_state})
                 
-                if not game.running:
-                    winner = "Player" if game.score["player"] >= 10 else "Opponent"
-                    message = json.dumps({"type": "end", "reason": f"Game Over: {winner} wins"})
-                    break
-                    # socket.close() ???
-                
-                send_operations = [
-                    player.send(text_data=message)
-                    for player_id, player in players.items()
-                    if player_id in game.players
-                ]
-                await asyncio.gather(*send_operations)
-                await asyncio.sleep(0.05)  # Adjust frequency as needed
+                # send_operations = [
+                #     player.send(text_data=message)
+                #     for player_id, player in players.items()
+                #     if player_id in game.players
+                # ]
+                # try:
+                #     await asyncio.gather(*send_operations)
+                # except Exception as e:
+                #     print(f"Error broadcasting state: {e}", flush=True)
+
+                # if not game.running:
+                #     winner = "Player" if game.score["player"] >= 10 else "Opponent"
+                #     message = json.dumps({"type": "end", "reason": f"Game Over: {winner} wins"})
+                #     break
+                #     # socket.close() ???``
+
+                # await asyncio.sleep(0.05)  # Adjust frequency as needed
+
