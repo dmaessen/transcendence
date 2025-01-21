@@ -1,4 +1,4 @@
-from data.models import User, UserManager
+from data.models import CustomUser, CustomUserManager
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
