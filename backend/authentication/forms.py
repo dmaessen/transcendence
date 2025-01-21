@@ -9,7 +9,7 @@ class LoginForm(forms.Form):
 	password = forms.CharField(max_length=65, widget=forms.PasswordInput)
 
 class RegisterForm(forms.Form):
-	username = forms.CharField(max_length=150)
+	name = forms.CharField(max_length=150)
 	email = forms.EmailField()
 	password = forms.CharField(widget=forms.PasswordInput)
 	repeat_password = forms.CharField(widget=forms.PasswordInput)
@@ -27,11 +27,11 @@ class RegisterForm(forms.Form):
 
 	def save(self, commit=True):
 		cleaned_data = self.cleaned_data
-		username = cleaned_data['username']
+		name = cleaned_data['name']
 		email = cleaned_data['email']
 		password = cleaned_data['password']
         
-		user = CustomUser(username = username, email = email)
+		user = CustomUser(name = name, email = email)
 		user.set_password(password)
 
 		if commit:
