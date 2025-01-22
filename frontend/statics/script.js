@@ -2,12 +2,14 @@ const gameMenuElementFirst = document.getElementById("gameMenuFirst");
 const gameMenuElement = document.getElementById("gameMenu");
 
 const gameTitle = document.getElementById("gameTitle");
+//const timer = document.getElementById("timer");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
 
 const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
 
+//timer.style.display = "none";
 instructions1.style.display = "none";
 instructions2.style.display = "none";
 
@@ -142,11 +144,45 @@ function showEndMenu(reason) {
     gameContext.fillText(reason, gameCanvas.width / 2, gameCanvas.height / 2 + 15);
 }
 
+function startTimer() {
+    //var countDownDate = new Date("Jan 5, 2030 15:37:25").getTime();
+
+    // Update the count down every 1 second
+    var distance = 0;
+    var x = setInterval(function() {
+
+    // Get today's date and time
+        var now = new Date().getTime();
+
+        // Find the distance between now and the count down date
+        //var distance = countDownDate - now;
+        distance += 1; // is this a possible way??
+
+        // Time calculations for days, hours, minutes and seconds
+        //var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        //var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Display the result in the element with id="demo"
+        // should it be with .innerhtml??
+        document.getElementById("timer").innerHTML = minutes + "m " + seconds + "s ";
+
+        // If the count down is finished, write some text
+        // if (distance < 0) {
+        //     clearInterval(x);
+        //     document.getElementById("timer").innerHTML = "EXPIRED";
+        // }
+    }, 1000);
+}
+
 document.addEventListener("keydown", (event) => {
     if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
         console.log("Key pressed. Starting the game...");
         gameState.running = true;
         socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+        //timer.style.display = "block";
+        startTimer();
     }
     // if (event.key === "ArrowUp" || event.key === "ArrowDown") {
     //     const direction = event.key === "ArrowUp" ? "up" : "down";
