@@ -25,7 +25,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         if self.player_id not in game.players:
             game.add_player(self.player_id)
 
-        #self.scope["player_id"] = self.player_id # is this still needed??
         await self.accept()  # accept socket connection
 
     async def disconnect(self, close_code):
@@ -33,7 +32,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         if self.player_id in players:
             del players[self.player_id]
         
-        # Remove the player from any active games
+        # rm the player from any active games
         for game_id, game in games.items():
             if self.player_id in game.players:
                 game.remove_player(self.player_id)
@@ -80,12 +79,12 @@ class GameConsumer(AsyncWebsocketConsumer):
             game_id = f"game_{self.player_id}"
             if game_id in games:
                 game = games[game_id]
-                game.start_game()  # Start the game, if not already started
+                game.start_game()
                 await self.send(text_data=json.dumps({
                     "type": "started",
                     "game_id": game_id,
                 }))
-                asyncio.create_task(self.broadcast_game_state(game_id))  # Broadcast only after starting
+                asyncio.create_task(self.broadcast_game_state(game_id))
             else:
                 games[game_id] = Game(mode)
                 await self.send(text_data=json.dumps({
@@ -117,46 +116,17 @@ class GameConsumer(AsyncWebsocketConsumer):
             while game.running:
                 game.update_state()
 
-                # Send updated state to clients
                 await self.send_json({
                     "type": "update",
                     "data": game.get_state()
                 })
 
-                # TO TEST
                 if not game.running: 
-                    winner = "Player" if game.score["player"] >= 1 else "Opponent"
+                    winner = "Player" if game.score["player"] >= 3 else "Opponent"
                     # improve the below with data/name from laura about the player_id
                     await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
-    
-                    break
                     # socket.close() ???
+                    break
 
-                # Yield control to the event loop
-                await asyncio.sleep(0.05)  # Adjust delay as needed
-
-
-
-
-                # game.update_state()
-                # game_state = game.get_state()
-                # message = json.dumps({"type": "update", "data": game_state})
-                
-                # send_operations = [
-                #     player.send(text_data=message)
-                #     for player_id, player in players.items()
-                #     if player_id in game.players
-                # ]
-                # try:
-                #     await asyncio.gather(*send_operations)
-                # except Exception as e:
-                #     print(f"Error broadcasting state: {e}", flush=True)
-
-                # if not game.running:
-                #     winner = "Player" if game.score["player"] >= 10 else "Opponent"
-                #     message = json.dumps({"type": "end", "reason": f"Game Over: {winner} wins"})
-                #     break
-                #     # socket.close() ???``
-
-                # await asyncio.sleep(0.05)  # Adjust frequency as needed
+                await asyncio.sleep(0.05)
 
