@@ -110,13 +110,13 @@ function startGameMenu() {
     displayStartPrompt();
 }
 
-function sleep(milliseconds) { // helper fucntion
-    const date = Date.now();
-    let currentDate = null;
-    do {
-      currentDate = Date.now();
-    } while (currentDate - date < milliseconds);
-}
+// function sleep(milliseconds) { // helper fucntion
+//     const date = Date.now();
+//     let currentDate = null;
+//     do {
+//       currentDate = Date.now();
+//     } while (currentDate - date < milliseconds);
+// }
 
 function showEndMenu(reason) {
     gameState.running = false;

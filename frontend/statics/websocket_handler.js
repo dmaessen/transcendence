@@ -8,6 +8,7 @@ let resetting = false;
 function connectWebSocket(mode) {
     if (socket && socket.readyState === WebSocket.OPEN) {
         console.log("WebSocket already connected.");
+        startGameMenu(); // or not
         return;
     }
 
@@ -30,6 +31,8 @@ function connectWebSocket(mode) {
         try {
             const message = JSON.parse(event.data);
             handleServerMessage(message);
+            // if (message.type == "end" && gameMenu.show())
+            //     socket.close();
         } catch (error) {
             console.error("Error parsing WebSocket message:", error, event.data);
         }
@@ -37,7 +40,7 @@ function connectWebSocket(mode) {
 
     socket.onclose = () => {
         console.log("Disconnected from the game server.");
-        alert("Connection to the game server lost.");
+        //alert("Connection to the game server lost."); // to rm
         reconnecting = false;
         setTimeout(() => connectWebSocket(mode), 2000); // reconnects after 2 seconds
     };
@@ -85,8 +88,13 @@ function handleServerMessage(message) {
             break;
         case "end":
             showEndMenu(`${message.reason}`);
+            setTimeout(() => {
+                instructions1.style.display = "none";
+                instructions2.style.display = "none";
+                gameCanvas.style.display = "none";
+            }, 20000);
             gameMenu.show();
-            gameCanvas.hide();
+            socket.close();
             break;
         // default:
         //     console.warn("Unknown message type received:", message.type);
