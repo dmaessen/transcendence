@@ -1,3 +1,4 @@
+const gameMenuElementFirst = document.getElementById("gameMenuFirst");
 const gameMenuElement = document.getElementById("gameMenu");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
@@ -6,6 +7,11 @@ const gameContext = gameCanvas.getContext("2d");
 
 instructions1.style.display = "none";
 instructions2.style.display = "none";
+
+const gameMenuFirst = new bootstrap.Modal(gameMenuElementFirst, {
+    backdrop: "static",
+    keyboard: false,
+});
 
 const gameMenu = new bootstrap.Modal(gameMenuElement, {
     backdrop: "static",
@@ -53,13 +59,20 @@ function startGame(mode) {
     }
 }
 
+// document.getElementById("profileBtn").addEventListener("click", () => ); // TODO connect with Laura
+// document.getElementById("tournamentInfoBtn").addEventListener("click", () => ); // TODO connect with Laura
+document.getElementById("playBtn").addEventListener("click", () => {
+    gameMenuFirst.hide();
+    gameMenu.show();});
+
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
 document.getElementById("tournamentBtn").addEventListener("click", () => startGame("Tournament"));
 
 window.onload = () => {
-    gameMenu.show();
+    gameMenuFirst.show();
+    //gameMenu.show();
 };
 
 function updateGameState(data) {
