@@ -44,7 +44,9 @@ canvas {
 }
 
 h1 {
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
+    font-size: calc(1.5rem + 1vw);
+    font-weight: bold;
 }
 
 p {

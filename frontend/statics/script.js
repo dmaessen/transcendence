@@ -1,7 +1,10 @@
 const gameMenuElementFirst = document.getElementById("gameMenuFirst");
 const gameMenuElement = document.getElementById("gameMenu");
+
+const gameTitle = document.getElementById("gameTitle");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
+
 const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
 
@@ -42,18 +45,22 @@ function startGame(mode) {
 
     if (mode === "One Player") {
         alert(`${mode} mode will use backend logic. Initializing connection...`);
+        gameTitle.textContent = "Pong game - One Player";
         instructions1.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (hot seat)") {
         alert(`${mode} mode is not yet implemented.`);
+        gameTitle.textContent = "Pong game - Two Players (hot seat)";
         instructions2.style.display = "block";
         // connectWebSocket(mode);
     } if (mode === "Two Players (remote)") {
         alert(`${mode} mode is not yet implemented.`);
+        gameTitle.textContent = "Pong game - Two Players (remote)";
         instructions1.style.display = "block";
         // connectWebSocket(mode);
     } if (mode === "Tournament") {
         alert(`${mode} mode is not yet implemented.`);
+        gameTitle.textContent = "Pong game - Tournament";
         instructions2.style.display = "block";
         // connectWebSocket(mode);
     }
