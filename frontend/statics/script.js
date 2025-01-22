@@ -110,14 +110,6 @@ function startGameMenu() {
     displayStartPrompt();
 }
 
-// function sleep(milliseconds) { // helper fucntion
-//     const date = Date.now();
-//     let currentDate = null;
-//     do {
-//       currentDate = Date.now();
-//     } while (currentDate - date < milliseconds);
-// }
-
 function showEndMenu(reason) {
     gameState.running = false;
 
@@ -128,14 +120,6 @@ function showEndMenu(reason) {
     gameContext.fillStyle = "#ffffff";
     gameContext.textAlign = "center";
     gameContext.fillText(reason, gameCanvas.width / 2, gameCanvas.height / 2 + 15);
-
-    // if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
-    //     console.log("Disconnecting the game...");
-    //     socket.send(JSON.stringify({ action: "disconnect"}));
-    // }
-
-    //sleep(20000);
-    //gameMenu.show();
 }
 
 document.addEventListener("keydown", (event) => {
