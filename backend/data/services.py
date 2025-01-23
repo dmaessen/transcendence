@@ -1,14 +1,15 @@
-from .models import CustomUser, Match, Tournament
+from .models import User, Match, Tournament
 from django.db.models import Q
 
 def get_all_users():
-    return CustomUser.objects.all()
+    return User.objects.all()
 
 def get_user_matches(user_id):
     return Match.objects.filter(player_id=user_id)
 
 def get_user_tournaments(user_id):
-    return ", ".join(str(t.id) for t in user_id.tournaments.all())
+    user = User.objects.get(id=user_id)
+    return list(user.tournaments.values_list('id', flat=True))
 
 def get_win_cout(user_id):
     wins = Match.objects.filter(id=user_id)
@@ -30,7 +31,8 @@ def get_score(user_id):
     return score
     
 def get_match_time(match_id):
-    total_seconds = int(match_id.match_time.total_seconds())
+    matchid = Match.objects.get(match_id)
+    total_seconds = int(matchid.match_time.total_seconds())
     minutes = total_seconds // 60
     seconds = total_seconds % 60
     match_time_str = f"{minutes}m {seconds}s"
