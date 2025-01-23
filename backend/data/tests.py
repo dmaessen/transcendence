@@ -1,7 +1,7 @@
 import os
 import csv
 from django.test import TestCase
-from .models import User, Match, Tournament
+from .models import *
 from datetime import timedelta
 from datetime import datetime
 from django.db.models import Q
