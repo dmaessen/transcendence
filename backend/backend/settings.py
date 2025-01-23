@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'authentication.providers.forty_two',
+    # 'oauth2_provider',
     
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
@@ -167,8 +168,10 @@ STATICFILES_DIRS = []
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom user model
+# Use Custom user model
 AUTH_USER_MODEL = 'data.CustomUser'
+
+LOGIN_URL = '/admin/login/'
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -190,14 +193,11 @@ SOCIALACCOUNT_PROVIDERS = {
         'OAUTH_PKCE_ENABLED': True,
     },
 
-    '42': {
-        'APP': {
-            'client_id': os.getenv('42_ID'),
-            'secret': os.getenv('42_SECRET'),
-            'key': os.getenv('42_KEY'),
-        },
+     '42': {
+        'SCOPE': [],
+        'AUTH_PARAMS': {},
+        'METHOD': 'oauth2',
     }
-
 }
 
 # Django allauth config

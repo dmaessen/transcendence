@@ -12,7 +12,8 @@ class FortyTwoProvider(OAuth2Provider):
     id = '42'
     name = '42'
     account_class = FortyTwoAccount
-
+    package = "authentication.providers.forty_two"
+    
     def extract_uid(self, data):
         return str(data['id'])
 
@@ -20,8 +21,6 @@ class FortyTwoProvider(OAuth2Provider):
         return {
             'username': data.get('login'),
             'email': data.get('email'),
-            'first_name': data.get('first_name'),
-            'last_name': data.get('last_name'),
         }
 
 
