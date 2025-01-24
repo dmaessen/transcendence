@@ -25,6 +25,11 @@ class Game:
             elif len(self.players) == 2:
                 self.players[player_id]["role"] = "opponent"
                 print(f"Opponent assigned to Player {player_id}", flush=True)
+        
+        if self.mode == "Two Players (hot seat)" and len(self.players) == 1:
+            opponent_id = "opponent"
+            self.players[opponent_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
+            print(f"Opponent added as opponent: {opponent_id}", flush=True) 
 
         # Automatically add a bot if only one player (in One Player mode)
         if self.mode == "One Player" and len(self.players) == 1:
@@ -86,7 +91,21 @@ class Game:
             self._move_ai()
 
     def move_player(self, player_id, direction):
-        if player_id in self.players:
+        if self.mode == "Two Players (hot seat)" and player_id in self.players:
+            print(f"Moving player {player_id} with direction {direction}", flush=True)
+            #paddle = self.players[player_id]
+            player = self.players[player_id]
+            opponent = self.players["opponent"]
+            if direction == "up" and opponent["y"] > 0:
+                opponent["y"] -= 10
+            elif direction == "down" and opponent["y"] + opponent["height"] < self.height:
+                opponent["y"] += 10
+            elif direction == "s_down" and player["y"] + player["height"] < self.height:
+                player["y"] += 10
+            elif direction == "w_up" and player["y"] > 0:
+                player["y"] -= 10
+
+        elif player_id in self.players:
             print(f"Moving player {player_id} with direction {direction}", flush=True)
             paddle = self.players[player_id]
             if direction == "up" and paddle["y"] > 0:

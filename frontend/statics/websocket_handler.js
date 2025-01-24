@@ -23,6 +23,7 @@ function connectWebSocket(mode) {
 
     socket.onopen = () => {
         console.log("Connected to the game server.");
+        socket.send(JSON.stringify({ action: "connect", mode: mode }));
         reconnecting = false;
         startGameMenu();
     };
@@ -42,7 +43,7 @@ function connectWebSocket(mode) {
         console.log("Disconnected from the game server.");
         //alert("Connection to the game server lost."); // to rm
         reconnecting = false;
-        setTimeout(() => connectWebSocket(mode), 2000); // reconnects after 2 seconds
+        //setTimeout(() => connectWebSocket(mode), 2000); // reconnects after 2 seconds
     };
 
     socket.onerror = (error) => {
