@@ -2,14 +2,12 @@ const gameMenuElementFirst = document.getElementById("gameMenuFirst");
 const gameMenuElement = document.getElementById("gameMenu");
 
 const gameTitle = document.getElementById("gameTitle");
-//const timer = document.getElementById("timer");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
 
 const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
 
-//timer.style.display = "none";
 instructions1.style.display = "none";
 instructions2.style.display = "none";
 
@@ -47,22 +45,22 @@ function startGame(mode) {
 
     if (mode === "One Player") {
         alert(`${mode} mode will use backend logic. Initializing connection...`);
-        gameTitle.textContent = "Pong game - One Player";
+        gameTitle.textContent = "One Player";
         instructions1.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (hot seat)") {
-        alert(`${mode} mode is not yet implemented.`);
-        gameTitle.textContent = "Pong game - Two Players (hot seat)";
+        alert(`${mode} mode will use backend logic. Initializing connection...`);
+        gameTitle.textContent = "Two Players (hot seat)";
         instructions2.style.display = "block";
-        // connectWebSocket(mode);
+        connectWebSocket(mode);
     } if (mode === "Two Players (remote)") {
         alert(`${mode} mode is not yet implemented.`);
-        gameTitle.textContent = "Pong game - Two Players (remote)";
+        gameTitle.textContent = "Two Players (remote)";
         instructions1.style.display = "block";
         // connectWebSocket(mode);
     } if (mode === "Tournament") {
         alert(`${mode} mode is not yet implemented.`);
-        gameTitle.textContent = "Pong game - Tournament";
+        gameTitle.textContent = "Tournament";
         instructions2.style.display = "block";
         // connectWebSocket(mode);
     }
@@ -134,6 +132,8 @@ function startGameMenu() {
 
 function showEndMenu(reason) {
     gameState.running = false;
+    stopTimer();
+    document.getElementById("timer").innerHTML = "Game Over!"; // needed? or just maybe hide timer?
 
     gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     gameContext.font = "50px Courier New";
@@ -144,36 +144,24 @@ function showEndMenu(reason) {
     gameContext.fillText(reason, gameCanvas.width / 2, gameCanvas.height / 2 + 15);
 }
 
+let timerInterval;
+
 function startTimer() {
-    //var countDownDate = new Date("Jan 5, 2030 15:37:25").getTime();
+    let distance = 0;
+    if (timerInterval)
+        clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+        distance += 1000; // incr the time by 1000ms/1sec
+        let minutes = Math.floor(distance / (1000 * 60));
+        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    // Update the count down every 1 second
-    var distance = 0;
-    var x = setInterval(function() {
-
-    // Get today's date and time
-        var now = new Date().getTime();
-
-        // Find the distance between now and the count down date
-        //var distance = countDownDate - now;
-        distance += 1; // is this a possible way??
-
-        // Time calculations for days, hours, minutes and seconds
-        //var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        //var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        // Display the result in the element with id="demo"
-        // should it be with .innerhtml??
-        document.getElementById("timer").innerHTML = minutes + "m " + seconds + "s ";
-
-        // If the count down is finished, write some text
-        // if (distance < 0) {
-        //     clearInterval(x);
-        //     document.getElementById("timer").innerHTML = "EXPIRED";
-        // }
+        document.getElementById("timer").innerHTML = `${minutes}m ${seconds}s`;
     }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
 }
 
 document.addEventListener("keydown", (event) => {
@@ -181,27 +169,16 @@ document.addEventListener("keydown", (event) => {
         console.log("Key pressed. Starting the game...");
         gameState.running = true;
         socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
-        //timer.style.display = "block";
         startTimer();
     }
-    // if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-    //     const direction = event.key === "ArrowUp" ? "up" : "down";
-    //     sendPlayerAction("move", { direction });
-    // }
-
-    // if (event.key === "ArrowUp") {
-    //     sendPlayerAction("move", { direction: "up" });
-    // } else if (event.key === "ArrowDown") {
-    //     sendPlayerAction("move", { direction: "down" });
-    // } else if (event.key === "s") { // needed??
-    //     sendPlayerAction("move", { direction: "down" });
-    // } else if (event.key === "w") { // needed??
-    //     sendPlayerAction("move", { direction: "up" });
-    // }
 });
 
 document.addEventListener("keydown", (event) => {
-    const direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
+    let direction = null;
+    if (gameState.mode != "Two Players (hot seat)" && gameState.running)
+        direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
+    else (gameState.mode === "Two Players (hot seat)" && gameState.running)
+        direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : event.key === "w" ? "w_up" : event.key === "s" ? "s_down" : null;
     if (direction) {
         console.log("ARROWS PRESSED");
         socket.send(JSON.stringify({ action: "move", direction: direction, game_id: gameState.gameId }));

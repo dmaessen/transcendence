@@ -53,7 +53,8 @@ canvas {
 
 h1 {
     /* margin-bottom: 20px; */
-    font-size: calc(1.5rem + 1vw);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: calc(0.5rem + 0.8vw);
     font-weight: bold;
 }
 

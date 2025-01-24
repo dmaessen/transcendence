@@ -11,19 +11,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         self.player_id = self.channel_name
         players[self.player_id] = self
         print(f"Player {self.player_id} connected.", flush=True)
-        
-        game_id = f"game_{self.player_id}"
-        if game_id in games:
-            game = games[game_id]
-            if not game.running:
-                game.reset_game("One Player")  # Ensure 'mode' is defined
-        else:
-            # Create a new game for this player
-            game = Game("One Player")  # Default mode
-            games[game_id] = game
-
-        if self.player_id not in game.players:
-            game.add_player(self.player_id)
 
         await self.accept()  # accept socket connection
 
@@ -48,8 +35,24 @@ class GameConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get("action")
         game_id = data.get("game_id")
+        mode = data.get("mode", "One Player")  # default to "One Player" if no mode sent
 
-        if action == "move":
+        if action == "connect":
+            game_id = f"game_{self.player_id}"
+            if game_id in games:
+                game = games[game_id]
+                if not game.running:
+                    game.reset_game(mode)
+            else:
+                # Create a new game for this player
+                game = Game(mode)
+                games[game_id] = game
+
+            if self.player_id not in game.players:
+                game.add_player(self.player_id)
+            print(f"Game mode set to: {mode}", flush=True)
+
+        elif action == "move":
             direction = data.get("direction")
             if game_id in games:
                 game = games[game_id]
