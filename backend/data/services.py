@@ -1,4 +1,4 @@
-from .models import User, Match, Tournament
+from .models import *
 from django.db.models import Q
 
 def get_all_users():
@@ -37,3 +37,7 @@ def get_match_time(match_id):
     seconds = total_seconds % 60
     match_time_str = f"{minutes}m {seconds}s"
     return match_time_str
+
+def add_friend(user1, user2): 
+    friendship = Friendship.objects.create(user=user1, friend=user2, status='pending')
+    print(f"Friend request sent from {user1.username} to {user2.username}.")
