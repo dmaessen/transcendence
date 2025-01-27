@@ -1,7 +1,6 @@
 services:
     psql:
         image: postgres:13-alpine
-        # build: ./backend/database
         container_name: postgres
         restart: always
         networks:
@@ -11,7 +10,7 @@ services:
         env_file:
             - ./dot_env/.env
         volumes:
-            - ./pgdata:/var/lib/postgresql/data/
+            - pgdata:/var/lib/postgresql/data/
 
     backend:
         build: ./backend/docker
@@ -45,6 +44,24 @@ networks:
     transcendence:
         driver: bridge
 
-# volumes:
-#   data:
-#     driver: local
+volumes:
+    pgdata:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: $HOME/.tranceanddance/pgdata
+    
+    # frontenddata:
+    #     driver: local
+    #     driver_opts:
+    #         type: none
+    #         o: bind
+    #         device: ${DB_DATA_DIR}/frontenddata
+
+    backenddata:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: $HOME/.tranceanddance/backenddata
