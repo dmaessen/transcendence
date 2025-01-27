@@ -2,6 +2,7 @@ import json
 import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from game_server.game_logic import Game
+#from backend.matchmaking.views import matchmaking
 
 games = {}  # active games by game_id -- laura might need??
 players = {}  # active players by player_id -- laura??
@@ -14,8 +15,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         print(f"Player {self.player_id} connected.", flush=True)
 
         # Gul? change below to fucntion that pairs/assigns a room
-        self.room_name = await matchmaking_service(self.player_id)
-        await self.channel_layer.group_add(self.room_name, self.channel_name)
+        # self.room_name = await create_a_match(self.player_id)
+        # await self.channel_layer.group_add(self.room_name, self.channel_name)
 
         await self.accept()  # accept socket connection
 
