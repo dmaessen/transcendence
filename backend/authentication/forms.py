@@ -1,11 +1,9 @@
 from django import forms
 from data.models import CustomUser, CustomUserManager
-# from django.contrib.auth.models import User, UserManager
-
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 class LoginForm(forms.Form):
-	username = forms.CharField(max_length=65)
+	email = forms.CharField(max_length=65)
 	password = forms.CharField(max_length=65, widget=forms.PasswordInput)
 
 class RegisterForm(forms.Form):

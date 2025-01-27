@@ -124,9 +124,6 @@ function updateGameState(data) {
 }
 
 
-
-
-
 // VERSION 4 -- GAME
 // const gameMenuElement = document.getElementById("gameMenu");
 
