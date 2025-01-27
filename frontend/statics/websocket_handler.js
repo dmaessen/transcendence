@@ -89,13 +89,12 @@ function handleServerMessage(message) {
             break;
         case "end":
             showEndMenu(`${message.reason}`);
-            setTimeout(() => {
-                instructions1.style.display = "none";
-                instructions2.style.display = "none";
-                gameCanvas.style.display = "none";
-            }, 20000);
-            gameMenu.show();
-            socket.close();
+            instructions1.style.display = "none";
+            instructions2.style.display = "none";
+            gameCanvas.style.display = "none";
+            gameTitle.style.display = "none";
+            socket.close()
+            gameMenuFirst.show();
             break;
         // default:
         //     console.warn("Unknown message type received:", message.type);
