@@ -59,7 +59,7 @@ function startGame(mode) {
         alert(`${mode} mode is not yet implemented.`);
         gameTitle.textContent = "Two Players (remote)";
         instructions1.style.display = "block";
-        // connectWebSocket(mode);
+        connectWebSocket(mode);
     } if (mode === "Tournament") {
         alert(`${mode} mode is not yet implemented.`);
         gameTitle.textContent = "Tournament";
