@@ -9,7 +9,8 @@ class User(models.Model):
     #victories = models.IntegerField(default=0) #This can be retrived from serching on the matches table
     oauth_tokens = models.JSONField(null=True, blank=True)  # Encrypting oauth tokens
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)  # Many-to-many relationship with Tournament
-
+    friends = models.ManyToManyField('self', through='Friendship', symmetrical=False)
+    
     def _str_(self):
         return self.name
     def clean(self):
@@ -18,6 +19,14 @@ class User(models.Model):
         if self.victories < 0:
             raise ValueError("Victories cannot be negative.")
 
+class Friendship(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='friendship_creator_set')
+    friend = models.ForeignKey('User', on_delete=models.CASCADE, related_name='friendship_receiver_set')
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=10, choices=(('pending', 'Pending'), ('approved', 'Approved')))
+
+    class Meta:
+        unique_together = ('user', 'friend')
 
 class Match(models.Model):
     player_1 = models.ForeignKey(User, related_name="player_1_matches", on_delete=models.SET_NULL, null=True)
