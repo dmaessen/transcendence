@@ -2,6 +2,7 @@ const gameMenuElementFirst = document.getElementById("gameMenuFirst");
 const gameMenuElement = document.getElementById("gameMenu");
 
 const gameTitle = document.getElementById("gameTitle");
+const exitButton = document.getElementById("exitButton");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
 
@@ -37,6 +38,7 @@ function startGame(mode) {
     console.log(`Game started in ${mode} mode.`);
     gameMenu.hide();
 
+    gameTitle.style.display = "block";
     gameCanvas.style.display = "block";
     gameCanvas.width = 1400;
     gameCanvas.height = 1000;
@@ -77,9 +79,19 @@ document.getElementById("twoPlayersBtn").addEventListener("click", () => startGa
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
 document.getElementById("tournamentBtn").addEventListener("click", () => startGame("Tournament"));
 
+document.getElementById("exitButton").addEventListener("click", () =>  {
+    gameState.running = false;
+    stopTimer();
+    instructions1.style.display = "none";
+    instructions2.style.display = "none";
+    gameCanvas.style.display = "none";
+    gameTitle.style.display = "none";
+    socket.close()
+    gameMenuFirst.show();
+    });
+
 window.onload = () => {
     gameMenuFirst.show();
-    //gameMenu.show();
 };
 
 function updateGameState(data) {
@@ -189,6 +201,13 @@ window.addEventListener("beforeunload", () => {
     if (socket && socket.readyState === WebSocket.OPEN) {
         console.log("Closing WebSocket before page unload.");
         gameState.running = false;
+        stopTimer();
+        instructions1.style.display = "none";
+        instructions2.style.display = "none";
+        gameCanvas.style.display = "none";
+        gameTitle.style.display = "none";
+        socket.close()
+        gameMenuFirst.show();
         socket.close();
     }
 });

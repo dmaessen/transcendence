@@ -17,25 +17,31 @@ class Game:
 
     def add_player(self, player_id):
         if player_id not in self.players:
-            self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100}
-            print(f"Player {player_id} added.", flush=True)
+            if len(self.players) == 0: #first player
+                self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "player"}
+                print(f"Player {player_id} added as Player 1.", flush=True)
+            elif len(self.players) == 1: #second player
+                self.players[player_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
+                print(f"Player {player_id} added as Player 2 (opponent).", flush=True)
+            else:
+                print(f"Cannot add more players. Maximum supported is 2.", flush=True)
             
-            if len(self.players) == 1:
-                self.players[player_id]["role"] = "player"
-            elif len(self.players) == 2:
-                self.players[player_id]["role"] = "opponent"
-                print(f"Opponent assigned to Player {player_id}", flush=True)
+            # if len(self.players) == 1:
+            #     self.players[player_id]["role"] = "player"
+            # elif len(self.players) == 2:
+            #     self.players[player_id]["role"] = "opponent"
+            #     print(f"Opponent assigned to Player {player_id}", flush=True)
         
-        if self.mode == "Two Players (hot seat)" and len(self.players) == 1:
-            opponent_id = "opponent"
-            self.players[opponent_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
-            print(f"Opponent added as opponent: {opponent_id}", flush=True) 
-
-        # Automatically add a bot if only one player (in One Player mode)
+        # automatically add a bot if only one player (in One Player mode)
         if self.mode == "One Player" and len(self.players) == 1:
             bot_id = "bot"
             self.players[bot_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
             print(f"Bot added as opponent: {bot_id}", flush=True)
+
+        if self.mode == "Two Players (hot seat)" and len(self.players) == 1:
+            opponent_id = "opponent"
+            self.players[opponent_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
+            print(f"Opponent added as opponent: {opponent_id}", flush=True) 
 
     def remove_player(self, player_id):
         if player_id in self.players:
@@ -82,8 +88,8 @@ class Game:
             self.score["player"] += 1
             self._reset_ball(direction=-1)
 
-        if self.score["player"] >= 3 or self.score["opponent"] >= 3:
-            winner = "Player" if self.score["player"] >= 3 else "Opponent"
+        if self.score["player"] >= 2 or self.score["opponent"] >= 2:
+            winner = "Player" if self.score["player"] >= 2 else "Opponent"
             self.stop_game(winner)
 
         # Opponent AI movement (only in single-player mode)
