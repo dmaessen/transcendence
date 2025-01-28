@@ -3,6 +3,7 @@
 
 import json
 import random
+import math
 
 class Game:
     def __init__(self, mode):
@@ -77,8 +78,8 @@ class Game:
                     self.ball["dir_x"] = -abs(self.ball["dir_x"])
 
                 # adjusts ball speed slightly
-                self.ball["dir_x"] *= 1.1
-                self.ball["dir_y"] *= 1.1
+                # self.ball["dir_x"] *= 1.1
+                # self.ball["dir_y"] *= 1.1
 
         # Ball out of bounds
         if self.ball["x"] < 0:
@@ -152,10 +153,11 @@ class Game:
         self.ball["x"] = self.width // 2
         self.ball["y"] = random.randint(200, self.height // 2)
         angle = random.uniform(0.2, 0.8)
-        speed = random.uniform(6, 10) #speed = 8
+        #speed = random.uniform(6, 10) #speed = 8
+        speed = math.sqrt(self.ball["dir_x"] ** 2 + self.ball["dir_y"] ** 2)
         
-        self.ball["dir_x"] = direction * speed * angle
-        self.ball["dir_y"] = speed * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
+        self.ball["dir_x"] = direction * (speed + 1) * angle
+        self.ball["dir_y"] = (speed + 1) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
 
     def _move_ai(self):
         opponent = None
