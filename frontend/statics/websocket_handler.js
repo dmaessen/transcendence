@@ -93,6 +93,7 @@ function handleServerMessage(message) {
             instructions2.style.display = "none";
             gameCanvas.style.display = "none";
             gameTitle.style.display = "none";
+            socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
             socket.close()
             gameMenuFirst.show();
             break;

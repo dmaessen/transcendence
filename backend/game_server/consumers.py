@@ -16,6 +16,8 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         # Gul? change below to fucntion that pairs/assigns a room
         # self.room_name = await create_a_match(self.player_id)
+        # channel_layer manages groups/messages
+        # group_add adds a websocket connection via the id, to a named group/room
         # await self.channel_layer.group_add(self.room_name, self.channel_name)
 
         await self.accept()  # accept socket connection
@@ -126,7 +128,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         # await self.channel_layer.group_send(
         #     self.room_name,
         #     {
-        #         "type": "update",
+        #         "type": "update", #this correct or we want another type?
         #         "game_id": game_id,
         #         "data": games[game_id].get_state(), #data or game_update
         #     },
