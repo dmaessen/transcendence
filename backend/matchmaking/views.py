@@ -5,18 +5,19 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
+from datetime import timedelta
 from data.models import User, Match
 from rest_framework.parsers import JSONParser
 from data.serializers import UserSerializer, MatchSerializer
-from . import game_state
+from .game_state import player_queue
 
 #@api_view(['GET'])
 def index(request):
     return HttpResponse("HI I AM THE BANANA and THIS IS INDEX")
 
-@api_view(['GET'])
-def list_players(request):
-    return player_queue
+# @api_view(['GET'])
+# def list_players(request):
+#    return JsonResponse({"queue": player_queue}, status=200)
 
 #rest api version, using serializer.
 # @api_view(['POST'])
@@ -55,53 +56,48 @@ def list_players(request):
 #for a sigle game?
 @api_view(['POST'])
 def create_a_match(request):
-
+    global player_queue
     player_id = request.user.id
-    player_queue.append(player_id)
+    print("IDDDD", player_id)
+    print("LENNNN= ", len(player_queue))
 
+    if not request.user or request.user.is_anonymous:
+        return JsonResponse({"message": "Authentication required to play a game."}, status=401)
+    player_queue.append(player_id)
+    print("MAAAA", player_queue)
     matches = []
     if len(player_queue) <= 1:
         return JsonResponse({"message": "Match is not created, no enough player"}, status=404)
 
     elif len(player_queue) > 1:
-        player1 = players[0]
-        player2 = players[1]
+        player1 = player_queue[0].pop()
+        player2 = player_queue[1].pop()
         match = Match.objects.create(player_1=player1, player_2=player2, match_time=timezone.now())
         matches.append(match)
-
-        # # remove paired players from the queue ?? not sure? maybe add is_active to playerqueue model??
-        #players = players[2:]
-        #LAURAAA
-            #change flag for is_in_queue for player
-
-        # player1.is_active = False
-        # player2.is_active = False
-        # player1.save()
-        # player2.save()
-
-        #change players in function scope
-        #players = User.objects.filter(is_active=True).order_by('total_wins')
 
     # serialize for printing and return match information
     serializer = MatchSerializer(matches, many=True)
     return JsonResponse({"message": "Matches created.", "matches": serializer.data}, status=201)
-    #return JsonResponse({"message": "Match is created.", "matches": [str(m) for m in matches]}, status=201)
 
 #for tournament?
 @api_view(['POST'])
 def create_matches(request):
-    player_id = request.user.id
-    player_queue.append(player_id)    #     if User.objects.filter(name=data.get('name')).exists():
+    global player_queue
+    player_id = request.user
+    
+    player_queue.append(player_id)
 
     #players = PlayerQueue.objects.all()
     if len(player_queue) <= 1:
         return JsonResponse({"message": "Match is not created, no enough player"}, status=404)
 
     matches = []
+    # print("LEN= ", len(player_queue))
+    # print("mail ", player_queue[0])
     while len(player_queue) > 1:
-        player1 = players[0]
-        player2 = players[1]
-        match = Match.objects.create(player_1=player1, player_2=player2, match_time=timezone.now())
+        player1 = player_queue[0]
+        player2 = player_queue[1]
+        match = Match.objects.create(player_1=player1, player_2=player2, match_time=timedelta(minutes=3))
         matches.append(match)
 
         # # remove paired players from the queue ?? not sure? maybe add is_active to playerqueue model??
@@ -110,7 +106,6 @@ def create_matches(request):
     # serialize for printing and return match information
     serializer = MatchSerializer(matches, many=True)
     return JsonResponse({"message": "Matches created.", "matches": serializer.data}, status=201)
-    #return JsonResponse({"message": "Match is created.", "matches": [str(m) for m in matches]}, status=201)
 
 @api_view(['GET'])
 def list_matches(request):
