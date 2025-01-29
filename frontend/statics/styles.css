@@ -7,6 +7,14 @@
     box-sizing: border-box;
 }
 
+#timer {
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    color: #000000;
+    margin-bottom: 30px;
+}
+
 #game-instruction1 {
     text-align: center;
     font-family: 'Courier New', Courier, monospace;
@@ -25,7 +33,7 @@
 
 body {
     text-align: center;
-    background-color: ghostwhite;
+    background-color: rgb(245, 245, 248);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -40,11 +48,14 @@ canvas {
     display: none;
     border: 1px solid #ccc; /* Optional border for the game canvas */
     margin: auto;
-    background-color: #f0f0f0; /* Light gray to see if canvas appears */
+    background-color: #040202;
 }
 
 h1 {
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: calc(0.5rem + 0.8vw);
+    font-weight: bold;
 }
 
 p {
