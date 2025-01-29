@@ -78,6 +78,7 @@ class Tournament(models.Model):
     def __str__(self):
         return f"Tournament: {self.get_match_type_display()}"
 
+    #ADDITIONS FROM GUL:???
 
 # Get all tournaments a player is in:
 # player = User.objects.get(id=x)
@@ -90,3 +91,56 @@ class Tournament(models.Model):
 # Get all matches in a specific tournament:
 # tournament = Tournament.objects.get(id=x)
 # matches = tournament.matches.all()  # All matches in this tournament
+
+
+
+# # ASK LAURA
+# class Tournament(models.Model):
+#     STATUS_CHOICES = [
+#         ('open', 'Open for Registration'),
+#         ('ongoing', 'Ongoing'),
+#         ('completed', 'Completed'),
+#         ('cancelled', 'Cancelled'),
+#     ]
+
+#     max_players = models.IntegerField(default=8)  # 4 or 8 players
+#     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+
+#     players = models.ManyToManyField(User, related_name="tournaments", blank=True)
+#     confirmed_ready = models.ManyToManyField(User, related_name="ready_players", blank=True)
+
+#     def add_player(self, player):
+#         """
+#         adds a player to the tournament if it's open and not full.
+#         """
+#         if self.status != 'open':
+#             raise ValueError("Cannot join a tournament that is not open.")
+#         if self.players.count() >= self.max_players:
+#             raise ValueError("Tournament is already full.")
+#         self.players.add(player)
+#         self.number_of_players += 1
+#         self.save()
+
+#     def confirm_ready(self, player):
+#         """
+#         player confirms they're ready to play.
+#         """
+#         if player not in self.players.all():
+#             raise ValueError("Player is not part of this tournament.")
+#         self.confirmed_ready.add(player)
+#         self.save()
+
+#     def start_tournament(self):
+#         """
+#         atarts the tournament if enough players are confirmed ready.
+#         """
+#         if self.confirmed_ready.count() != self.max_players:
+#             raise ValueError("Not all players are ready.")
+#         self.status = 'ongoing'
+#         self.start_date = timezone.now()
+#         self.save()
+
+#     def end_tournament(self):
+#         self.status = 'completed'
+#         self.end_date = timezone.now()
+#         self.save()

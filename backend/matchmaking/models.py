@@ -1,3 +1,5 @@
+#NOT IN USE, INSTEAD OF THIS models.py WE HAVE data.models
+
 from django.db import models
 
 # IS THIS NECESSARY WHEN WE HAVE PlayerQueue class?
@@ -27,6 +29,8 @@ class PlayerQueue(models.Model):
     #skill_level = models.IntegerField()  
     total_wins = models.IntegerField(default=0)
     joined_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)  # indicated if the player is currently in the queue (available for a match)
+
 
     def __str__(self):
         return f"Player {self.player_id} (Skill: {self.skill_level})"
