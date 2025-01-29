@@ -1,5 +1,6 @@
 const gameMenuElementFirst = document.getElementById("gameMenuFirst");
 const gameMenuElement = document.getElementById("gameMenu");
+const gameMenuElementTournament = document.getElementById("gameMenuTournament");
 
 const gameTitle = document.getElementById("gameTitle");
 const exitButton = document.getElementById("exitButton");
@@ -8,6 +9,9 @@ const instructions2 = document.getElementById("game-instruction2");
 
 const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
+
+let timerInterval;
+let keyboardEnabled = true;
 
 instructions1.style.display = "none";
 instructions2.style.display = "none";
@@ -22,15 +26,21 @@ const gameMenu = new bootstrap.Modal(gameMenuElement, {
     keyboard: false,
 });
 
+const gameMenuTournament = new bootstrap.Modal(gameMenuElementTournament, {
+    backdrop: "static",
+    keyboard: false,
+});
+
 const gameState = { 
     mode: null,
     gameId: null,
     players: [],
     running: false,
-    playerId: null, // assigned by the server -- alex/Laura??
+    playerId: null, // does Laura need?
 };
 
 function startGame(mode) {
+    keyboardEnabled = true;
     gameState.running = false;
     gameState.mode = mode; 
     resetGame(mode);
@@ -46,42 +56,60 @@ function startGame(mode) {
     gameCanvas.style.height = gameCanvas.height / 2 + "px";
 
     if (mode === "One Player") {
-        alert(`${mode} mode will use backend logic. Initializing connection...`);
+        //alert(`${mode} mode will use backend logic. Initializing connection...`);
         gameTitle.textContent = "One Player";
         instructions1.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (hot seat)") {
-        alert(`${mode} mode will use backend logic. Initializing connection...`);
+        //alert(`${mode} mode will use backend logic. Initializing connection...`);
         gameTitle.textContent = "Two Players (hot seat)";
         instructions2.style.display = "block";
         connectWebSocket(mode);
-    } if (mode === "Two Players (remote)") {
+    } if (mode === "Two Players (remote)") { // TODO
         alert(`${mode} mode is not yet implemented.`);
         gameTitle.textContent = "Two Players (remote)";
         instructions1.style.display = "block";
         connectWebSocket(mode);
-    } if (mode === "Tournament") {
+    } if (mode === "Two Players (with a friend)") { // TODO
         alert(`${mode} mode is not yet implemented.`);
-        gameTitle.textContent = "Tournament";
-        instructions2.style.display = "block";
+        gameTitle.textContent = "Two Players (with a friend)";
+        instructions1.style.display = "block";
+        //connectWebSocket(mode);
+    } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
+        gameMenuTournament.hide();
+        alert(`${mode} mode is not yet implemented.`);
+        gameTitle.textContent = `${mode}`;
+        instructions1.style.display = "block";
         // connectWebSocket(mode);
     }
 }
 
 // document.getElementById("profileBtn").addEventListener("click", () => ); // TODO connect with Laura
+// document.getElementById("friendsBtn").addEventListener("click", () => ); // TODO connect with Laura
 // document.getElementById("tournamentInfoBtn").addEventListener("click", () => ); // TODO connect with Laura
 document.getElementById("playBtn").addEventListener("click", () => {
     gameMenuFirst.hide();
-    gameMenu.show();});
+    gameMenu.show();
+});
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
-document.getElementById("tournamentBtn").addEventListener("click", () => startGame("Tournament"));
+document.getElementById("twoPlayersFriendsBtn").addEventListener("click", () => startGame("Two Players (with a friend)"));
+
+document.getElementById("tournamentBtn").addEventListener("click", () => {
+    gameMenuTournament.show();
+    gameMenu.hide();
+});
+document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => startGame("Tournament - 4 Players"));
+document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => startGame("Tournament - 8 Players"));
+
 
 document.getElementById("exitButton").addEventListener("click", () =>  {
+    keyboardEnabled = false;
     gameState.running = false;
     stopTimer();
+    document.getElementById("timer").innerHTML = " ";
     instructions1.style.display = "none";
     instructions2.style.display = "none";
     gameCanvas.style.display = "none";
@@ -144,6 +172,7 @@ function startGameMenu() {
 }
 
 function showEndMenu(reason) {
+    keyboardEnabled = false;
     gameState.running = false;
     stopTimer();
     document.getElementById("timer").innerHTML = "Game Over!"; // needed? or just maybe hide timer?
@@ -155,9 +184,9 @@ function showEndMenu(reason) {
     gameContext.fillStyle = "#ffffff";
     gameContext.textAlign = "center";
     gameContext.fillText(reason, gameCanvas.width / 2, gameCanvas.height / 2 + 15);
-}
 
-let timerInterval;
+    document.getElementById("timer").innerHTML = " ";
+}
 
 function startTimer() {
     let distance = 0;
@@ -178,6 +207,8 @@ function stopTimer() {
 }
 
 document.addEventListener("keydown", (event) => {
+    if (keyboardEnabled === false)
+        return;
     if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
         console.log("Key pressed. Starting the game...");
         gameState.running = true;

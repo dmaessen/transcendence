@@ -156,8 +156,8 @@ class Game:
         #speed = random.uniform(6, 10) #speed = 8
         speed = math.sqrt(self.ball["dir_x"] ** 2 + self.ball["dir_y"] ** 2)
         
-        self.ball["dir_x"] = direction * (speed + 1) * angle
-        self.ball["dir_y"] = (speed + 1) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
+        self.ball["dir_x"] = direction * (speed * 1.2) * angle
+        self.ball["dir_y"] = (speed * 1.2) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
 
     def _move_ai(self):
         opponent = None

@@ -14,8 +14,8 @@
     <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
 </head>
 <body>
-    <div id="tournamentBanner" class="alert alert-info" role="alert">
-        Join the tournament!
+    <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert">
+        A tournament is about to start, join us!
     </div>
     <h1 id="gameTitle" class="text-center my-3 display-6">Pong Game</h1>
     <button id="exitButton" type="button" class="btn btn-outline-dark position-fixed top-0 end-0 m-3">Exit</button>
@@ -25,7 +25,7 @@
         <p id="game-instruction2">Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move.</p>
 
 
-    <!-- FIRST Game Menu Modal -->
+    <!-- MAIN FIRST Menu -->
     <div class="modal fade" id="gameMenuFirst" tabindex="-1" aria-labelledby="gameMenuLabelFirst" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -35,6 +35,7 @@
                 <div class="modal-body">
                     <button id="profileBtn" class="btn btn-outline-secondary w-100 mb-2">Profile</button>
                     <button id="tournamentInfoBtn" class="btn btn-outline-secondary w-100 mb-2">Tournament</button>
+                    <button id="friendsBtn" class="btn btn-outline-secondary w-100 mb-2">Friends</button>
                     <button id="playBtn" class="btn btn-outline-dark w-100 mb-2">START PLAYING</button>
                 </div>
             </div>
@@ -52,8 +53,24 @@
                 <div class="modal-body">
                     <button id="onePlayerBtn" class="btn btn-outline-dark w-100 mb-2">One Player</button>
                     <button id="twoPlayersBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (hot seat)</button>
+                    <button id="twoPlayersFriendsBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (with a friend)</button>
                     <button id="twoPlayersRemoteBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (remote)</button>
                     <button id="tournamentBtn" class="btn btn-outline-dark w-100 mb-2">Tournament</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THIRD Game Menu Modal Tournament -->
+    <div class="modal fade" id="gameMenuTournament" tabindex="-1" aria-labelledby="gameMenuLabelTournament" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="gameMenuLabelTournament">Amount of players</h5>
+                </div>
+                <div class="modal-body">
+                    <button id="fourPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">4 Players</button>
+                    <button id="eightPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">8 Players</button>
                 </div>
             </div>
         </div>

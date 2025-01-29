@@ -73,6 +73,20 @@ function resetGame(mode) {
     displayStartPrompt();
 }
 
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+
+const returnToStartMenu = async () => {
+    await sleep(10000);
+    instructions1.style.display = "none";
+    instructions2.style.display = "none";
+    gameCanvas.style.display = "none";
+    gameTitle.style.display = "none";
+    socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+    socket.close()
+    console.log("----in here----"); // to rm
+    gameMenuFirst.show();
+}
+
 function handleServerMessage(message) {
     switch (message.type) {
         case "started":
@@ -89,15 +103,10 @@ function handleServerMessage(message) {
             break;
         case "end":
             showEndMenu(`${message.reason}`);
-            instructions1.style.display = "none";
-            instructions2.style.display = "none";
-            gameCanvas.style.display = "none";
-            gameTitle.style.display = "none";
-            socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-            socket.close()
-            gameMenuFirst.show();
+            returnToStartMenu();
             break;
         // default:
         //     console.warn("Unknown message type received:", message.type);
     }
 }
+
