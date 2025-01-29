@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'game_server.apps.GameServerConfig',
     'data.apps.DataConfig',
     'authentication.apps.AuthenticationConfig'
-
 ]
 
 MIDDLEWARE = [
@@ -148,13 +147,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
 
 # No need to set STATICFILES_DIRS if frontend is handling static files
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+    BASE_DIR / 'frontend/statics',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
