@@ -102,7 +102,7 @@ def create_matches(request):
     while len(player_queue) > 1:
         player1 = User.objects.get(id=player_queue[0])
         #player1 = get_object_or_404(User, id=player_queue[0])
-        #player2 = get_object_or_404(User, id=player_queue[1])
+        player2 = get_object_or_404(User, id=player_queue[1])
         player2 = User.objects.get(id=player_queue[1])
         match = Match.objects.create(player_1=player1, player_2=player2, match_time=timedelta(minutes=3))
         matches.append(match)
