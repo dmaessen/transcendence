@@ -6,6 +6,8 @@ from game_server.game_logic import Game
 
 games = {}  # active games by game_id -- laura might need??
 players = {}  # active players by player_id -- laura??
+tournament_active = False # for banner popup in frontend
+tournaments = {} #active tournament by id
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -21,6 +23,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         # await self.channel_layer.group_add(self.room_name, self.channel_name)
 
         await self.accept()  # accept socket connection
+        #await self.send_json({"action": "tournament_status", "active": tournament_active})
 
     async def disconnect(self, close_code):
         print(f"Player {self.player_id} disconnected.", flush=True)
@@ -123,6 +126,24 @@ class GameConsumer(AsyncWebsocketConsumer):
                 "game_group",
                 self.channel_name
             )
+
+        elif action == "start_tournament":
+            tournament_id = f"tournament_{len(tournaments) + 1}"
+            tournaments[tournament_id] = {
+                "players": [self.player_id],
+                "rounds": [],
+                "status": "waiting",
+                "current_match": None
+            }
+            await self.send_json({"action": "tournament_status", "active": True, "tournament_id": tournament_id})
+            
+            global tournament_active
+            tournament_active = True
+            await self.broadcast_tournament_status(True)
+
+        elif action == "end_tournament": 
+            tournament_active = False
+            await self.broadcast_tournament_status(False)
         
         #broadcasts the updated game state to the group (for two players remote)
         # await self.channel_layer.group_send(
@@ -133,6 +154,11 @@ class GameConsumer(AsyncWebsocketConsumer):
         #         "data": games[game_id].get_state(), #data or game_update
         #     },
         # )
+    
+    async def broadcast_tournament_status(self, active):
+        """Broadcast tournament status to all connected players."""
+        for player in players.values():
+            await player.send_json({"action": "tournament_status", "active": active})
 
     async def broadcast_game_state(self, game_id):
         if game_id in games:
