@@ -1,64 +1,112 @@
-//import { handleServerMessage } from "./statics/script.js";
-
 //const serverUrl = "ws://localhost:8000/ws/game_server/";
-//const serverUrl = "ws://localhost/ws/game_server/";
 const wsUrl = `ws://${window.location.host}/ws/game_server/`;
 
-//const serverUrl = `ws://${window.location.host}/ws/game_server/`;
-
 let socket;
+let reconnecting = false;
+let resetting = false;
 
-function connectWebSocket() {
+function connectWebSocket(mode) {
     if (socket && socket.readyState === WebSocket.OPEN) {
         console.log("WebSocket already connected.");
+        startGameMenu(); // or not
         return;
     }
 
+    if (reconnecting) {
+        console.warn("Reconnection already in progress.");
+        return;
+    }
+
+    reconnecting = true;
+    console.log("Attempting to connect to websocket...");
     socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
         console.log("Connected to the game server.");
-        //initializeGame(); // Perform any necessary setup
-        if (gameState) {
-            socket.send(JSON.stringify({action: "start", mode: gameState.mode}));
-        }
+        socket.send(JSON.stringify({ action: "connect", mode: mode }));
+        reconnecting = false;
+        startGameMenu();
     };
 
     socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        handleServerMessage(message);
+        try {
+            const message = JSON.parse(event.data);
+            handleServerMessage(message);
+            // if (message.type == "end" && gameMenu.show())
+            //     socket.close();
+        } catch (error) {
+            console.error("Error parsing WebSocket message:", error, event.data);
+        }
     };
 
     socket.onclose = () => {
         console.log("Disconnected from the game server.");
-        alert("Connection to the game server lost.");
+        //alert("Connection to the game server lost."); // to rm
+        reconnecting = false;
+        //setTimeout(() => connectWebSocket(mode), 2000); // reconnects after 2 seconds
     };
 
     socket.onerror = (error) => {
         console.error("WebSocket error:", error);
-        alert(`WebSocket error: ${error.message}`);  // More detailed error message
+        alert(`WebSocket error: ${error.message}`);
+        reconnecting = false;
     };
 }
 
-function sendPlayerAction(action, data) {
+// function sendPlayerAction(action, data) {
+//     if (socket && socket.readyState === WebSocket.OPEN) {
+//         if (!gameState.gameId) {
+//             console.warn("No game ID available. Cannot send action.");
+//             return;
+//         }
+//         socket.send(JSON.stringify({ action, game_id: gameState.gameId, data, }));
+//     } else {
+//         console.warn("WebSocket is not open. Unable to send data.");
+//     }
+// }
+
+function resetGame(mode) {
     if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ action, data }));
-    } else {
-        console.warn("WebSocket is not open. Unable to send data.");
+      socket.send(JSON.stringify({ action: "reset", gameId: gameState.gameId, mode }));
     }
+    gameState.running = false;
+    displayStartPrompt();
+}
+
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+
+const returnToStartMenu = async () => {
+    await sleep(10000);
+    instructions1.style.display = "none";
+    instructions2.style.display = "none";
+    gameCanvas.style.display = "none";
+    gameTitle.style.display = "none";
+    socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+    socket.close()
+    console.log("----in here----"); // to rm
+    gameMenuFirst.show();
 }
 
 function handleServerMessage(message) {
     switch (message.type) {
+        case "started":
+            gameState.gameId = message.game_id;
+            console.log(`Game initialized with ID: ${gameState.gameId}`);
+            gameState.running = true;
+            break;
+        case "reset":
+            gameState.gameId = message.game_id;
+            console.log(`Game in reset with ID: ${gameState.gameId}`);
+            break;
         case "update":
             updateGameState(message.data);
             break;
         case "end":
-            alert(`Game Over: ${message.reason}`);
+            showEndMenu(`${message.reason}`);
+            returnToStartMenu();
             break;
-        default:
-            console.warn("Unknown message type received:", message.type);
+        // default:
+        //     console.warn("Unknown message type received:", message.type);
     }
 }
 
-//export { connectWebSocket, sendPlayerAction };

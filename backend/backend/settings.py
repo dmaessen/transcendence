@@ -82,6 +82,17 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # For development
+        # Uncomment below for production (requires Redis)
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {
+        #     "hosts": [("127.0.0.1", 6379)],
+        # },
+    },
+}
+
 
 ROOT_URLCONF = 'backend.urls'
 
