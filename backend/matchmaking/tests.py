@@ -9,7 +9,7 @@ from data.models import User, Match
 
 class MatchViewTest(TestCase):
     def setUp(self):
-        global player_queue
+        #global player_queue
 
         self.client = APIClient()
 
