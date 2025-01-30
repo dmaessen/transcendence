@@ -83,7 +83,7 @@ def create_a_match(request):
 @api_view(['POST'])
 def create_matches(request):
     global player_queue
-    player_id = request.user
+    player_id = request.user.id
     
     player_queue.append(player_id)
 
