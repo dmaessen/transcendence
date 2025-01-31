@@ -1,2 +1,2 @@
-global player_queue
+#global player_queue
 player_queue = []

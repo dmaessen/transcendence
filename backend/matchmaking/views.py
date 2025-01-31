@@ -2,13 +2,15 @@ from django.shortcuts import render
 
 from django.http import HttpResponse, JsonResponse
 
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
+from datetime import timedelta
 from data.models import User, Match
 from rest_framework.parsers import JSONParser
 from data.serializers import UserSerializer, MatchSerializer
-from . import game_state
+from .game_state import player_queue
 
 #@api_view(['GET'])
 def index(request):
@@ -16,7 +18,7 @@ def index(request):
 
 @api_view(['GET'])
 def list_players(request):
-    return player_queue
+   return JsonResponse({"queue": player_queue}, status=200)
 
 #rest api version, using serializer.
 # @api_view(['POST'])
@@ -24,7 +26,7 @@ def list_players(request):
 #     data = JSONParser().parse(request)
 
 #     #check if new player exists in queue
-#     if User.objects.filter(name=data.get('name')).exists():
+#     if User.objects.get(id=name=data.get(id='name')).exists():
 #         return JsonResponse({"error": "Player name is already used."},
 #             status=400
 #         )
@@ -55,62 +57,63 @@ def list_players(request):
 #for a sigle game?
 @api_view(['POST'])
 def create_a_match(request):
-
+    global player_queue
     player_id = request.user.id
     player_queue.append(player_id)
+    # print("player_id= ", player_id)
+    # print("len(player_queue)= ", len(player_queue))
 
+    if not request.user or request.user.is_anonymous:
+        return JsonResponse({"message": "Authentication required to play a game."}, status=401)
+    #print("player_queue= ", player_queue)
     matches = []
     if len(player_queue) <= 1:
         return JsonResponse({"message": "Match is not created, no enough player"}, status=404)
 
     elif len(player_queue) > 1:
-        player1 = players[0]
-        player2 = players[1]
-        match = Match.objects.create(player_1=player1, player_2=player2, match_time=timezone.now())
+        player1 = User.objects.get(id=player_queue[0])
+        player2 = User.objects.get(id=player_queue[1])
+        match = Match.objects.create(player_1=player1, player_2=player2, match_time=timedelta(minutes=2))
         matches.append(match)
-
-        # # remove paired players from the queue ?? not sure? maybe add is_active to playerqueue model??
-        #players = players[2:]
-        #LAURAAA
-            #change flag for is_in_queue for player
-
-        # player1.is_active = False
-        # player2.is_active = False
-        # player1.save()
-        # player2.save()
-
-        #change players in function scope
-        #players = User.objects.filter(is_active=True).order_by('total_wins')
+        player_queue.pop(0)
+        player_queue.pop(0)
 
     # serialize for printing and return match information
     serializer = MatchSerializer(matches, many=True)
     return JsonResponse({"message": "Matches created.", "matches": serializer.data}, status=201)
-    #return JsonResponse({"message": "Match is created.", "matches": [str(m) for m in matches]}, status=201)
 
 #for tournament?
 @api_view(['POST'])
 def create_matches(request):
+    global player_queue
     player_id = request.user.id
-    player_queue.append(player_id)    #     if User.objects.filter(name=data.get('name')).exists():
+    
+    player_queue.append(player_id)
 
-    #players = PlayerQueue.objects.all()
     if len(player_queue) <= 1:
         return JsonResponse({"message": "Match is not created, no enough player"}, status=404)
 
     matches = []
-    while len(player_queue) > 1:
-        player1 = players[0]
-        player2 = players[1]
-        match = Match.objects.create(player_1=player1, player_2=player2, match_time=timezone.now())
-        matches.append(match)
 
+    print("player0 ID ", player_queue[0])
+    print("player1 ID ", player_queue[1])
+    print("player_queue= ", player_queue)
+
+    while len(player_queue) > 1:
+        player1 = User.objects.get(id=player_queue[0])
+        #player1 = get_object_or_404(User, id=player_queue[0])
+        player2 = get_object_or_404(User, id=player_queue[1])
+        player2 = User.objects.get(id=player_queue[1])
+        match = Match.objects.create(player_1=player1, player_2=player2, match_time=timedelta(minutes=3))
+        matches.append(match)
+        player_queue.pop(0)
+        player_queue.pop(0)
         # # remove paired players from the queue ?? not sure? maybe add is_active to playerqueue model??
-        player_queue = player_queue[2:]
+        #player_queue = player_queue[2:]
 
     # serialize for printing and return match information
     serializer = MatchSerializer(matches, many=True)
     return JsonResponse({"message": "Matches created.", "matches": serializer.data}, status=201)
-    #return JsonResponse({"message": "Match is created.", "matches": [str(m) for m in matches]}, status=201)
 
 @api_view(['GET'])
 def list_matches(request):
@@ -155,8 +158,8 @@ def list_matches(request):
     # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #WITHOUT SERIALIZER
 #     data = request.data
-#     name = data.get('name')
-#     max_players = data.get('max_players', 8)  # Default to 8 players
+#     name = data.get(id='name')
+#     max_players = data.get(id='max_players', 8)  # Default to 8 players
 
 #     if max_players not in [4, 8]:
 #         return JsonResponse({"error": "Max players must be 4 or 8."}, status=400)
@@ -168,7 +171,7 @@ def list_matches(request):
 # @api_view(['POST'])
 # def join_tournament(request, tournament_id):
     # tournament = get_object_or_404(Tournament, id=tournament_id)
-    # player_id = request.data.get("player_id")
+    # player_id = request.data.get(id="player_id")
 
     # if not player_id:
     #     return Response({"error": "Player ID is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -191,9 +194,9 @@ def list_matches(request):
     # )
 
 #BEFORE SERIALIZER
-#     user_id = request.data.get('user_id')
-#     user = User.objects.get(id=user_id)
-#     tournament = Tournament.objects.get(id=tournament_id)
+#     user_id = request.data.get(id='user_id')
+#     user = User.objects.get(id=id=user_id)
+#     tournament = Tournament.objects.get(id=id=tournament_id)
 
 #     try:
 #         tournament.add_player(user)
@@ -204,9 +207,9 @@ def list_matches(request):
 
 # @api_view(['POST'])
 # def confirm_ready(request, tournament_id):
-#     user_id = request.data.get('user_id')
-#     user = User.objects.get(id=user_id)
-#     tournament = Tournament.objects.get(id=tournament_id)
+#     user_id = request.data.get(id='user_id')
+#     user = User.objects.get(id=id=user_id)
+#     tournament = Tournament.objects.get(id=id=tournament_id)
 
 #     try:
 #         tournament.confirm_ready(user)
@@ -217,7 +220,7 @@ def list_matches(request):
 
 # @api_view(['POST'])
 # def start_tournament(request, tournament_id):
-#     tournament = Tournament.objects.get(id=tournament_id)
+#     tournament = Tournament.objects.get(id=id=tournament_id)
 
 #     try:
 #         tournament.start_tournament()
@@ -229,7 +232,7 @@ def list_matches(request):
 
 # @api_view(['POST'])
 # def cancel_tournament(request, tournament_id):
-#     tournament = Tournament.objects.get(id=tournament_id)
+#     tournament = Tournament.objects.get(id=id=tournament_id)
 #     if tournament.status != 'open':
 #         return JsonResponse({"error": "Cannot cancel a tournament that has already started."}, status=400)
     

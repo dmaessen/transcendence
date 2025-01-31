@@ -2,7 +2,7 @@ import json
 import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from game_server.game_logic import Game
-#from backend.matchmaking.views import matchmaking
+from matchmaking.utils import create_match
 
 games = {}  # active games by game_id -- laura might need??
 players = {}  # active players by player_id -- laura??
@@ -11,19 +11,26 @@ tournaments = {} #active tournament by id
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.player_id = self.channel_name
-        self.room_name = None # for two players remote
-        players[self.player_id] = self
-        print(f"Player {self.player_id} connected.", flush=True)
+        self.player_id = self.scope["user"].id  # to ensure this is an integer, i use this in view as int
+        self.room_name = await create_match(self.player_id)  # ensure this is a valid string
 
-        # Gul? change below to fucntion that pairs/assigns a room
-        # self.room_name = await create_a_match(self.player_id)
-        # channel_layer manages groups/messages
-        # group_add adds a websocket connection via the id, to a named group/room
+        # if not self.room_name or not isinstance(self.room_name, str):
+        #     self.room_name = f"default_room_{self.player_id}"  # assign a fallback room ??
+
+        await self.channel_layer.group_add(self.room_name, self.channel_name)
+        await self.accept()
+        # self.player_id = self.channel_name
+        # self.room_name = None # for two players remote
+        # players[self.player_id] = self
+        # print(f"Player {self.player_id} connected.", flush=True)
+
+        # # Gul? change below to fucntion that pairs/assigns a room
+        # self.room_name = await create_match(self.player_id)
+        # # channel_layer manages groups/messages
+        # # group_add adds a websocket connection via the id, to a named group/room
         # await self.channel_layer.group_add(self.room_name, self.channel_name)
 
-        await self.accept()  # accept socket connection
-        #await self.send_json({"action": "tournament_status", "active": tournament_active})
+        #await self.accept()  # accept socket connection
 
     async def disconnect(self, close_code):
         print(f"Player {self.player_id} disconnected.", flush=True)
@@ -154,11 +161,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         #         "data": games[game_id].get_state(), #data or game_update
         #     },
         # )
-    
-    async def broadcast_tournament_status(self, active):
-        """Broadcast tournament status to all connected players."""
-        for player in players.values():
-            await player.send_json({"action": "tournament_status", "active": active})
 
     async def broadcast_game_state(self, game_id):
         if game_id in games:

@@ -21,8 +21,8 @@ class MatchSerializer(serializers.ModelSerializer):
         model = Match
         fields = [
             'id',
-            'player_1',
-            'player_2',
+            'player_1_name',
+            'player_2_name',
             'player_1_points',
             'player_2_points',
             'match_time',
