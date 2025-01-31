@@ -3,6 +3,7 @@ import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from game_server.game_logic import Game
 from matchmaking.utils import create_match
+import uuid
 
 games = {}  # active games by game_id -- laura might need??
 players = {}  # active players by player_id -- laura??
@@ -11,14 +12,50 @@ tournaments = {} #active tournament by id
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.player_id = self.scope["user"].id  # to ensure this is an integer, i use this in view as int
-        self.room_name = await create_match(self.player_id)  # ensure this is a valid string
+        if self.scope["user"].is_authenticated:
+            self.player_id = self.scope["user"].id
+        else:
+            self.player_id = None  # Guest user (will be assigned a negative ID)
+        
+        print(f"Player ID: {self.player_id}")
+        await self.accept()  # Accept the WebSocket connection FIRST
 
+        #self.player_id = self.scope["user"].id  # to ensure this is an integer, i use this in view as int
+        match_data = await create_match(self.player_id)  # ensure this is a valid string
+
+        #match_data = await create_match(self.player_id)
+
+        if match_data == "waiting":
+            await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
+            self.room_name = f"waiting_room_{self.player_id}"  
+            return
         # if not self.room_name or not isinstance(self.room_name, str):
         #     self.room_name = f"default_room_{self.player_id}"  # assign a fallback room ??
+        self.room_name = f"match_{match_data['id']}"
 
         await self.channel_layer.group_add(self.room_name, self.channel_name)
-        await self.accept()
+        #await self.accept()
+# class GameConsumer(AsyncWebsocketConsumer):
+#     async def connect(self):
+#         if self.scope["user"].is_authenticated:
+#             self.player_id = self.scope["user"].id  # Authenticated user
+#         else:
+#             self.player_id = None  # Guest user (will be assigned a negative ID)
+
+#         print(f"Player ID: {self.player_id}")
+        
+#         match_data = await create_match(self.player_id)
+
+#         if match_data == "waiting":
+#             await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
+#             await self.accept()  # Accept WebSocket connection even if waiting
+#             return
+
+#         self.room_name = f"match_{match_data['id']}"
+
+#         await self.channel_layer.group_add(self.room_name, self.channel_name)
+#         await self.accept()
+
         # self.player_id = self.channel_name
         # self.room_name = None # for two players remote
         # players[self.player_id] = self
