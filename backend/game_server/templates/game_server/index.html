@@ -14,9 +14,13 @@
     <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
 </head>
 <body>
-    <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert">
-        🚀 A tournament is about to start! Join now!
+    <div id="tournamentWaitingRoom" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert">
+        <p id="tournamentCountdown"></p>
+        <p>🚀 A tournament is about to start! <span id="playersInTournament">0/8</span> players in.</p>
+        <button onclick="joinTournament()">Join now!</button>
     </div>
+    <!--<div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert"> </div>-->
+    
     <h1 id="gameTitle" class="text-center my-3 display-6">Pong Game</h1>
     <button id="exitButton" type="button" class="btn btn-outline-dark position-fixed top-0 end-0 m-3">Exit</button>
     <p id="timer">0m 0s</p>
@@ -81,6 +85,7 @@
     <!-- Link JS -->
     <!-- <script src="../frontend/static/script.js"></script> -->
     <script src="http://localhost:8080/static/websocket_handler.js"></script>
+    <script src="http://localhost:8080/static/tournament.js"></script>
     <script src="http://localhost:8080/static/script.js"></script>
     <!-- <script src="/static/script.js"></script> -->
 </body>
