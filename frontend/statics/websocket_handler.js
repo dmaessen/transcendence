@@ -1,14 +1,13 @@
 //const serverUrl = "ws://localhost:8000/ws/game_server/";
 const websocket = `ws://${window.location.host}/ws/game_server/`;
-const tournamentWebsocket = `ws://${window.location.host}/ws/tournament/`;
+const tournamentwebsocket = `ws://${window.location.host}/ws/game_server/`;
 
 let socket;
-let tournamentsocket;
 let reconnecting = false;
 let resetting = false;
 
 function connectWebSocket(mode) {
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
         console.log("WebSocket already connected.");
         startGameMenu(); // or not
         return;
@@ -21,7 +20,10 @@ function connectWebSocket(mode) {
 
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
-    socket = new WebSocket(websocket);
+    if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players")
+        socket = new WebSocket(tournamentwebsocket);
+    else
+        socket = new WebSocket(websocket);
 
     socket.onopen = () => {
         console.log("Connected to the game server.");
@@ -55,48 +57,6 @@ function connectWebSocket(mode) {
     };
 }
 
-function connectTournamentWebSocket(mode) {
-    if (tournamentsocket && tournamentsocket.readyState === WebSocket.OPEN) {
-        console.log("(Tournament) WebSocket already connected.");
-        //startGameMenu(); // or not
-        return;
-    }
-
-    console.log("(Tournament) Attempting to connect to websocket...");
-    tournamentsocket = new WebSocket(tournamentWebsocket);
-
-    tournamentsocket.onopen = () => {
-        console.log("(Tournament) Connected to the game server.");
-        if (mode === "Tournament - 4 Players") {
-            tournamentsocket.send(JSON.stringify({ action: "connect", mode: 4 }));
-            tournamentsocket.send(JSON.stringify({ action: "start_tournament", mode: 4 }));
-        } else if (mode === "Tournament - 8 Players") {
-            tournamentsocket.send(JSON.stringify({ action: "connect", mode: 8 }));
-            tournamentsocket.send(JSON.stringify({ action: "start_tournament", mode: 8 }));
-        }
-        //startGameMenu();
-    };
-
-    tournamentsocket.onmessage = (event) => {
-        try {
-            const message = JSON.parse(event.data);
-            handleServerMessage(message);
-        } catch (error) {
-            console.error("(Tournament) Error parsing WebSocket message:", error, event.data);
-        }
-    };
-
-    tournamentsocket.onclose = () => {
-        console.log("(Tournament) Disconnected from the game server.");
-        //setTimeout(() => connectWebSocket(mode), 2000); // reconnects after 2 seconds
-    };
-
-    tournamentsocket.onerror = (error) => {
-        console.error("(Tournament) WebSocket error:", error);
-        alert(`(Tournament) WebSocket error: ${error.message}`);
-    };
-}
-
 function resetGame(mode) {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ action: "reset", gameId: gameState.gameId, mode }));
@@ -108,13 +68,16 @@ function resetGame(mode) {
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
 
 const returnToStartMenu = async () => {
-    await sleep(10000); // reduce?
+    await sleep(6000);
     instructions1.style.display = "none";
     instructions2.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-    socket.close()
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+        await sleep(500);
+        socket.close();
+    }
     gameMenuFirst.show();
 }
 
@@ -138,15 +101,26 @@ function handleServerMessage(message) {
             break;
         case "tournament_status":
             const banner = document.getElementById("tournamentBanner");
-            if (data.active) {
+            if (message.active) {
                 banner.style.display = "block";
                 setTimeout(() => {
                     banner.style.display = "none";
                 }, 20000); // 20sec
             }
+            break;
         case "match_found":
-            console.log("Tournament match found:", data.game_id);
-            startGame(data.game_id); // Your existing game logic -- CHECK ON THIS
+            console.log("Tournament match found:", message.game_id);
+            startGame(message.game_id); // Your existing game logic -- CHECK ON THIS
+            break;
+        case "match_result":
+            // ADD STUFF
+            break;
+        case "tournament_update":
+            // ADD STUFF
+            break;
+        case "tournament_end":
+            // ADD STUFF
+            break;
         // default:
         //     console.warn("Unknown message type received:", message.type);
     }
