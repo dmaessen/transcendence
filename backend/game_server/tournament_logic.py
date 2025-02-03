@@ -9,7 +9,7 @@ class Tournament:
         self.num_players = num_players
         self.players = []  # List of player IDs
         self.matches = []  # Store ongoing matches
-        self.bracket = {}  # Stores matchups for each round
+        self.bracket = {}  # Stores matchups for each round -- GUL??
         self.current_round = 1
         self.running = False
         self.winners = []  # Players who win their matches

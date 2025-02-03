@@ -37,7 +37,6 @@ function tournamentCanceled() {
     socket.send(JSON.stringify({ action: "cancel_tournament" }));
 }
 
-// Example of when a player joins the tournament:
 function onPlayerJoinTournament() {
     // Start the countdown when the first player joins
     if (!tournamentStartTime) {
@@ -45,10 +44,9 @@ function onPlayerJoinTournament() {
     }
 }
 
-// Call this when the tournament is full or the countdown reaches 0:
+// when the tournament is full
 function onTournamentFull() {
-    clearInterval(countdownInterval); // Stop the countdown
-    // Proceed with starting the tournament.
-    // Notify the server to start the game and reset the UI.
+    clearInterval(countdownInterval);
     socket.send(JSON.stringify({ action: "start_tournament" }));
+	// start 1v1 games maybe with the other .js files
 }
