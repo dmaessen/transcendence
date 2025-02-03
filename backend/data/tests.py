@@ -2,6 +2,7 @@ import os
 import csv
 from django.test import TestCase
 from .models import *
+from .services import *
 from datetime import timedelta
 from datetime import datetime
 from django.db.models import Q
@@ -61,6 +62,11 @@ class ModelFromFileTest(TestCase):
                 User.objects.create(
                     name=row['name'],
                     location=row['location'],
+                    email=row['email'],
+                    username=row['username'],
+                    is_active=row['is_active'],
+                    is_staff=row['is_staff'],
+                    oauth_tokens=row['oauth_tokens'],
                 )
         print(f"Users were set and {User.objects.count()} users have been created!")
         # self.print_users_table()
@@ -343,3 +349,9 @@ class ModelFromFileTest(TestCase):
         print("Here are ze tables\n")
         self.print_users_table()
         self.print_match_table()
+
+    def test_services(self):
+
+        #User1
+        expected_matches = [self.mat]
+        self.assertEqual(get_user_matches(user1.id))

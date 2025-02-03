@@ -1,6 +1,7 @@
 from .models import *
 from django.db.models import Q
 
+# Get data from tables 
 def get_all_users():
     return User.objects.all()
 
@@ -10,6 +11,13 @@ def get_user_matches(user_id):
 def get_user_tournaments(user_id):
     user = User.objects.get(id=user_id)
     return list(user.tournaments.values_list('id', flat=True))
+
+def get_tournaments():
+    return Tournament.objects.all()
+
+def get_tournament_data(tournament_id):
+    tournament = Tournament.objects.get(tournament_id)
+    return tournament
 
 def get_win_cout(user_id):
     wins = Match.objects.filter(id=user_id)
@@ -38,6 +46,83 @@ def get_match_time(match_id):
     match_time_str = f"{minutes}m {seconds}s"
     return match_time_str
 
-def add_friend(user1, user2): 
-    friendship = Friendship.objects.create(user=user1, friend=user2, status='pending')
-    print(f"Friend request sent from {user1.username} to {user2.username}.")
+# Manage friendships 
+def add_friend(user_id, friend_id):
+    user = User.objects.get(user_id)
+    friend = User.objects.get(friend_id)
+    if Friendship.objects.filter(user=user, friend=friend).exists():
+        return f"Friendship request or connection already exists between {user.username} and {friend.username}."
+    
+    Friendship.objects.create(user=user, friend=friend, status='pending')
+    return f"Friend request sent from {user.username} to {friend.username}."
+
+def accept_friend(user_id, friend_id):
+    user = User.objects.get(user_id)
+    friend = User.objects.get(friend_id)
+    try:
+        friendship = Friendship.objects.get(user, friend, status='pending')
+        friendship.status = 'approved'
+        friendship.save()
+        Friendship.objects.create(user, friend, status='approved')
+        return f"{user.username} and {friend.username} are now friends!"
+    except Friendship.DoesNotExist:
+        return f"No pending friend request from {friend.username} to {user.username}."
+
+def remove_friendship(user_id, friend_id):
+    user = User.objects.get(user_id)
+    friend = User.objects.get(friend_id)
+    deleted_count = Friendship.objects.filter(
+        Q(user, friend) | Q(user, friend)
+    ).delete()
+    if deleted_count[0] > 0:
+        return f"Friendship or request between {user.username} and {friend.username} has been removed."
+    return f"No friendship or request exists between {user.username} and {friend.username}."
+
+def are_friends(user_id, friend_id):
+    user = User.objects.get(user_id)
+    friend = User.objects.get(friend_id)
+    return Friendship.objects.filter(user, friend, status='approved').exists()
+
+def get_friends(user_id):
+    user = User.objects.get(user_id)
+    friends = Friendship.objects.filter(user, status='approved').values_list('friend__username', flat=True)
+    return list(friends)
+
+def get_received_friend_requests(user_id):
+    user = User.objects.get(user_id)
+    requests = Friendship.objects.filter(user, status='pending')
+    output = []
+    for req in requests:
+        output.append({
+            "from": req.user.username,
+            "sent_at": req.created_at,
+        })
+    return output
+
+def get_sent_friend_requests(user_id):
+    user = User.objects.get(user_id)
+    requests = Friendship.objects.filter(user=user, status='pending')
+    output = []
+    for req in requests:
+        output.append({
+            "from": req.user.username,
+            "sent_at": req.created_at,
+        })
+    return output
+
+# Manage profile 
+def change_name(req, user_id):
+    user = User.objects.get(user_id)
+    user.name = req.POST.get('name')
+    user.save()
+
+def change_picture(req, user_id):
+    user = User.objects.get(user_id)
+    user.avatar = req.POST.get()
+
+def change_email(req, user_id):
+    user = User.objects.get(user_id)
+
+def delete_account(user_id):
+    user = User.objects.get(user_id)
+    user.delete()

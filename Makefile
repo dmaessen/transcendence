@@ -46,6 +46,6 @@ resetall:
 	@docker system prune -af
 	@docker volume prune -af
 	@docker image prune -af
-	@rm -rf $(HOME)/.tranceanddance
+	@sudo rm -rf $(HOME)/.tranceanddance
 
 .PHONY: all build up down kill updateach buildclean show run re clean fclean
