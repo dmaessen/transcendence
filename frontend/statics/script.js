@@ -10,8 +10,11 @@ const instructions2 = document.getElementById("game-instruction2");
 const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
 
+const tournamentBtn = document.getElementById("tournamentBtn");
+
 let timerInterval;
 let keyboardEnabled = true;
+let tournamentOngoing = false; // switch back to off at some point maybe after xxx minutes or whatever
 
 instructions1.style.display = "none";
 instructions2.style.display = "none";
@@ -90,6 +93,10 @@ function startGame(mode) {
 document.getElementById("playBtn").addEventListener("click", () => {
     gameMenuFirst.hide();
     gameMenu.show();
+    if (tournamentOngoing)
+        tournamentBtn.style.display = "none";
+    else
+        tournamentBtn.style.display = "block";
 });
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
@@ -99,10 +106,13 @@ document.getElementById("twoPlayersFriendsBtn").addEventListener("click", () => 
 
 document.getElementById("tournamentBtn").addEventListener("click", () => {
     gameMenuTournament.show();
-    gameMenu.hide();
-});
-document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => startGame("Tournament - 4 Players"));
-document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => startGame("Tournament - 8 Players"));
+    gameMenu.hide();});
+document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
+    tournamentOngoing = true;
+    startGame("Tournament - 4 Players");});
+document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
+    tournamentOngoing = true;
+    startGame("Tournament - 8 Players");});
 
 
 document.getElementById("exitButton").addEventListener("click", () =>  {
