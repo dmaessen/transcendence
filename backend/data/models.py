@@ -28,7 +28,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)  # Unique email for login
-    name = models.CharField(max_length=100)  # Non-unique name field #defaul value was 30
+    name = models.CharField(max_length=30)  # Non-unique name field
     location = models.CharField(max_length=30, blank=True, null=True)
     oauth_tokens = models.JSONField(null=True, blank=True)
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)
