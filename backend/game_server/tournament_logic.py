@@ -1,7 +1,7 @@
 import json
 import random
 import math
-from game_logic import Game  # import the normal game logic to use in individual matches
+from game_server.game_logic import Game  # import the normal game logic to use in individual matches
 
 class Tournament:
     def __init__(self, mode, num_players):

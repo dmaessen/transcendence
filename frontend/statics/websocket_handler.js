@@ -1,6 +1,6 @@
 //const serverUrl = "ws://localhost:8000/ws/game_server/";
 const websocket = `ws://${window.location.host}/ws/game_server/`;
-const tournamentwebsocket = `ws://${window.location.host}/ws/game_server/`;
+const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
 
 let socket;
 let reconnecting = false;
@@ -20,7 +20,7 @@ function connectWebSocket(mode) {
 
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
-    if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players")
+    if (mode == "Tournament - 4 Players" || mode == "Tournament - 8 Players")
         socket = new WebSocket(tournamentwebsocket);
     else
         socket = new WebSocket(websocket);
@@ -82,6 +82,7 @@ const returnToStartMenu = async () => {
 }
 
 function handleServerMessage(message) {
+    const tournamentBanner = document.getElementById("tournamentBanner");
     switch (message.type) {
         case "started":
             gameState.gameId = message.game_id;
@@ -99,12 +100,11 @@ function handleServerMessage(message) {
             showEndMenu(`${message.reason}`);
             returnToStartMenu();
             break;
-        case "tournament_status":
-            const banner = document.getElementById("tournamentBanner");
+        case "tournament_status": // needed
             if (message.active) {
-                banner.style.display = "block";
+                tournamentBanner.style.display = "block";
                 setTimeout(() => {
-                    banner.style.display = "none";
+                    tournamentBanner.style.display = "none";
                 }, 20000); // 20sec
             }
             break;
@@ -115,8 +115,13 @@ function handleServerMessage(message) {
         case "match_result":
             // ADD STUFF
             break;
-        case "tournament_update":
-            // ADD STUFF
+        case "update_tournament":
+            document.getElementById("playersInTournament").textContent = `${message.players_in}/${message.remaining_spots + message.players_in}`;
+            if ((message.players_in == 4 && message.mode == "Tournament - 4 Players") 
+                || (message.players_in == 8 && message.mode == "Tournament - 8 Players")) {
+                tournamentBanner.style.display = "none";
+                socket.send(JSON.stringify({ action: "start_tournament" }));
+            }
             break;
         case "tournament_end":
             // ADD STUFF

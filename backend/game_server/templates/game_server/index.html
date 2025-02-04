@@ -19,9 +19,9 @@
         <p>🚀 A tournament is about to start! <span id="playersInTournament">0/8</span> players in.</p>
         <button onclick="joinTournament()">Join now!</button>
     </div>-->
-    <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert">
+    <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">
         🚀 A tournament is about to start! <span id="playersInTournament">0/8</span> players in. 
-        <a href="#" class="alert-link">Join now!</a>
+        <a href="#" class="alert-link" id="joinTournamentLink">Join now!</a>
       </div>
 
 
@@ -66,6 +66,7 @@
                     <button id="twoPlayersFriendsBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (with a friend)</button>
                     <button id="twoPlayersRemoteBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (remote)</button>
                     <button id="tournamentBtn" class="btn btn-outline-dark w-100 mb-2">Tournament</button>
+                    <button id="previous1Btn" class="btn btn-outline-secondary w-100 mb-2">Previous page</button>
                 </div>
             </div>
         </div>
@@ -81,6 +82,7 @@
                 <div class="modal-body">
                     <button id="fourPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">4 Players</button>
                     <button id="eightPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">8 Players</button>
+                    <button id="previous2Btn" class="btn btn-outline-secondary w-100 mb-2">Previous page</button>
                 </div>
             </div>
         </div>
