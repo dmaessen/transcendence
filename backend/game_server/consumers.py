@@ -27,7 +27,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             
             User = get_user_model()
             guest_user = await sync_to_async(User.objects.create)(
-                name=f"Guest_{session.session_key}",
+                name=f"Guest_{session.session_key[:12]}",
                 email=f"{session.session_key[:10]}",
                 is_active=False
             )
@@ -188,6 +188,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 "data": games[game_id].get_state(), #data or game_update
             },
         )
+
 
     async def broadcast_game_state(self, game_id):
         if game_id in games:
