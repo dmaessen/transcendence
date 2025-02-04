@@ -8,11 +8,17 @@ import uuid
 games = {}  # active games by game_id -- laura might need??
 players = {}  # active players by player_id -- laura??
 
+#The scope is a set of details about a single incoming connection 
+#scope containing the user's username, chosen name, and user ID.
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        #while testing in browser, for now we dont have an user in db,
+        #so player_id will be None
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
         else:
+            #if it s not authenticated we can assign scope values manually, 
+            #but then where to store that info?
             self.player_id = None  # Guest user (will be assigned a negative ID)
         
         print(f"Player ID: {self.player_id}")
@@ -25,13 +31,13 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if match_data == "waiting":
             await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
-            self.room_name = f"waiting_room_{self.player_id}"  
+            self.match_name = f"waiting_room_{self.player_id}"  
             return
-        # if not self.room_name or not isinstance(self.room_name, str):
-        #     self.room_name = f"default_room_{self.player_id}"  # assign a fallback room ??
-        self.room_name = f"match_{match_data['id']}"
+        # if not self.match_name or not isinstance(self.match_name, str):
+        #     self.match_name = f"default_room_{self.player_id}"  # assign a fallback room ??
+        self.match_name = f"match_{match_data['id']}"
 
-        await self.channel_layer.group_add(self.room_name, self.channel_name)
+        await self.channel_layer.group_add(self.match_name, self.channel_name)
         #await self.accept()
 # class GameConsumer(AsyncWebsocketConsumer):
 #     async def connect(self):
@@ -49,21 +55,21 @@ class GameConsumer(AsyncWebsocketConsumer):
 #             await self.accept()  # Accept WebSocket connection even if waiting
 #             return
 
-#         self.room_name = f"match_{match_data['id']}"
+#         self.match_name = f"match_{match_data['id']}"
 
-#         await self.channel_layer.group_add(self.room_name, self.channel_name)
+#         await self.channel_layer.group_add(self.match_name, self.channel_name)
 #         await self.accept()
 
         # self.player_id = self.channel_name
-        # self.room_name = None # for two players remote
+        # self.match_name = None # for two players remote
         # players[self.player_id] = self
         # print(f"Player {self.player_id} connected.", flush=True)
 
         # # Gul? change below to fucntion that pairs/assigns a room
-        # self.room_name = await create_match(self.player_id)
+        # self.match_name = await create_match(self.player_id)
         # # channel_layer manages groups/messages
         # # group_add adds a websocket connection via the id, to a named group/room
-        # await self.channel_layer.group_add(self.room_name, self.channel_name)
+        # await self.channel_layer.group_add(self.match_name, self.channel_name)
 
         # await self.accept()  # accept socket connection
 
@@ -80,8 +86,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                     game.stop_game("No players")
                     del games[game_id]
 
-        if self.room_name:
-            await self.channel_layer.group_discard(self.room_name, self.channel_name)
+        if self.match_name:
+            await self.channel_layer.group_discard(self.match_name, self.channel_name)
         await self.close()
     
     async def send_json(self, content):
@@ -171,7 +177,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         
         #broadcasts the updated game state to the group (for two players remote)
         await self.channel_layer.group_send(
-            self.room_name,
+            self.match_name,
             {
                 "type": "update", #this correct or we want another type?
                 "game_id": game_id,

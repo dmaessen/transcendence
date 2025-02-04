@@ -1,18 +1,19 @@
-from django.shortcuts import render
-
-from django.http import HttpResponse, JsonResponse
-
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
 from data.models import User, Match
-from rest_framework.parsers import JSONParser
 from data.serializers import UserSerializer, MatchSerializer
 from .game_state import player_queue
 from types import SimpleNamespace
 from asgiref.sync import sync_to_async
+
+"""
+the issue was when we have a guest player (during the dev test when i press button for 2 player])
+
+guest players dont need to pass to db because they dont have user accounts
+Sothat i can make a class (maybe a matchmaking class) and give it a guestuser??
+"""
 
 async def create_match(player_id):
     global player_queue
