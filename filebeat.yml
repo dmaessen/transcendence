@@ -13,3 +13,4 @@ output.logstash:
 logging.level: debug
 
 setup.ilm.enabled: false
+
