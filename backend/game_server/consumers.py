@@ -46,36 +46,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         self.match_name = f"match_{match_data['id']}"
         await self.channel_layer.group_add(self.match_name, self.channel_name)
 
-# class GameConsumer(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         #while testing in browser, for now we dont have an user in db,
-#         #so player_id will be None
-#         if self.scope["user"].is_authenticated:
-#             self.player_id = self.scope["user"].id
-#         else:
-#             #if it s not authenticated we can assign scope values manually, 
-#             #but then where to store that info?
-#             self.player_id = None  # Guest user (will be assigned a negative ID)
-        
-#         print(f"Player ID: {self.player_id}")
-#         await self.accept()  # Accept the WebSocket connection FIRST
-
-#         #self.player_id = self.scope["user"].id  # to ensure this is an integer, i use this in view as int
-#         match_data = await create_match(self.player_id)  # ensure this is a valid string
-
-#         #match_data = await create_match(self.player_id)
-
-#         if match_data == "waiting":
-#             await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
-#             self.match_name = f"waiting_room_{self.player_id}"  
-#             return
-#         # if not self.match_name or not isinstance(self.match_name, str):
-#         #     self.match_name = f"default_room_{self.player_id}"  # assign a fallback room ??
-#         self.match_name = f"match_{match_data['id']}"
-
-#         await self.channel_layer.group_add(self.match_name, self.channel_name)
-#         #await self.accept()
-
 
     async def disconnect(self, close_code):
         print(f"Player {self.player_id} disconnected.", flush=True)
