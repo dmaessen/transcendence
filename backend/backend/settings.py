@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 import os
@@ -29,12 +30,13 @@ DEBUG = True
 
 # Controls which hostnames can make requests to your Django server.
 # ensures only recognized hosts can serve your app
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'localhost']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +51,9 @@ INSTALLED_APPS = [
 
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
+    'data.apps.DataConfig',
+    'authentication.apps.AuthenticationConfig'
+
 
 ]
 
@@ -69,11 +74,23 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://frontend:8080",
     "http://localhost:8080",  # for local development, later change it
+    "http://localhost:8000", 
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # For development
+        # Uncomment below for production (requires Redis)
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {
+        #     "hosts": [("127.0.0.1", 6379)],
+        # },
+    },
 }
 
 
@@ -104,8 +121,12 @@ ASGI_APPLICATION = "backend.asgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST'),
+        'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
 
@@ -205,3 +226,8 @@ LOGGING = {
 #         }
 #     }
 # }
+# Custom user model
+AUTH_USER_MODEL = 'data.User'
+
+
+

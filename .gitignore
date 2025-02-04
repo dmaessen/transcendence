@@ -140,4 +140,3 @@ GitHub.sublime-settings
 # Project especifc folders 
 pgdata/
 myvenv/
-dot_env/.env

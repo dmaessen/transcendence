@@ -1,3 +1,5 @@
+#NOT IN USE, INSTEAD OF THIS serializers.py WE HAVE data.serializers
+
 from rest_framework import serializers
 from .models import PlayerQueue, Match
 
