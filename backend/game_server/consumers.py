@@ -18,15 +18,6 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 
-
-#The scope is a set of details about a single incoming connection 
-#scope containing the user's username, chosen name, and user ID.
-
-from django.contrib.sessions.backends.db import SessionStore
-from django.contrib.auth import get_user_model
-from asgiref.sync import sync_to_async
-
-
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if self.scope["user"].is_authenticated:
@@ -77,6 +68,9 @@ class GameConsumer(AsyncWebsocketConsumer):
     
     async def send_json(self, content):
         await self.send(text_data=json.dumps(content))
+    
+    async def update(self, event):
+        await self.send_json(event["data"])
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -152,7 +146,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 }))
 
         elif action == "disconnect":
-            del players[self.player_id]
+            if self.player_id in players:
+                del players[self.player_id]
             await self.close()
             print(f"WebSocket disconnected", flush=True)
             await self.channel_layer.group_discard(
@@ -179,14 +174,15 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.broadcast_tournament_status(False)
         
         #broadcasts the updated game state to the group (for two players remote)
-        await self.channel_layer.group_send(
-            self.match_name,
-            {
-                "type": "update", #this correct or we want another type?
-                "game_id": game_id,
-                "data": games[game_id].get_state(), #data or game_update
-            },
-        )
+        if game_id in games:
+            await self.channel_layer.group_send(
+                self.match_name,
+                {
+                    "type": "update", #this correct or we want another type?
+                    "game_id": game_id,
+                    "data": games[game_id].get_state(), #data or game_update
+                },
+            )
 
 
     async def broadcast_game_state(self, game_id):
