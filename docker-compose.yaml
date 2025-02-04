@@ -1,4 +1,17 @@
 services:
+  psql:
+      image: postgres:13-alpine
+      container_name: postgres
+      restart: always
+      networks:
+          - transcendence
+      ports:
+          - "5432:5432"
+      env_file:
+          - ./dot_env/.env
+      volumes:
+          - pgdata:/var/lib/postgresql/data/
+
   backend:
     build: ./backend/docker
     container_name: backend
@@ -7,29 +20,37 @@ services:
       - ./logs:/var/log/django
     ports:
       - "8000:8000"
+    env_file:
+      - ./dot_env/.env     
     networks:
       - transcendence
-    command: python3 ./backend/game_server/game_server.py
+    # command: python3 ./backend/game_server/game_server.py
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+    depends_on:
+      - psql
 
   frontend:
-    build: ./frontend
-    container_name: frontend
-    volumes:
-      - ./frontend/statics/:/usr/share/nginx/html/static/
-    ports:
-      - "8080:80"
-    networks:
-      - transcendence
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      build: ./frontend
+      container_name: frontend
+      volumes:
+          - ./frontend/statics/:/usr/share/nginx/html/static/
+      ports:
+          - "8080:80"
+      networks:
+          - transcendence
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+
+      depends_on:
+      - backend
+      - psql
 
   # Elasticsearch: Stores all the logs
   elasticsearch:
@@ -78,6 +99,8 @@ services:
     volumes:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./logs:/var/log/django:ro
+      # - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
     user: root  # Might be needed for file permissions
     command: ["filebeat", "run", "-e", "--strict.perms=false"]  # Fixed command syntax
     depends_on:
@@ -91,6 +114,18 @@ networks:
 
 volumes:
   elasticsearch_data:
+  pgdata:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: $HOME/.tranceanddance/pgdata
+  backenddata:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: $HOME/.tranceanddance/backenddata
 # services:
 #   backend:
 #     build: ./backend/docker

@@ -14,3 +14,30 @@ logging.level: debug
 
 setup.ilm.enabled: false
 
+#FRONT, non stop LOGSTASH
+
+# filebeat.inputs:
+# - type: filestream
+#   enabled: true
+#   paths:
+#     - /var/log/django/*.json
+#   json.keys_under_root: true
+#   json.add_error_key: true
+#   tags: ["app-logs"]
+
+# - type: container
+#   enabled: true
+#   paths: 
+#     - '/var/lib/docker/containers/*/*.log'
+#   stream: 'all'
+#   tags: ["nginx-logs"]
+#   processors:
+#     - add_docker_metadata:
+#         host: "unix:///var/run/docker.sock"
+
+# output.logstash:
+#   hosts: ["logstash:5044"]
+
+# logging.level: debug
+
+# setup.ilm.enabled: false

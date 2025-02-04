@@ -8,5 +8,4 @@ python-json-logger==3.2.1
 
 
 websockets==14.1
-
-
+psycopg2-binary>=2.9.6,<2.10
