@@ -38,6 +38,7 @@ services:
       container_name: frontend
       volumes:
           - ./frontend/statics/:/usr/share/nginx/html/static/
+          - ./logs/nginx:/var/log/nginx
       ports:
           - "8080:80"
       networks:
@@ -99,6 +100,8 @@ services:
     volumes:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./logs:/var/log/django:ro
+      - ./logs/nginx:/var/log/nginx:ro
+
       # - /var/lib/docker/containers:/var/lib/docker/containers:ro
       # - /var/run/docker.sock:/var/run/docker.sock:ro
     user: root  # Might be needed for file permissions
