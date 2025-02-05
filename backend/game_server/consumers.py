@@ -6,17 +6,19 @@ from game_server.tournament_logic import Tournament
 from matchmaking.utils import create_match
 import uuid
 
-games = {}  # active games by game_id -- laura might need??
-players = {}  # active players by player_id -- laura??
-tournament_active = False # for banner popup in frontend
-tournaments = {} #active tournament by id
-
 #The scope is a set of details about a single incoming connection 
 #scope containing the user's username, chosen name, and user ID.
-
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
+
+from game_server.player import Player
+
+games = {}  # active games by game_id -- laura might need??
+players = {}  # active players by player_id -- laura??
+tournament_active = False # for banner popup in frontend
+#tournaments = {} #active tournament by id
+
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -36,17 +38,12 @@ class GameConsumer(AsyncWebsocketConsumer):
             
             self.player_id = guest_user.id
             self.session_key = session.session_key
+
+        player = Player(self.player_id, self.session_key, 'online')
+        # self.match_name = None
+        # self.match_data = None
         
         await self.accept()
-        match_data = await create_match(self.player_id)
-
-        if match_data == "waiting":
-            await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
-            self.match_name = f"waiting_room_{self.player_id}"  
-            return
-
-        self.match_name = f"match_{match_data['id']}"
-        await self.channel_layer.group_add(self.match_name, self.channel_name)
 
 
     async def disconnect(self, close_code):
@@ -72,14 +69,65 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def update(self, event):
         await self.send_json(event["data"])
 
+    async def find_match(self):
+        timeout = 300  # 5 minutes max
+        start_time = asyncio.get_event_loop().time()
+
+        self.match_name = f"waiting_room_{self.player_id}"  # Unique waiting room
+        await self.channel_layer.group_add(self.match_name, self.channel_name)
+
+        while True:
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                await self.send(text_data=json.dumps({"message": "Matchmaking timed out."}))
+                await self.channel_layer.group_discard(self.match_name, self.channel_name)
+                break  # Stop the loop
+
+            self.match_data = await create_match(self.player_id)
+
+            if self.match_data != "waiting":
+                # Matched! Move player from waiting room to match group
+                await self.channel_layer.group_discard(self.match_name, self.channel_name)
+                self.match_name = f"match_{self.match_data['id']}"
+                await self.channel_layer.group_add(self.match_name, self.channel_name)
+
+                await self.send(text_data=json.dumps({"message": "Match found!", "match_id": self.match_data['id']}))
+                break  # Exit loop
+
+            await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
+            await asyncio.sleep(2)  # Wait before retrying
+
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
         game_id = data.get("game_id")
         mode = data.get("mode", "One Player")  # default to "One Player" if no mode sent
+        print("Mode in receive()", mode)
 
         if action == "connect":
-            game_id = f"game_{self.player_id}"
+            if mode == "Two Players (remote)":
+                asyncio.create_task(self.find_match())
+                while self.match_data == "waiting":
+                    await asyncio.sleep(1)
+                # match_data = await create_match(self.player_id)
+
+                # if match_data == "waiting":
+                #     print("Made it here??")
+                #     await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
+                #     self.match_name = f"waiting_room_{self.player_id}"
+                #     await self.channel_layer.group_add(self.match_name, self.channel_name)
+                    
+                #     # Wait and try again
+                #     await asyncio.sleep(20)  # Adjust the delay as needed
+                #     await self.receive(json.dumps({"action": "connect", "mode": mode}))  # Recursively call itself
+                #     return
+
+                # self.match_name = f"match_{match_data['id']}"
+                # await self.channel_layer.group_add(self.match_name, self.channel_name)
+
+            if mode == "Two Players (remote)":
+                game_id = self.match_name
+            else:
+                game_id = f"game_{self.player_id}"
             if game_id in games:
                 game = games[game_id]
                 if not game.running:
@@ -91,7 +139,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             if self.player_id not in game.players:
                 game.add_player(self.player_id)
-            print(f"Game mode set to: {mode}", flush=True)
+            print(f"Game mode set to: {mode}, with game_id {game_id}", flush=True)
 
         elif action == "move":
             direction = data.get("direction")
@@ -135,6 +183,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "type": "started",
                     "game_id": game_id,
                 }))
+        
+        # elif action == "waiting":
+
 
         elif action == "stop":
             if game_id in games:
@@ -174,12 +225,12 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.broadcast_tournament_status(False)
         
         #broadcasts the updated game state to the group (for two players remote)
-        if game_id in games:
+        if game_id in games and self.match_name is not None:
             await self.channel_layer.group_send(
                 self.match_name,
                 {
                     "type": "update", #this correct or we want another type?
-                    "game_id": game_id,
+                    # "game_id": game_id,
                     "data": games[game_id].get_state(), #data or game_update
                 },
             )
