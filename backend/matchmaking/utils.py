@@ -24,7 +24,8 @@ async def create_match(player_id):
     global player_queue
     User = get_user_model()
 
-    player_queue.append(player_id)
+    if player_id not in player_queue:
+        player_queue.append(player_id)
 
     if len(player_queue) <= 1:
         return "waiting"
