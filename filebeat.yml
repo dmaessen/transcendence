@@ -1,21 +1,3 @@
-filebeat.inputs:
-- type: filestream
-  enabled: true
-  paths:
-    - /var/log/django/*.json
-  json.keys_under_root: true
-  json.add_error_key: true
-  tags: ["app-logs"]
-
-output.logstash:
-  hosts: ["logstash:5044"]
-
-logging.level: debug
-
-setup.ilm.enabled: false
-
-#FRONT, non stop LOGSTASH
-
 # filebeat.inputs:
 # - type: filestream
 #   enabled: true
@@ -25,19 +7,35 @@ setup.ilm.enabled: false
 #   json.add_error_key: true
 #   tags: ["app-logs"]
 
-# - type: container
-#   enabled: true
-#   paths: 
-#     - '/var/lib/docker/containers/*/*.log'
-#   stream: 'all'
-#   tags: ["nginx-logs"]
-#   processors:
-#     - add_docker_metadata:
-#         host: "unix:///var/run/docker.sock"
-
 # output.logstash:
 #   hosts: ["logstash:5044"]
 
 # logging.level: debug
 
 # setup.ilm.enabled: false
+
+filebeat.inputs:
+- type: filestream
+  enabled: true
+  paths:
+    - /var/log/django/*.json
+  json.keys_under_root: true
+  json.add_error_key: true
+  tags: ["app-logs"]
+
+- type: filestream
+  enabled: true
+  paths:
+    - /var/log/nginx/*.log
+  tags: ["nginx-logs"]
+  multiline:
+    pattern: '^\d{4}/\d{2}/\d{2}'
+    negate: true
+    match: after
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+logging.level: debug
+
+setup.ilm.enabled: false
