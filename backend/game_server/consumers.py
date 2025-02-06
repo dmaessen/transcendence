@@ -15,7 +15,7 @@ from asgiref.sync import sync_to_async
 from game_server.player import Player
 
 games = {}  # active games by game_id -- laura might need??
-players = {}  # active players by player_id -- laura??
+# players = {}  # active players by player_id -- laura??
 tournament_active = False # for banner popup in frontend
 #tournaments = {} #active tournament by id
 
@@ -35,21 +35,22 @@ class GameConsumer(AsyncWebsocketConsumer):
                 email=f"{session.session_key[:10]}",
                 is_active=False
             )
+            print(f"guest user {guest_user.name}")
             
             self.player_id = guest_user.id
             self.session_key = session.session_key
 
+        print(f"player_id == {self.player_id}", flush=True)
         player = Player(self.player_id, self.session_key, 'online')
-        # self.match_name = None
-        # self.match_data = None
+        self.match_data = "waiting"
         
         await self.accept()
 
 
     async def disconnect(self, close_code):
         print(f"Player {self.player_id} disconnected.", flush=True)
-        if self.player_id in players:
-            del players[self.player_id]
+        # if self.player_id in players:
+        #     del players[self.player_id]
         
         # rm the player from any active games
         for game_id, game in games.items():
@@ -70,44 +71,80 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.send_json(event["data"])
 
     async def find_match(self):
-        timeout = 300  # 5 minutes max
+        timeout = 300  # 5 min max
         start_time = asyncio.get_event_loop().time()
+        match_id = -1 # to check if overwritten below
 
-        self.match_name = f"waiting_room_{self.player_id}"  # Unique waiting room
+        self.match_name = f"waiting_room_{self.player_id}"
         await self.channel_layer.group_add(self.match_name, self.channel_name)
 
         while True:
             if asyncio.get_event_loop().time() - start_time > timeout:
                 await self.send(text_data=json.dumps({"message": "Matchmaking timed out."}))
+                print(f"Matchmaking timed out.", flush=True)
                 await self.channel_layer.group_discard(self.match_name, self.channel_name)
-                break  # Stop the loop
+                break
+            
+            if match_id != -1:
+                break
 
             self.match_data = await create_match(self.player_id)
+            print(f"Received match_data: {self.match_data}", flush=True)
 
-            if self.match_data != "waiting":
-                # Matched! Move player from waiting room to match group
-                await self.channel_layer.group_discard(self.match_name, self.channel_name)
-                self.match_name = f"match_{self.match_data['id']}"
-                await self.channel_layer.group_add(self.match_name, self.channel_name)
+            if self.match_data == "waiting":
+                print(f"Waiting for another player... Current players in queue: {self.match_data}", flush=True)
+                await asyncio.sleep(5)
+                continue
 
-                await self.send(text_data=json.dumps({"message": "Match found!", "match_id": self.match_data['id']}))
-                break  # Exit loop
+            if isinstance(self.match_data, dict) and 'id' in self.match_data:
+                match_id = self.match_data['id']
+                self.match_name = f"match_{match_id}"
+                
+                player_1_channel = f"player_{self.match_data['player_1']}"
+                player_2_channel = f"player_{self.match_data['player_2']}"
 
-            await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
-            await asyncio.sleep(2)  # Wait before retrying
+                # await self.channel_layer.group_discard(self.match_name, self.channel_name)
+                # await self.channel_layer.group_add(self.match_name, self.channel_name)
+                await asyncio.gather(
+                    self.channel_layer.group_add(self.match_name, player_1_channel),
+                    self.channel_layer.group_add(self.match_name, player_2_channel)
+                )
+
+                print(f"Match found: {match_id} with player IDs {self.match_data['player_1']} and {self.match_data['player_2']}", flush=True)
+
+                await self.channel_layer.send(player_1_channel, {
+                    'type': 'send_message',
+                    'message': f"Match found! You are Player 1 in match {match_id}."
+                })
+                await self.channel_layer.send(player_2_channel, {
+                    'type': 'send_message',
+                    'message': f"Match found! You are Player 2 in match {match_id}."
+                })
+                # await self.channel_layer.group_send(
+                #     self.match_name,
+                #     {
+                #         "type": "update",
+                #         "data": games[match_id].get_state(),  # Ensure this reflects the actual match state
+                #     }
+                # )
+
+                break
+            
+            print(f"Invalid match data received: {self.match_data}", flush=True)
+            await asyncio.sleep(2)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
         game_id = data.get("game_id")
-        mode = data.get("mode", "One Player")  # default to "One Player" if no mode sent
-        print("Mode in receive()", mode)
+        mode = data.get("mode", "One Player")
 
         if action == "connect":
             if mode == "Two Players (remote)":
-                asyncio.create_task(self.find_match())
-                while self.match_data == "waiting":
-                    await asyncio.sleep(1)
+                await self.find_match()
+                # asyncio.create_task(self.find_match())
+                # while self.match_data == "waiting":
+                #     await asyncio.sleep(1)
                 # match_data = await create_match(self.player_id)
 
                 # if match_data == "waiting":
@@ -130,10 +167,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                 game_id = f"game_{self.player_id}"
             if game_id in games:
                 game = games[game_id]
-                if not game.running:
-                    game.reset_game(mode)
+                # if not game.running:
+                #     game.reset_game(mode)
             else:
-                # Create a new game for this player
                 game = Game(mode)
                 games[game_id] = game
 
@@ -183,9 +219,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "type": "started",
                     "game_id": game_id,
                 }))
-        
-        # elif action == "waiting":
-
 
         elif action == "stop":
             if game_id in games:
@@ -197,8 +230,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 }))
 
         elif action == "disconnect":
-            if self.player_id in players:
-                del players[self.player_id]
+            # if self.player_id in players:
+            #     del players[self.player_id]
             await self.close()
             print(f"WebSocket disconnected", flush=True)
             await self.channel_layer.group_discard(
@@ -206,26 +239,26 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
 
-        elif action == "start_tournament":
-            tournament_id = f"tournament_{len(tournaments) + 1}"
-            tournaments[tournament_id] = {
-                "players": [self.player_id],
-                "rounds": [],
-                "status": "waiting",
-                "current_match": None
-            }
-            await self.send_json({"action": "tournament_status", "active": True, "tournament_id": tournament_id})
+        # elif action == "start_tournament":
+        #     tournament_id = f"tournament_{len(tournaments) + 1}"
+        #     tournaments[tournament_id] = {
+        #         "players": [self.player_id],
+        #         "rounds": [],
+        #         "status": "waiting",
+        #         "current_match": None
+        #     }
+        #     await self.send_json({"action": "tournament_status", "active": True, "tournament_id": tournament_id})
             
-            global tournament_active
-            tournament_active = True
-            await self.broadcast_tournament_status(True)
+        #     global tournament_active
+        #     tournament_active = True
+        #     await self.broadcast_tournament_status(True)
 
-        elif action == "end_tournament": 
-            tournament_active = False
-            await self.broadcast_tournament_status(False)
+        # elif action == "end_tournament": 
+        #     tournament_active = False
+        #     await self.broadcast_tournament_status(False)
         
         #broadcasts the updated game state to the group (for two players remote)
-        if game_id in games and self.match_name is not None:
+        if game_id in games:
             await self.channel_layer.group_send(
                 self.match_name,
                 {

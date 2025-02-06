@@ -62,7 +62,8 @@ class Match(models.Model):
     tournament = models.ForeignKey('Tournament', related_name="matches", on_delete=models.SET_NULL, null=True, blank=True)  # Tournament for match, null if not part of any
 
     def __str__(self):
-        return f"Match: {self.player_1} vs {self.player_2}"
+        return f"Match_{self.player_1}.vs.{self.player_2}"
+        # return f"Match: {self.player_1} vs {self.player_2}"
 
 
 class Tournament(models.Model):
