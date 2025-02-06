@@ -27,11 +27,13 @@ async def create_match(player_id):
     if player_id not in player_queue:
         player_queue.append(player_id)
 
+    print(f"Players in queue: {player_queue}", flush=True)
     if len(player_queue) <= 1:
         return "waiting"
 
     player1_id = player_queue.pop(0)
     player2_id = player_queue.pop(0)
+
 
     # Separate get_user function
     async def resolve_user(player_id):
@@ -52,8 +54,10 @@ async def create_match(player_id):
         match_time=timedelta(minutes=2)
     )
 
+    print(f"match id== {match.id}")
     return {
-        "id": match.id, 
+        "id": match.id, # or without id??
         "player_1": player1.id, 
         "player_2": player2.id
     }
+
