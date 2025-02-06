@@ -39,6 +39,17 @@ services:
         depends_on:
         - backend
         - psql
+    
+    redis:
+        image: redis:latest
+        container_name: redis
+        networks:
+            - transcendence
+        ports:
+            - "6379:6379"
+        # depends on:
+        #     - backend
+        #     - psql
 
 networks:
     transcendence:

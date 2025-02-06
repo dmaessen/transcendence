@@ -45,14 +45,22 @@ class GameConsumer(AsyncWebsocketConsumer):
         self.match_data = "waiting"
         
         await self.accept()
+        asyncio.create_task(self.check_connection_timeout())
 
+    async def check_connection_timeout(self):
+        await asyncio.sleep(30)  # 30-second timeout
+        if not hasattr(self, 'match_name') or not self.match_name:
+            await self.send(text_data=json.dumps({
+                "type": "connection_timeout",
+                "message": "Connection timed out"
+            }))
+            await self.close()
 
     async def disconnect(self, close_code):
+        print(f"Player {self.player_id} disconnected unexpectedly. Close code: {close_code}", flush=True)
+
         print(f"Player {self.player_id} disconnected.", flush=True)
-        # if self.player_id in players:
-        #     del players[self.player_id]
-        
-        # rm the player from any active games
+
         for game_id, game in games.items():
             if self.player_id in game.players:
                 game.remove_player(self.player_id)
@@ -60,8 +68,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                     game.stop_game("No players")
                     del games[game_id]
 
-        if self.match_name:
-            await self.channel_layer.group_discard(self.match_name, self.channel_name)
+        try:
+            if hasattr(self, 'match_name'):
+                await self.channel_layer.group_discard(self.match_name, self.channel_name)
+        except Exception as e:
+            print(f"Error during disconnection: {e}")
+        
         await self.close()
     
     async def send_json(self, content):
@@ -70,10 +82,30 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def update(self, event):
         await self.send_json(event["data"])
 
+    async def send_match_data(self, player_id, match_data):
+        print(f"Sending match data to Player {player_id}: {match_data}", flush=True)
+        await self.send(text_data=json.dumps(match_data))
+
+    async def send_game_state(self, game):
+        game_state = game.get_state()
+        game_state_str_keys = {
+            str(k): v if not isinstance(v, dict) else {str(inner_k): inner_v for inner_k, inner_v in v.items()}
+            for k, v in game_state.items()
+        }
+
+        await self.channel_layer.group_send(
+            self.match_name,
+            {
+                "type": "update",
+                "data": game_state_str_keys,
+            }
+        )
+
     async def find_match(self):
+        print(f"Player {self.player_id} entered find_match()", flush=True)
+
         timeout = 300  # 5 min max
         start_time = asyncio.get_event_loop().time()
-        match_id = -1 # to check if overwritten below
 
         self.match_name = f"waiting_room_{self.player_id}"
         await self.channel_layer.group_add(self.match_name, self.channel_name)
@@ -84,50 +116,47 @@ class GameConsumer(AsyncWebsocketConsumer):
                 print(f"Matchmaking timed out.", flush=True)
                 await self.channel_layer.group_discard(self.match_name, self.channel_name)
                 break
-            
-            if match_id != -1:
-                break
 
-            self.match_data = await create_match(self.player_id)
-            print(f"Received match_data: {self.match_data}", flush=True)
+            self.match_data = await create_match(self, self.player_id)
+            print(f"Player {self.player_id} received match_data: {self.match_data}", flush=True)
 
             if self.match_data == "waiting":
-                print(f"Waiting for another player... Current players in queue: {self.match_data}", flush=True)
                 await asyncio.sleep(5)
                 continue
 
-            if isinstance(self.match_data, dict) and 'id' in self.match_data:
+            # if isinstance(self.match_data, dict) and 'id' in self.match_data:
+            if isinstance(self.match_data, dict):
                 match_id = self.match_data['id']
-                self.match_name = f"match_{match_id}"
-                
-                player_1_channel = f"player_{self.match_data['player_1']}"
-                player_2_channel = f"player_{self.match_data['player_2']}"
+                self.match_data = {str(k): v for k, v in self.match_data.items()}
+                self.match_name = str(f"match_{match_id}")
+                print(f"Player {self.player_id} assigned match_name: {self.match_name}", flush=True)
 
-                # await self.channel_layer.group_discard(self.match_name, self.channel_name)
-                # await self.channel_layer.group_add(self.match_name, self.channel_name)
-                await asyncio.gather(
-                    self.channel_layer.group_add(self.match_name, player_1_channel),
-                    self.channel_layer.group_add(self.match_name, player_2_channel)
-                )
+                await self.channel_layer.group_add(self.match_name, self.channel_name)
 
                 print(f"Match found: {match_id} with player IDs {self.match_data['player_1']} and {self.match_data['player_2']}", flush=True)
 
-                await self.channel_layer.send(player_1_channel, {
-                    'type': 'send_message',
-                    'message': f"Match found! You are Player 1 in match {match_id}."
-                })
-                await self.channel_layer.send(player_2_channel, {
-                    'type': 'send_message',
-                    'message': f"Match found! You are Player 2 in match {match_id}."
-                })
+                game = Game("Two Players (remote)")
+                games[self.match_name] = game
+
+                game.add_player(self.match_data['player_1'])
+                game.add_player(self.match_data['player_2'])
+
+                print(f"Sending match update: {self.match_name} -> {game.get_state()}", flush=True)
+                # game_state = game.get_state()
+                # game_state_str_keys = {
+                #     str(k): v if not isinstance(v, dict) else {str(inner_k): inner_v for inner_k, inner_v in v.items()}
+                #     for k, v in game_state.items()
+                # }
+
                 # await self.channel_layer.group_send(
                 #     self.match_name,
                 #     {
                 #         "type": "update",
-                #         "data": games[match_id].get_state(),  # Ensure this reflects the actual match state
+                #         "data": game_state_str_keys,
                 #     }
                 # )
-
+                await self.send_game_state(game)
+                print(f"Breaking loop for Player {self.player_id}, match_name: {self.match_name}", flush=True)
                 break
             
             print(f"Invalid match data received: {self.match_data}", flush=True)
@@ -140,28 +169,14 @@ class GameConsumer(AsyncWebsocketConsumer):
         mode = data.get("mode", "One Player")
 
         if action == "connect":
+            print(f"Player {self.player_id} trying to connect to game.", flush=True)
             if mode == "Two Players (remote)":
                 await self.find_match()
-                # asyncio.create_task(self.find_match())
-                # while self.match_data == "waiting":
-                #     await asyncio.sleep(1)
-                # match_data = await create_match(self.player_id)
-
-                # if match_data == "waiting":
-                #     print("Made it here??")
-                #     await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
-                #     self.match_name = f"waiting_room_{self.player_id}"
-                #     await self.channel_layer.group_add(self.match_name, self.channel_name)
-                    
-                #     # Wait and try again
-                #     await asyncio.sleep(20)  # Adjust the delay as needed
-                #     await self.receive(json.dumps({"action": "connect", "mode": mode}))  # Recursively call itself
-                #     return
-
-                # self.match_name = f"match_{match_data['id']}"
-                # await self.channel_layer.group_add(self.match_name, self.channel_name)
-
-            if mode == "Two Players (remote)":
+                print(f"Player {self.player_id} finished matchmaking, match_name: {self.match_name}", flush=True)
+                if self.match_name is None:
+                    print(f"ERROR: Player {self.player_id} failed matchmaking, re-entering queue!", flush=True)
+                    await self.send(text_data=json.dumps({"error": "Matchmaking failed"}))
+                    return
                 game_id = self.match_name
             else:
                 game_id = f"game_{self.player_id}"
@@ -259,14 +274,16 @@ class GameConsumer(AsyncWebsocketConsumer):
         
         #broadcasts the updated game state to the group (for two players remote)
         if game_id in games:
-            await self.channel_layer.group_send(
-                self.match_name,
-                {
-                    "type": "update", #this correct or we want another type?
-                    # "game_id": game_id,
-                    "data": games[game_id].get_state(), #data or game_update
-                },
-            )
+            await self.send_game_state(game)
+
+            # await self.channel_layer.group_send(
+            #     self.match_name,
+            #     {
+            #         "type": "update", #this correct or we want another type?
+            #         # "game_id": game_id,
+            #         "data": games[game_id].get_state(), #data or game_update
+            #     },
+            # )
 
 
     async def broadcast_game_state(self, game_id):
