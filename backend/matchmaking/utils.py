@@ -20,10 +20,12 @@ Sothat i can make a class (maybe a matchmaking class) and give it a guestuser??
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 
-async def create_match(player_id):
+async def create_match(self, player_id):
     global player_queue
     User = get_user_model()
 
+    player_queue = [p for p in player_queue if p != player_id] #rm instance of this player
+    
     if player_id not in player_queue:
         player_queue.append(player_id)
 
@@ -34,6 +36,7 @@ async def create_match(player_id):
     player1_id = player_queue.pop(0)
     player2_id = player_queue.pop(0)
 
+    print(f"Matched players: {player1_id}, {player2_id}", flush=True)
 
     # Separate get_user function
     async def resolve_user(player_id):
@@ -55,9 +58,20 @@ async def create_match(player_id):
     )
 
     print(f"match id== {match.id}")
-    return {
-        "id": match.id, # or without id??
+    # return {
+    #     "id": match.id, # or without id??
+    #     "player_1": player1.id, 
+    #     "player_2": player2.id
+    # }
+    match_data = {
+        "id": match.id,
         "player_1": player1.id, 
         "player_2": player2.id
     }
+
+    # Send match data to both players
+    await self.send_match_data(player1.id, match_data)
+    await self.send_match_data(player2.id, match_data)
+
+    return match_data
 

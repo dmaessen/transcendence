@@ -45,7 +45,7 @@ function connectWebSocket(mode) {
     };
 
     socket.onclose = () => {
-        console.log("Disconnected from the game server.");
+        console.log(`Disconnected from the game server: ${gameState.playerId}`);
         reconnecting = false;
         //setTimeout(() => connectWebSocket(mode), 2000); // reconnects after 2 seconds
     };
@@ -109,8 +109,8 @@ function handleServerMessage(message) {
             }
             break;
         case "match_found":
-            console.log("Tournament match found:", message.game_id);
-            startGame(message.game_id); // Your existing game logic -- CHECK ON THIS
+            console.log("Match found:", message.game_id);
+            //startGame(message.game_id); // Your existing game logic -- CHECK ON THIS
             break;
         case "match_result":
             // ADD STUFF

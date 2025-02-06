@@ -84,12 +84,13 @@ REST_FRAMEWORK = {
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",  # For development
+        # "BACKEND": "channels.layers.InMemoryChannelLayer",  # For development
         # Uncomment below for production (requires Redis)
-        # "BACKEND": "channels_redis.core.RedisChannelLayer",
-        # "CONFIG": {
-        #     "hosts": [("127.0.0.1", 6379)],
-        # },
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+            # "connection_timeout": 10,
+        },
     },
 }
 
