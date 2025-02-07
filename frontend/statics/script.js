@@ -1,6 +1,7 @@
 const gameMenuElementFirst = document.getElementById("gameMenuFirst");
 const gameMenuElement = document.getElementById("gameMenu");
 const gameMenuElementTournament = document.getElementById("gameMenuTournament");
+const signInMenuElement = document.getElementById("SignInMenu");
 
 const gameTitle = document.getElementById("gameTitle");
 const exitButton = document.getElementById("exitButton");
@@ -9,6 +10,8 @@ const instructions2 = document.getElementById("game-instruction2");
 
 const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
+
+const baseUrl = "http://127.0.0"
 
 let timerInterval;
 let keyboardEnabled = true;
@@ -31,6 +34,11 @@ const gameMenuTournament = new bootstrap.Modal(gameMenuElementTournament, {
     keyboard: false,
 });
 
+const SignInMenu = new bootstrap.Modal(signInMenuElement, {
+    backdrop: "static",
+    keyboard: false,
+});
+
 const gameState = { 
     mode: null,
     gameId: null,
@@ -38,6 +46,15 @@ const gameState = {
     running: false,
     playerId: null, // does Laura need?
 };
+
+async function login(email,password){
+    const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+}
 
 function startGame(mode) {
     keyboardEnabled = true;
@@ -92,6 +109,11 @@ document.getElementById("playBtn").addEventListener("click", () => {
     gameMenu.show();
 });
 
+document.getElementById("signIn").addEventListener("click", () => {
+    gameMenuFirst.hide();
+    SignInMenu.show();
+});
+
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
@@ -103,7 +125,6 @@ document.getElementById("tournamentBtn").addEventListener("click", () => {
 });
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => startGame("Tournament - 4 Players"));
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => startGame("Tournament - 8 Players"));
-
 
 document.getElementById("exitButton").addEventListener("click", () =>  {
     keyboardEnabled = false;

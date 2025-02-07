@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from data.models import User, Match, Tournament
+from data.models import CustomUser, Match, Tournament
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = [
             'id', 
             'email',

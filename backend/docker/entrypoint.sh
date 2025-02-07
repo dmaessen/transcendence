@@ -7,6 +7,7 @@ python manage.py makemigrations
 
 echo "Applying migrations..."
 #python manage.py makemigrations
+python manage.py migrate sites 0001 --fake
 python manage.py migrate
 
 # Start Daphne with custom timeout settings

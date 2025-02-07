@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
-from data.models import User, Match
+from data.models import CustomUser, Match
 from rest_framework.parsers import JSONParser
 from data.serializers import UserSerializer, MatchSerializer
 from . import game_state
@@ -52,7 +52,7 @@ def list_players(request):
 
 #     return Response({'status': 'Player added to queue', 'player_id': player_id})
 
-#for a sigle game?
+#for a single game?
 @api_view(['POST'])
 def create_a_match(request):
 
