@@ -20,7 +20,7 @@ function connectWebSocket(mode) {
 
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
-    if (mode == "Tournament - 4 Players" || mode == "Tournament - 8 Players")
+    if (mode == "4" || mode == "8") // or full name of it??
         socket = new WebSocket(tournamentwebsocket);
     else
         socket = new WebSocket(websocket);
@@ -29,7 +29,15 @@ function connectWebSocket(mode) {
         console.log("Connected to the game server.");
         socket.send(JSON.stringify({ action: "connect", mode: mode }));
         reconnecting = false;
-        startGameMenu();
+        if (mode != "4" && mode != "8")
+            startGameMenu();
+        else
+            if (tournamentOngoing == false)
+                socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+                showTournamentAdBanner();
+                tournamentOngoing == true;
+            socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
+            showWaitingRoomTournament();
 
         // if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") // check what to do to make this banner work
         //     socket.send(JSON.stringify({ action: "start_tournament" })); // but we also need to turn this off
@@ -100,31 +108,39 @@ function handleServerMessage(message) {
             showEndMenu(`${message.reason}`);
             returnToStartMenu();
             break;
-        case "tournament_status": // needed
-            if (message.active) {
-                tournamentBanner.style.display = "block";
-                setTimeout(() => {
-                    tournamentBanner.style.display = "none";
-                }, 20000); // 20sec
-            }
-            break;
         case "match_found":
-            console.log("Match found:", message.game_id);
-            //startGame(message.game_id); // Your existing game logic -- CHECK ON THIS
+            console.log("(FRONTEND) Match found:", message.game_id);
             break;
-        case "match_result":
-            // ADD STUFF
+        case 'match_start':
+            gameState.gameId = message.game_id;
+            console.log(`Game initialized with ID: ${gameState.gameId}`);
+            startGameMenu();
+            //gameState.running = true;
+            break;
+        // case "tournament_status": // needed
+        //     if (message.active) {
+        //         tournamentBanner.style.display = "block";
+        //         setTimeout(() => {
+        //             tournamentBanner.style.display = "none";
+        //         }, 20000); // 20sec
+        //     }
+        //     break;
+        // case "match_result":
+        //     // ADD STUFF
+        //     break;
+        case "tournament_full":
+            tournamentOngoing = false;
             break;
         case "update_tournament":
-            document.getElementById("playersInTournament").textContent = `${message.players_in}/${message.remaining_spots + message.players_in}`;
-            if ((message.players_in == 4 && message.mode == "Tournament - 4 Players") 
-                || (message.players_in == 8 && message.mode == "Tournament - 8 Players")) {
-                tournamentBanner.style.display = "none";
-                socket.send(JSON.stringify({ action: "start_tournament" }));
-            }
+            // document.getElementById("playersInTournament").textContent = `${message.players_in}/${message.remaining_spots + message.players_in}`;
+            // if ((message.players_in == 4 && message.mode == "Tournament - 4 Players") 
+            //     || (message.players_in == 8 && message.mode == "Tournament - 8 Players")) {
+            //     tournamentBanner.style.display = "none";
+            //     socket.send(JSON.stringify({ action: "start_tournament" }));
+            // }
             break;
         case "tournament_end":
-            // ADD STUFF
+            // show the overall winner
             break;
         // default:
         //     console.warn("Unknown message type received:", message.type);

@@ -134,8 +134,6 @@ class Game:
             "height": self.height
         }
 
-    
-
     def _check_collision(self, paddle):
         # predictive collision detection based on ball's direction
         next_x = self.ball["x"] + self.ball["dir_x"]
