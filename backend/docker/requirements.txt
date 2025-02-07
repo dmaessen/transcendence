@@ -2,7 +2,10 @@ channels==4.0.0
 Django==5.0.4
 requests==2.32.3
 djangorestframework==3.14.0
+djangorestframework-simplejwt
+django-allauth==0.52.0
 django-cors-headers==4.6.0
 daphne==4.1.2
 websockets==14.1
 psycopg2-binary>=2.9.6,<2.10
+dj-rest-auth[with_social]==4.0.0

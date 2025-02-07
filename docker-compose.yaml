@@ -26,7 +26,7 @@ services:
         command: python3 ./backend/game_server/game_server.py
         restart: on-failure
         depends_on:
-        - psql
+            - psql
 
     frontend:
         build: ./frontend
