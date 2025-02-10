@@ -11,10 +11,11 @@ const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
 
 const tournamentMenuBtn = document.getElementById("tournamentBtn");
+const tournamentBanner = document.getElementById("tournamentBanner");
 
 let timerInterval;
 let keyboardEnabled = true;
-let tournamentOngoing = false; // switch back to off at some point maybe after xxx minutes or whatever
+let tournamentSpotsOpen = false;
 
 instructions1.style.display = "none";
 instructions2.style.display = "none";
@@ -39,6 +40,7 @@ const gameState = {
     gameId: null,
     players: [],
     running: false,
+    // tournamentOngoing: false,
     playerId: null, // does Laura need?
 };
 
@@ -59,12 +61,10 @@ function startGame(mode) {
     gameCanvas.style.height = gameCanvas.height / 2 + "px";
 
     if (mode === "One Player") {
-        //alert(`${mode} mode will use backend logic. Initializing connection...`);
         gameTitle.textContent = "One Player";
         instructions1.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (hot seat)") {
-        //alert(`${mode} mode will use backend logic. Initializing connection...`);
         gameTitle.textContent = "Two Players (hot seat)";
         instructions2.style.display = "block";
         connectWebSocket(mode);
@@ -79,6 +79,7 @@ function startGame(mode) {
         instructions1.style.display = "block";
         //connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
+        tournamentSpotsOpen = true;
         gameMenuTournament.hide();
         alert(`${mode} mode is not yet implemented.`);
         gameTitle.textContent = `${mode}`;
@@ -87,6 +88,7 @@ function startGame(mode) {
             connectWebSocket(4);
         else
             connectWebSocket(8);
+        // gameState.tournamentOngoing = true;
     }
     // if joining via the banner then connect directly blablabal
 }
@@ -94,13 +96,14 @@ function startGame(mode) {
 // document.getElementById("profileBtn").addEventListener("click", () => ); // TODO connect with Laura
 // document.getElementById("friendsBtn").addEventListener("click", () => ); // TODO connect with Laura
 // document.getElementById("tournamentInfoBtn").addEventListener("click", () => ); // TODO connect with Laura
+
 document.getElementById("playBtn").addEventListener("click", () => {
     gameMenuFirst.hide();
     gameMenu.show();
-    if (tournamentOngoing)
-        tournamentBtn.style.display = "none";
+    if (tournamentSpotsOpen)
+        tournamentMenuBtn.style.display = "none";
     else
-        tournamentBtn.style.display = "block";
+        tournamentMenuBtn.style.display = "block";
 });
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
@@ -109,24 +112,21 @@ document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => s
 document.getElementById("twoPlayersFriendsBtn").addEventListener("click", () => startGame("Two Players (with a friend)"));
 
 document.getElementById("tournamentBtn").addEventListener("click", () => {
-    if (!tournamentOngoing) {
+    if (!tournamentSpotsOpen) {
         gameMenuTournament.show();
         gameMenu.hide();
     } else {
         alert("A tournament is already ongoing.");
     }});
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
-    //tournamentOngoing = true;
-    //tournamentInitiator = gameState.playerId;
     startGame("Tournament - 4 Players");
     disableTournamentButtons();
     // showTournamentAdBanner();
 });
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
-    //tournamentOngoing = true;
-    //tournamentInitiator = gameState.playerId;
     startGame("Tournament - 8 Players");
     disableTournamentButtons();
+    // showTournamentAdBanner();
     });
 
 document.getElementById("previous1Btn").addEventListener("click", () => {
@@ -159,15 +159,14 @@ function disableTournamentButtons() {
     gameMenuTournament.hide(); // Hide the tournament menu
 }
 
-function showTournamentAdBanner() { // Show waiting room for players who want to join tournament
-    const maxPlayers = 8;
-    if (mode == "Tournament - 4 Players")
-        maxPlayers = 4;
-    if (tournamentOngoing) {
-        const tournamentBanner = document.getElementById("tournamentBanner");
-        tournamentBanner.style.display = "block"; // Show banner to promote for other players
+function showTournamentAdBanner(players_in, total_spots) {// Show banner to promote for other players
+    if (tournamentSpotsOpen && players_in < total_spots) {
+        tournamentBanner.style.display = "block"; 
         const playersInTournament = document.getElementById("playersInTournament");
-        playersInTournament.textContent = `${tournamentPlayers}/${maxPlayers}`; // get this update from backend??
+        playersInTournament.textContent = `${players_in}/${total_spots}`;
+    } else {
+        tournamentSpotsOpen = false;
+        tournamentBanner.style.display = "none";  // Hide it if no tournament or full
     }
 }
 
@@ -178,7 +177,7 @@ function showWaitingRoomTournament() {
     gameContext.fillStyle = "#ffffff";
     gameContext.textAlign = "center";
     gameContext.fillText("Waiting for players to join...", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
-    // here block all the keys as no game right
+    keyboardEnabled = false;
 }
 
 function updateGameState(data) {
@@ -222,6 +221,7 @@ function displayStartPrompt() {
     gameContext.fillStyle = "#ffffff";
     gameContext.textAlign = "center";
     gameContext.fillText("Press any key to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
+    keyboardEnabled = true;
 }
 
 function startGameMenu() {
