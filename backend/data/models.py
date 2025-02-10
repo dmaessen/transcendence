@@ -76,7 +76,7 @@ class Tournament(models.Model):
     end_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"Tournament: {self.get_match_type_display()}"
+        return f"Tournament {self.id}: {self.status} (Start: {self.start_date})"
 
     #ADDITIONS FROM GUL:???
 

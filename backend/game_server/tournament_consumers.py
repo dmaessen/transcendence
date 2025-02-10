@@ -3,6 +3,9 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from game_server.game_logic import Game
 from game_server.tournament_logic import Tournament
 from game_server.player import Player
+from django.contrib.sessions.backends.db import SessionStore
+from django.contrib.auth import get_user_model
+from asgiref.sync import sync_to_async
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     tournament = None  # keeps track of the tournament instance
@@ -83,6 +86,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await self.broadcast_tournament_state()
                 print(f"Player {self.player_id} joined the tournament.")
                 if len(self.tournament.players) == self.tournament.num_players:
+                    print(f"Tournament started in handle_join_tournament")
                     tournament.start_tournament() # follow from here where it gpes next and what to do
                     # await self.broadcast_tournament_state()
             else:
@@ -127,6 +131,14 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 "players_in": len(self.tournament.players),
                 "remaining_spots": self.tournament.num_players - len(self.tournament.players),
             }
+            print(f"(BACKEND) Sending update: {state}", flush=True)
             await self.channel_layer.group_send(
-                self.room_name, {"type": "tournament_update", "message": json.dumps(state)}
+                self.room_name, {
+                    "type": "tournament_update",
+                    "message": json.dumps({
+                        "type": "update_tournament",
+                        "players_in": len(self.tournament.players),
+                        "remaining_spots": self.tournament.num_players - len(self.tournament.players),
+                    })
+                }
             )

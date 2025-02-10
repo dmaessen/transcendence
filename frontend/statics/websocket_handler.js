@@ -5,6 +5,7 @@ const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
 let socket;
 let reconnecting = false;
 let resetting = false;
+let tournamentOpen = false; // switch back to off at some point maybe after xxx minutes or whatever
 
 function connectWebSocket(mode) {
     if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
@@ -31,16 +32,15 @@ function connectWebSocket(mode) {
         reconnecting = false;
         if (mode != "4" && mode != "8")
             startGameMenu();
-        else
-            if (tournamentOngoing == false)
+        else if (mode == "4" || mode == "8") {
+            if (tournamentOpen == false) {
                 socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
-                showTournamentAdBanner();
-                tournamentOngoing == true;
+                console.log("start_tounrment from connectWebsocket undergoing");
+                tournamentOpen = true;
+            }
             socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
             showWaitingRoomTournament();
-
-        // if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") // check what to do to make this banner work
-        //     socket.send(JSON.stringify({ action: "start_tournament" })); // but we also need to turn this off
+        }
     };
 
     socket.onmessage = (event) => {
@@ -129,15 +129,16 @@ function handleServerMessage(message) {
         //     // ADD STUFF
         //     break;
         case "tournament_full":
-            tournamentOngoing = false;
+            tournamentOpen = false;
             break;
         case "update_tournament":
-            // document.getElementById("playersInTournament").textContent = `${message.players_in}/${message.remaining_spots + message.players_in}`;
-            // if ((message.players_in == 4 && message.mode == "Tournament - 4 Players") 
-            //     || (message.players_in == 8 && message.mode == "Tournament - 8 Players")) {
-            //     tournamentBanner.style.display = "none";
-            //     socket.send(JSON.stringify({ action: "start_tournament" }));
-            // }
+            console.log(`Players in tournament: ${message.players_in}`); // to rm
+            console.log(`Remaining spots: ${message.remaining_spots}`); // to rm
+            if (message.remaining_spots > 0) {
+                showTournamentAdBanner(message.players_in, message.remaining_spots + message.players_in);
+            } else {
+                tournamentBanner.style.display = "none";
+            }
             break;
         case "tournament_end":
             // show the overall winner

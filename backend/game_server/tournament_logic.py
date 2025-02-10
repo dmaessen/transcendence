@@ -4,9 +4,9 @@ import math
 from game_server.game_logic import Game  # import the normal game logic to use in individual matches
 
 class Tournament:
-    def __init__(self, mode, num_players):
+    def __init__(self, mode):
         self.mode = mode  # Either "4-player" or "8-player"
-        self.num_players = num_players
+        self.num_players = mode
         self.players = []  # List of player IDs
         self.matches = []  # Store ongoing matches
         self.bracket = {}  # Stores matchups for each round -- GUL??
