@@ -67,6 +67,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="gameMenuLabelTournament">Amount of players</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <button id="fourPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">4 Players</button>
@@ -76,6 +77,69 @@
         </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="avatar">
+                        <img id="userAvatar" src="defaut.jpg" alt="F****">
+                    </div>
+                    <h4 id="username">John Doe</h4>
+                    <p id="userEmail">johndoe@example.com</p>
+                    <button class="btn btn-primary">Edit Profile</button>
+                    <div class="matches">
+                        <div class="divider">Matches</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Match Date</th>
+                                    <th>Winner</th>
+                                    <th>Opponent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filled dynamically -->
+                            </tbody>
+                        </table>                        
+                    </div>
+                    <div class="matches">
+                        <div class="divider">Tournaments</div> 
+                        <table>
+                            <tr>
+                                <th>Tournament date</th>
+                                <th>Winer</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <!-- fill with information from db -->
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Friends Modal -->
+    <div class="modal fade" id="friendsModal" tabindex="-1" aria-labelledby="friendsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="friendsModalLabel">Friends</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul id="friendsList" class="list-group"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <!-- Link JS -->
@@ -83,5 +147,7 @@
     <script src="http://localhost:8080/static/websocket_handler.js"></script>
     <script src="http://localhost:8080/static/script.js"></script>
     <!-- <script src="/static/script.js"></script> -->
+    <!-- profile page -->
+    <script src="http://localhost:8080/static/profile.js"></script>
 </body>
 </html>

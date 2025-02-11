@@ -238,7 +238,7 @@ class ModelFromFileTest(TestCase):
 
         # Create the tournament
         self.tournament = Tournament.objects.create(
-        number_of_players=8,
+        max_players=8,
         start_date=start_time,
         end_date=end_time
         )

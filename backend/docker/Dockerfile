@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY ./requirements.txt /app/
 COPY ./entrypoint.sh /usr/local/bin/
+COPY ../ /app/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

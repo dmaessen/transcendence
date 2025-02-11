@@ -1,5 +1,6 @@
 #!/bin/bash
 
+ls -la
 # dont want to make unecessary migrations everytime i make an image
 # run migrations only if there are unapplied changes
 echo "Checking for pending migrations..."
