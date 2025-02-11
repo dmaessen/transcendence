@@ -23,6 +23,7 @@ services:
             - ./dot_env/.env
         networks:
             - transcendence
+        command: python3 ./backend/game_server/game_server.py
         restart: on-failure
         depends_on:
         - psql
