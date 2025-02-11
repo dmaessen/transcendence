@@ -92,3 +92,41 @@ p {
     width: 100%;
     margin-bottom: 10px;
 }
+
+#profileModal .modal-dialog {
+    max-width: 1200px; /* Adjust this size as needed */
+}
+
+#profileModal .avatar img {
+    width: 300px;
+    height: auto;
+    float: left;
+    /* border-radius: */
+    border-radius: 15px 50px 30px;
+}
+
+#profileModal .playerInfo {
+    float:  left;
+}
+
+#profileModal .matches {
+    text-align: left;
+    /* float: left; */
+    /* width: 300px; */
+    /* border: 3px solid #73AD21; */
+    /* padding: 10px; */
+}
+
+.divider {
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+  }
+  
+.divider::before, .divider::after {
+    flex: 1;
+    content: '';
+    padding: 1px;
+    background-color: black;
+    margin: 1px;
+  }

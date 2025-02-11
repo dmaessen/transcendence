@@ -7,10 +7,14 @@ def get_all_users():
 
 def get_user_matches(user_id):
     return Match.objects.filter(player_id=user_id)
+def get_user_3_matches(user_id):
+    return Match.objects.filter(Q(player_1_id=user_id) | Q(player_2_id=user_id)).order_by('-id')[:3]
 
 def get_user_tournaments(user_id):
     user = User.objects.get(id=user_id)
     return list(user.tournaments.values_list('id', flat=True))
+def get_user_3_tournaments(user_id):
+    return Tournament.objects.filter(players__id=user_id).order_by("-start_date")[:3]
 
 def get_tournaments():
     return Tournament.objects.all()
@@ -126,3 +130,6 @@ def change_email(req, user_id):
 def delete_account(user_id):
     user = User.objects.get(user_id)
     user.delete()
+
+
+#TODO set of functions to set data after a match and a tournament 

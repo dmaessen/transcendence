@@ -6,3 +6,4 @@ django-cors-headers==4.6.0
 daphne==4.1.2
 websockets==14.1
 psycopg2-binary>=2.9.6,<2.10
+Pillow

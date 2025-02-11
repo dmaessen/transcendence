@@ -30,7 +30,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)  # Unique email for login
     name = models.CharField(max_length=30)  # Non-unique name field
     username = models.CharField(unique=True, max_length=30) # Unique as well
-    avatar = models.ImageField(upload_to='./images', default='./images/defaut.png')
+    avatar = models.ImageField(upload_to='app/data/images', default='app/data/images/defaut.png')
     location = models.CharField(max_length=30, blank=True, null=True)
     oauth_tokens = models.JSONField(null=True, blank=True)
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)
@@ -48,11 +48,6 @@ class User(AbstractBaseUser, PermissionsMixin):
    
     def _str_(self):
         return self.name
-    def clean(self):
-        if self.score < 0:
-            raise ValueError("Score cannot be negative.")
-        if self.victories < 0:
-            raise ValueError("Victories cannot be negative.")
 
 class Friendship(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='friendship_creator_set')
@@ -68,12 +63,13 @@ class Match(models.Model):
     player_2 = models.ForeignKey(User, related_name="player_2_matches", on_delete=models.SET_NULL, null=True)
     player_1_points = models.IntegerField(default=0)
     player_2_points = models.IntegerField(default=0)
+    match_start = models.DateTimeField(null=True, blank=True)
     match_time = models.DurationField()
     winner = models.ForeignKey(User, related_name="match_winner", on_delete=models.SET_NULL, null=True, blank=True)
     tournament = models.ForeignKey('Tournament', related_name="matches", on_delete=models.SET_NULL, null=True, blank=True)  # Tournament for match, null if not part of any
 
     def __str__(self):
-        return f"Match: {self.player_1} vs {self.player_2}"
+        return f"Match_{self.player_1}.vs.{self.player_2}"
 
 
 class Tournament(models.Model):
@@ -97,7 +93,7 @@ class Tournament(models.Model):
     end_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"Tournament: {self.get_match_type_display()}"
+        return f"Tournament {self.id}: {self.status} (Start: {self.start_date})"
 
     #ADDITIONS FROM GUL:???
 
