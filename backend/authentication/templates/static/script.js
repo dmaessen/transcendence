@@ -1,12 +1,15 @@
-const baseUrl = "http://127.0.0.1:8001/api/authentication";
+
+const baseUrl = "http://127.0.0.1:8000/api/authentication";
 
 document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    console.log("script.js loaded successfully!, registerform");
     e.preventDefault();
     console.log("Register form submitted!");
-    const username = document.getElementById("registerUsername").value;
+    {% comment %} const username = document.getElementById("registerUsername").value; {% endcomment %}
     const email = document.getElementById("registerEmail").value;
     const password = document.getElementById("registerPassword").value;
 
+    console.log("sending data: ", { email, password });
     try{
         const response = await fetch(`${baseUrl}/register/`, {
             method: "POST",
@@ -28,6 +31,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 });
 
 document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    console.log("script.js loaded successfully!, loginform");
     e.preventDefault();
     console.log("Login form submitted!");
 
@@ -44,6 +48,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         });
 
         const data = await response.json();
+        console.log("Server response:", data);
         if (response.ok) {
             localStorage.setItem("access", data.access);
             localStorage.setItem("refresh", data.refresh);

@@ -32,7 +32,6 @@ class RegisterView(APIView):
 				status=status.HTTP_201_CREATED,
 			)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-			
 
 class LoginView(APIView):
 	def post(self, request):
@@ -48,16 +47,12 @@ class LoginView(APIView):
 
 		if not user.check_password(password):
 			return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-
+		
 		refresh = RefreshToken.for_user(user)
 		return Response({
 			'refresh': str(refresh),
 			'access': str(refresh.access_token),
 		}, status=status.HTTP_200_OK)
-
-
 
 def sign_in(request):
 	if request.method == 'GET':
@@ -116,8 +111,6 @@ def register(request):
 			return redirect('sign_out')
 		else:
 			return render(request, 'users/register.html', {'form': form})
-
-
 
 def home(request):
 	return render(request, 'base.html')
