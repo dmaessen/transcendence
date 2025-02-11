@@ -80,6 +80,7 @@ function startGame(mode) {
         //connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
         tournamentSpotsOpen = true;
+        localStorage.setItem("tournamentSpotsOpen", "true");
         gameMenuTournament.hide();
         alert(`${mode} mode is not yet implemented.`);
         gameTitle.textContent = `${mode}`;
@@ -88,9 +89,7 @@ function startGame(mode) {
             connectWebSocket(4);
         else
             connectWebSocket(8);
-        // gameState.tournamentOngoing = true;
     }
-    // if joining via the banner then connect directly blablabal
 }
 
 // document.getElementById("profileBtn").addEventListener("click", () => ); // TODO connect with Laura
@@ -117,7 +116,7 @@ document.getElementById("tournamentBtn").addEventListener("click", () => {
         gameMenu.hide();
     } else {
         alert("A tournament is already ongoing.");
-    }});
+}});
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
     disableTournamentButtons();
@@ -127,14 +126,16 @@ document.getElementById("eightPlayersTournamentBtn").addEventListener("click", (
     startGame("Tournament - 8 Players");
     disableTournamentButtons();
     // showTournamentAdBanner();
-    });
+});
 
 document.getElementById("previous1Btn").addEventListener("click", () => {
     gameMenu.hide();
-    gameMenuFirst.show();});
+    gameMenuFirst.show();
+});
 document.getElementById("previous2Btn").addEventListener("click", () => {
     gameMenuTournament.hide();
-    gameMenu.show();});
+    gameMenu.show();
+});
 
 document.getElementById("exitButton").addEventListener("click", () =>  {
     keyboardEnabled = false;
@@ -148,11 +149,46 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
     socket.close()
     gameMenuFirst.show();
-    });
+});
 
-window.onload = () => {
+tournamentBanner.addEventListener("click", () => {
+    if (localStorage.getItem("tournamentSpotsOpen") === "true") {
+        connectWebSocket("tournament");
+    }
+});
+
+async function fetchTournamentStatus() {
+    try {
+        const response = await fetch("/api/tournament-status/");
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Tournament Status:", data);
+
+        if (data.tournament_active) {
+            showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
+        }
+    } catch (error) {
+        console.error("Error fetching tournament status:", error);
+    }
+}
+
+window.addEventListener("load", () => {
     gameMenuFirst.show();
-};
+    
+    fetchTournamentStatus();
+
+    fetch("/api/tournament-status/")
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched tournament status:", data);
+            if (data.tournament_active && data.remaining_spots != 0) {
+                showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
+            }
+        })
+        .catch(error => console.error("Error fetching tournament status:", error));
+});
 
 function disableTournamentButtons() {
     tournamentMenuBtn.style.display = "none";  // Hide the tournament button
@@ -161,11 +197,13 @@ function disableTournamentButtons() {
 
 function showTournamentAdBanner(players_in, total_spots) {// Show banner to promote for other players
     if (tournamentSpotsOpen && players_in < total_spots) {
+        localStorage.setItem("tournamentSpotOpen", "true"); // needed again here??
         tournamentBanner.style.display = "block"; 
         const playersInTournament = document.getElementById("playersInTournament");
         playersInTournament.textContent = `${players_in}/${total_spots}`;
     } else {
         tournamentSpotsOpen = false;
+        localStorage.setItem("tournamentSpotsOpen", "false");
         tournamentBanner.style.display = "none";  // Hide it if no tournament or full
     }
 }

@@ -5,6 +5,7 @@ const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
 let socket;
 let reconnecting = false;
 let resetting = false;
+let tournament_mode;
 let tournamentOpen = false; // switch back to off at some point maybe after xxx minutes or whatever
 
 function connectWebSocket(mode) {
@@ -21,6 +22,8 @@ function connectWebSocket(mode) {
 
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
+    if (mode == "tournament")
+        mode = tournament_mode;
     if (mode == "4" || mode == "8") // or full name of it??
         socket = new WebSocket(tournamentwebsocket);
     else
@@ -30,10 +33,11 @@ function connectWebSocket(mode) {
         console.log("Connected to the game server.");
         socket.send(JSON.stringify({ action: "connect", mode: mode }));
         reconnecting = false;
-        if (mode != "4" && mode != "8")
+        if (mode != "4" && mode != "8") {
             startGameMenu();
-        else if (mode == "4" || mode == "8") {
+        } else if (mode == "4" || mode == "8") {
             if (tournamentOpen == false) {
+                tournament_mode = mode;
                 socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
                 console.log("start_tounrment from connectWebsocket undergoing");
                 tournamentOpen = true;
@@ -134,11 +138,11 @@ function handleServerMessage(message) {
         case "update_tournament":
             console.log(`Players in tournament: ${message.players_in}`); // to rm
             console.log(`Remaining spots: ${message.remaining_spots}`); // to rm
-            if (message.remaining_spots > 0) {
-                showTournamentAdBanner(message.players_in, message.remaining_spots + message.players_in);
-            } else {
-                tournamentBanner.style.display = "none";
-            }
+            // if (message.remaining_spots > 0) {
+            showTournamentAdBanner(message.players_in, message.remaining_spots + message.players_in);
+            // } else {
+            //     tournamentBanner.style.display = "none";
+            // }
             break;
         case "tournament_end":
             // show the overall winner
