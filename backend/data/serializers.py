@@ -4,7 +4,7 @@ import logging
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = [
             'id', 
             'email',
