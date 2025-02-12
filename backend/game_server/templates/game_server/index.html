@@ -14,9 +14,19 @@
     <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
 </head>
 <body>
-    <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert">
-        A tournament is about to start, join us!
-    </div>
+    <!--<div id="tournamentWaitingRoom" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert">
+        <p id="tournamentCountdown"></p>
+        <p>🚀 A tournament is about to start! <span id="playersInTournament">0/8</span> players in.</p>
+        <button onclick="joinTournament()">Join now!</button>
+    </div>-->
+    <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">
+        🚀 A tournament is about to start!<br><span id="playersInTournament">0/8</span> players in. 
+        <a href="#" class="alert-link" id="joinTournamentLink">Join now!</a>
+      </div>
+
+
+    <!--<div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert"> </div>-->
+    
     <h1 id="gameTitle" class="text-center my-3 display-6">Pong Game</h1>
     <button id="exitButton" type="button" class="btn btn-outline-dark position-fixed top-0 end-0 m-3">Exit</button>
     <p id="timer">0m 0s</p>
@@ -26,7 +36,7 @@
 
 
     <!-- MAIN FIRST Menu -->
-    <div class="modal fade" id="gameMenuFirst" tabindex="-1" aria-labelledby="gameMenuLabelFirst" aria-hidden="true">
+    <div class="modal fade" id="gameMenuFirst" tabindex="-1" aria-labelledby="gameMenuLabelFirst">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -44,7 +54,7 @@
 
 
     <!-- SECOND Game Menu Modal -->
-    <div class="modal fade" id="gameMenu" tabindex="-1" aria-labelledby="gameMenuLabel" aria-hidden="true">
+    <div class="modal fade" id="gameMenu" tabindex="-1" aria-labelledby="gameMenuLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -56,13 +66,14 @@
                     <button id="twoPlayersFriendsBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (with a friend)</button>
                     <button id="twoPlayersRemoteBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (remote)</button>
                     <button id="tournamentBtn" class="btn btn-outline-dark w-100 mb-2">Tournament</button>
+                    <button id="previous1Btn" class="btn btn-outline-secondary w-100 mb-2">Previous page</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- THIRD Game Menu Modal Tournament -->
-    <div class="modal fade" id="gameMenuTournament" tabindex="-1" aria-labelledby="gameMenuLabelTournament" aria-hidden="true">
+    <div class="modal fade" id="gameMenuTournament" tabindex="-1" aria-labelledby="gameMenuLabelTournament">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -72,6 +83,7 @@
                 <div class="modal-body">
                     <button id="fourPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">4 Players</button>
                     <button id="eightPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">8 Players</button>
+                    <button id="previous2Btn" class="btn btn-outline-secondary w-100 mb-2">Previous page</button>
                 </div>
             </div>
         </div>
@@ -145,6 +157,7 @@
     <!-- Link JS -->
     <!-- <script src="../frontend/static/script.js"></script> -->
     <script src="http://localhost:8080/static/websocket_handler.js"></script>
+    <script src="http://localhost:8080/static/tournament.js"></script>
     <script src="http://localhost:8080/static/script.js"></script>
     <!-- <script src="/static/script.js"></script> -->
     <!-- profile page -->

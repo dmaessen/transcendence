@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from .game_logic import Game  # Replace 'GameLogic' with the class/function name.
-#from .game_server import GameServer  # Replace 'GameServer' with the class/function name.
+from django.core.cache import cache
 
 def index(request):
     return render(request, 'game_server/index.html')
@@ -10,3 +9,8 @@ def index(request):
     # if request.method == "POST":
     #     game = Game(mode="singleplayer")  # ex
     #     return JsonResponse({"status": "Game started", "game_id": id(game)})
+
+def get_tournament_status(request):
+    """Returns the tournament state for new players who just joined."""
+    state = cache.get("tournament_state", {"tournament_active": False})
+    return JsonResponse(state)

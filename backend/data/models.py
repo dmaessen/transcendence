@@ -70,6 +70,10 @@ class Match(models.Model):
 
     def __str__(self):
         return f"Match_{self.player_1}.vs.{self.player_2}"
+<<<<<<< HEAD
+=======
+        # return f"Match: {self.player_1} vs {self.player_2}"
+>>>>>>> ws-game
 
 
 class Tournament(models.Model):

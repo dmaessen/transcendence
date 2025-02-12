@@ -10,7 +10,7 @@ services:
         env_file:
             - ./dot_env/.env
         volumes:
-            - pgdata:/var/lib/postgresql/data/
+            - ${HOME}/.tranceanddance/pgdata:/var/lib/postgresql/data/
 
     backend:
         build: ./backend/docker
@@ -23,10 +23,9 @@ services:
             - ./dot_env/.env
         networks:
             - transcendence
-        command: python3 ./backend/game_server/game_server.py
         restart: on-failure
         depends_on:
-        - psql
+            - psql
 
     frontend:
         build: ./frontend
@@ -38,8 +37,19 @@ services:
         networks:
             - transcendence
         depends_on:
-        - backend
-        - psql
+            - backend
+            - psql
+    
+    redis:
+        image: redis:latest
+        container_name: redis
+        networks:
+            - transcendence
+        ports:
+            - "6380:6379"
+        # depends on:
+        #     - backend
+        #     - psql
 
 networks:
     transcendence:
@@ -51,7 +61,7 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: $HOME/.tranceanddance/pgdata
+            device: ${HOME}/.tranceanddance/pgdata
     
     # frontenddata:
     #     driver: local
@@ -65,4 +75,87 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: $HOME/.tranceanddance/backenddata
+            device: ${HOME}/.tranceanddance/backenddata
+
+
+
+
+
+# services:
+#     psql:
+#         image: postgres:13-alpine
+#         container_name: postgres
+#         restart: always
+#         networks:
+#             - transcendence
+#         ports:
+#             - "5432:5432"
+#         env_file:
+#             - ./dot_env/.env
+#         volumes:
+#             - pgdata:/var/lib/postgresql/data/
+
+#     backend:
+#         build: ./backend/docker
+#         container_name: backend
+#         volumes:
+#             - ./backend/:/app/
+#         ports:
+#             - "8000:8000"
+#         env_file:
+#             - ./dot_env/.env
+#         networks:
+#             - transcendence
+#         restart: on-failure
+#         depends_on:
+#         - psql
+
+#     frontend:
+#         build: ./frontend
+#         container_name: frontend
+#         volumes:
+#             - ./frontend/statics/:/usr/share/nginx/html/static/
+#         ports:
+#             - "8080:80"
+#         networks:
+#             - transcendence
+#         depends_on:
+#         - backend
+#         - psql
+    
+#     redis:
+#         image: redis:latest
+#         container_name: redis
+#         networks:
+#             - transcendence
+#         ports:
+#             - "6380:6379"
+#         # depends on:
+#         #     - backend
+#         #     - psql
+
+# networks:
+#     transcendence:
+#         driver: bridge
+
+# volumes:
+#     pgdata:
+#         driver: local
+#         driver_opts:
+#             type: none
+#             o: bind
+#             device: $HOME/.tranceanddance/pgdata
+    
+#     # frontenddata:
+#     #     driver: local
+#     #     driver_opts:
+#     #         type: none
+#     #         o: bind
+#     #         device: ${DB_DATA_DIR}/frontenddata
+
+#     backenddata:
+#         driver: local
+#         driver_opts:
+#             type: none
+#             o: bind
+#             device: $HOME/.tranceanddance/backenddata
