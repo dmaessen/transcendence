@@ -50,8 +50,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.name
 
 class Friendship(models.Model):
-    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='friendship_creator_set')
-    friend = models.ForeignKey('User', on_delete=models.CASCADE, related_name='friendship_receiver_set')
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_creator_set')
+    friend = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_receiver_set')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=(('pending', 'Pending'), ('approved', 'Approved')))
 
