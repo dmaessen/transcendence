@@ -16,7 +16,7 @@ services:
         build: ./backend/docker
         container_name: backend
         volumes:
-            - backenddata:/app/
+            - ./backend/:/app/
         ports:
             - "8000:8000"
         env_file:
