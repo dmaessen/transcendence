@@ -225,7 +225,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.create_game(self.player_id)
         else:
             game = await sync_to_async(game.first)()
-            await self.join_game(game, 2, self.player_id)
+            self.match_name = await self.join_game(game, 2, self.player_id)
 
         # if get_all_matches_count() == 0:
         #     await self.create_game(user)
@@ -235,7 +235,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         # await sync_to_async(game.save)()
         player_queue.remove(self.player_id)
         #player_queue[user.id] = f"{game.id}"
-
+        #return self.match_name
         # while True:
         #     # if asyncio.get_event_loop().time() - start_time > timeout:
         #     #     await self.send(text_data=json.dumps({"message": "Matchmaking timed out."}))
@@ -310,11 +310,17 @@ class GameConsumer(AsyncWebsocketConsumer):
             game.add_player(user.id)
             game.status = "waiting"
         else:
-            game = games[game.id]
+            game.player_2 = user
+            self.match_name = str(f"match_{game.id}")
+            await sync_to_async(game.save)()
+            game = games[game.id] #this game represents Game(), not Match model
             game.players[user.id] = user
             game.add_player(user.id)
             game.status = "started"
         
+        #await self.send_game_state(game)
+
+        return self.match_name
 
 
     async def broadcast_game_state(self, game_id):

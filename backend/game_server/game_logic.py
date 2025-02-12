@@ -15,6 +15,7 @@ class Game:
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
+        self.status = None #default can be "waiting", "started"
 
     def add_player(self, player_id):
         if player_id not in self.players:
