@@ -7,7 +7,7 @@ import logging
 def get_user_data(request):
     logging.info(f"Request {request}")
     
-    testUser = User.objects.filter(id=4).first()
+    testUser = CustomUser.objects.filter(id=4).first()
     if not testUser:
         return JsonResponse({"error": "User not found"}, status=404)
 
