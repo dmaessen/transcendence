@@ -1,11 +1,11 @@
 
-const baseUrl = "http://127.0.0.1:8000/api/authentication";
+const baseUrl = "http://localhost:8000";
 
 document.getElementById("registerForm").addEventListener("submit", async function (e) {
     console.log("script.js loaded successfully!, registerform");
     e.preventDefault();
     console.log("Register form submitted!");
-    {% comment %} const username = document.getElementById("registerUsername").value; {% endcomment %}
+    const username = document.getElementById("registerUsername").value;
     const email = document.getElementById("registerEmail").value;
     const password = document.getElementById("registerPassword").value;
 
