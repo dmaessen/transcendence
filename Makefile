@@ -42,7 +42,7 @@ clean:
 fclean: rmi
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) down --rmi all -v --remove-orphans
 
-resetall:
+resetall: fclean
 	@docker system prune -af
 	@docker volume prune -af
 	@docker image prune -af
