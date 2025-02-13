@@ -3,6 +3,13 @@ from data.services import *
 from data.serializers import *
 import logging
 
+logger = logging.getLogger(__name__)
+
+def my_view(request):
+    logger.debug("This is a debug message from views.py")
+    logger.info("This is an info message from views.py")
+    logger.warning("This is a warning message from views.py")
+
 # @login_required
 def get_user_data(request):
     logging.info(f"Request {request}")
