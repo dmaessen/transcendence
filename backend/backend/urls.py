@@ -17,10 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from data.views import get_user_data
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('matchmaking/', include('matchmaking.urls'), name='matchmaking'),
     path('game_server/', include('game_server.urls'), name='game_server'),
+	path('api/authentication/', include('authentication.urls'), name='authentication'),
     path("get_user_data/", get_user_data, name="get_user_data"),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
