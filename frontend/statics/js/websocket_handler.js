@@ -20,6 +20,8 @@ function connectWebSocket(mode) {
         return;
     }
 
+    console.log(`websocket: ${websocket} | tournament: ${tournamentwebsocket}`);
+
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
     if (mode == "tournament")
