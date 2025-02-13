@@ -108,7 +108,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -176,9 +176,9 @@ STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'front
 
 # No need to set STATICFILES_DIRS if frontend is handling static files
 STATICFILES_DIRS = [
-    os.path.join(STATIC_ROOT, '/css/'),  # Ensure Django knows where to find them
-    os.path.join(STATIC_ROOT, '/js/'),
-    os.path.join(STATIC_ROOT, '/html/'),
+    os.path.join(STATIC_ROOT, 'css/'),  # Ensure Django knows where to find them
+    os.path.join(STATIC_ROOT, 'js/'),
+    os.path.join(STATIC_ROOT, 'html/'),
 ]
 
 MEDIA_URL = '/media/'
@@ -219,3 +219,64 @@ CACHES = {
         'LOCATION': 'tournament_cache'
     }
 }
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#         'views': {  # Explicitly enable logs for views.py
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': False,
+#         },
+#         'serializers': {  # Explicitly enable logs for serializers.py
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': False,
+#         },
+#     },
+# }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',  # Only log errors and critical issues
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/django_errors.log'),  # Log file path
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} - {name} - {message}',
+            'style': '{',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+
+

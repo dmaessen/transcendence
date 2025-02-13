@@ -2,6 +2,14 @@ from rest_framework import serializers
 from data.models import CustomUser, Match, Tournament
 import logging
 
+logger = logging.getLogger(__name__)
+
+class MySerializer(serializers.Serializer):
+    def validate(self, data):
+        logger.debug("This is a debug message from serializers.py")
+        logger.info(f"Validating data: {data}")
+        return data
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -56,24 +64,30 @@ class TournamentSerializer(serializers.ModelSerializer):
         ]
 
 class MatchSummarySerializer(serializers.ModelSerializer):
-    opponent = serializers.SerializerMethodField()  # Dynamically get the opponent's name
-    logging.info(f"Request {opponent}")
+    opponent = serializers.SerializerMethodField()
+
     class Meta:
         model = Match
         fields = ["match_start", "winner", "opponent"]
 
     def get_opponent(self, obj):
-        """Return the name of the opponent, assuming 'request.user' is player_1 or player_2."""
+        """Return the name of the opponent."""
         user = self.context.get("user")
         if user:
-            return obj.player_1.name if obj.player_2 == user else obj.player_2.name
+            opponent = obj.player_1.name if obj.player_2 == user else obj.player_2.name
+            logging.info(f"Opponent: {opponent}")  # Log the opponent here
+            return opponent
         return "Unknown"
 
+
 class TournamentSummarySerializer(serializers.ModelSerializer):
-    winner = serializers.ReadOnlyField(source="first_place.name")  # Only show the winner
-    logging.info(f"winner: {winner}")
+    winner = serializers.ReadOnlyField(source="first_place.name")
     start_date = serializers.DateTimeField()
-    # logging.info(f"start_date: {start_date}")
+
     class Meta:
         model = Tournament
         fields = ["start_date", "winner"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        logging.info(f"Tournament winner: {self.validated_data.get('winner', 'Unknown')}")
