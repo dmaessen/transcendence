@@ -159,7 +159,7 @@ tournamentBanner.addEventListener("click", () => {
 
 async function fetchTournamentStatus() {
     try {
-        const response = await fetch("/api/tournament-status/");
+        const response = await fetch("http://localhost:8080/api/tournament-status/");
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -167,6 +167,7 @@ async function fetchTournamentStatus() {
         console.log("Tournament Status:", data);
 
         if (data.tournament_active) {
+            console.log("tournament active in fetchTournamentStatus()")
             showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
         }
     } catch (error) {
@@ -179,7 +180,7 @@ window.addEventListener("load", () => {
     
     fetchTournamentStatus();
 
-    fetch("/api/tournament-status/")
+    fetch("http://localhost:8080/api/tournament-status/")
         .then(response => response.json())
         .then(data => {
             console.log("Fetched tournament status:", data);
