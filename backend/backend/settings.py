@@ -80,6 +80,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://frontend:8080",
     "http://localhost:8080",  # for local development, later change it
     "http://localhost:8000", 
+    "http://localhost;80",
 ]
 
 REST_FRAMEWORK = {
