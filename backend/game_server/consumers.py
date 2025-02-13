@@ -5,6 +5,8 @@ from game_server.game_logic import Game
 from game_server.tournament_logic import Tournament
 from matchmaking.utils import create_match
 import uuid
+import msgspec
+
 from datetime import timedelta
 
 #The scope is a set of details about a single incoming connection 
@@ -69,6 +71,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                     game.stop_game("No players")
                     del games[game_id]
 
+        user = await get_user_by_id(self.player_id)
+
+
         try:
             if hasattr(self, 'match_name'):
                 await self.channel_layer.group_discard(self.match_name, self.channel_name)
@@ -89,16 +94,17 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def send_game_state(self, game):
         game_state = game.get_state()
-        game_state_str_keys = {
-            str(k): v if not isinstance(v, dict) else {str(inner_k): inner_v for inner_k, inner_v in v.items()}
-            for k, v in game_state.items()
-        }
+        # game_state_str_keys = {
+        #     str(k): v if not isinstance(v, dict) else {str(inner_k): inner_v for inner_k, inner_v in v.items()}
+        #     for k, v in game_state.items()
+        # }
+        game_state_serializable = msgspec.json.encode(game_state).decode("utf-8")  # Ensures proper JSON formatting
 
         await self.channel_layer.group_send(
             self.match_name,
             {
                 "type": "update",
-                "data": game_state_str_keys,
+                "data": game_state_serializable,
             }
         )
         print(f"out of send_game_sate {self.player_id}", flush=True)
@@ -121,7 +127,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                     print(f"ERROR: Player {player_id} failed matchmaking, re-entering queue!", flush=True)
                     await self.send(text_data=json.dumps({"error": "Matchmaking failed"}))
                     return
-                game_id = self.match_name
+                game_id = int(self.match_name[6:])
+                print("GAME_ID ", game_id)
+
             else:
                 game_id = f"game_{player_id}"
 
@@ -137,6 +145,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                     game.add_player(player_id)
             print(f"Game mode set to: {mode}, with game_id {game_id}", flush=True)
 
+            if game_id in games:
+                print("LAAAAAAA")
         elif action == "move":
             direction = data.get("direction")
             if game_id in games:
@@ -200,7 +210,8 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
         
         #broadcasts the updated game state to the group (for two players remote)
-        if game_id in games and mode == "Two Players (remote": # or tournament??
+        if game_id in games and mode == "Two Players (remote)": # or tournament??
+            game = games[game_id]
             await self.send_game_state(game)
 
             # await self.channel_layer.group_send(
@@ -297,6 +308,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         game.players[user.id] = user
         #adding a game to games dict. game by gameid
         games[match.id] = game
+        print("MATCH.ID ", match.id)
         self.match_name = str(f"match_{match.id}")
         await self.channel_layer.group_add(self.match_name, self.channel_name)
         
@@ -349,3 +361,5 @@ async def get_all_matches_count():
 async  def get_user_by_id(user_id):
     return await sync_to_async(User.objects.get)(id=user_id)
 
+async def get_user_matches(user_id):
+    return await sync_to_async(Match.objects.filter)(player_id=user_id)
