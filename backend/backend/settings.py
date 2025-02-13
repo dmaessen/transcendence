@@ -175,7 +175,9 @@ STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'front
 
 # No need to set STATICFILES_DIRS if frontend is handling static files
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'authentication/templates/static'),  # Ensure Django knows where to find them
+    os.path.join(STATIC_ROOT, '/css/'),  # Ensure Django knows where to find them
+    os.path.join(STATIC_ROOT, '/js/'),
+    os.path.join(STATIC_ROOT, '/html/'),
 ]
 
 # Default primary key field type
