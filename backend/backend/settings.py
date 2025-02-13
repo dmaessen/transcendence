@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    # 'game_server',
+    #'game_server',
 
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
@@ -80,7 +80,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://frontend:8080",
     "http://localhost:8080",  # for local development, later change it
     "http://localhost:8000", 
-    "http://localhost;80",
+    "http://localhost:80",
 ]
 
 #CORS_ALLOW_ALL_ORIGINS = True
