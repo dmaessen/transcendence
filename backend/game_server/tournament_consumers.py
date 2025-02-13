@@ -134,7 +134,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             }
 
             print(f"(BACKEND) Sending update: {state}", flush=True)
-            cache.set("tournament_state", state)  # saved in cache, do we want to change that??
+            print(f"Setting tournament_state in cache: {state}")
+            cache.set("tournament_state", state)
+            print(f"Retrieved tournament_state from cache: {state}")
 
             await self.channel_layer.group_send(
                 self.room_name, {
