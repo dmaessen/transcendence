@@ -2,77 +2,60 @@ import json
 import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from game_server.game_logic import Game
+from game_server.tournament_logic import Tournament
 from matchmaking.utils import create_match
 import uuid
 
-games = {}  # active games by game_id -- laura might need??
-players = {}  # active players by player_id -- laura??
+#The scope is a set of details about a single incoming connection 
+#scope containing the user's username, chosen name, and user ID.
+from django.contrib.sessions.backends.db import SessionStore
+from django.contrib.auth import get_user_model
+from asgiref.sync import sync_to_async
+
+from game_server.player import Player
+
+games = {}  # wanna remove it??
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
         else:
-            self.player_id = None  # Guest user (will be assigned a negative ID)
+            # Use sync_to_async for session creation
+            session = await sync_to_async(SessionStore)()
+            await sync_to_async(session.create)()
+            
+            User = get_user_model()
+            guest_user = await sync_to_async(User.objects.create)(
+                name=f"Guest_{session.session_key[:12]}",
+                email=f"{session.session_key[:10]}",
+                is_active=False
+            )
+            print(f"guest user {guest_user.name}")
+            
+            self.player_id = guest_user.id
+            self.session_key = session.session_key
+
+        print(f"player_id == {self.player_id}", flush=True)
+        player = Player(self.player_id, self.session_key, 'online')
+        self.match_data = "waiting"
         
-        print(f"Player ID: {self.player_id}")
-        await self.accept()  # Accept the WebSocket connection FIRST
+        await self.accept()
 
-        #self.player_id = self.scope["user"].id  # to ensure this is an integer, i use this in view as int
-        match_data = await create_match(self.player_id)  # ensure this is a valid string
-
-        #match_data = await create_match(self.player_id)
-
-        if match_data == "waiting":
-            await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
-            self.room_name = f"waiting_room_{self.player_id}"  
-            return
-        # if not self.room_name or not isinstance(self.room_name, str):
-        #     self.room_name = f"default_room_{self.player_id}"  # assign a fallback room ??
-        self.room_name = f"match_{match_data['id']}"
-
-        await self.channel_layer.group_add(self.room_name, self.channel_name)
-        #await self.accept()
-# class GameConsumer(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         if self.scope["user"].is_authenticated:
-#             self.player_id = self.scope["user"].id  # Authenticated user
-#         else:
-#             self.player_id = None  # Guest user (will be assigned a negative ID)
-
-#         print(f"Player ID: {self.player_id}")
-        
-#         match_data = await create_match(self.player_id)
-
-#         if match_data == "waiting":
-#             await self.send(text_data=json.dumps({"message": "Waiting for another player..."}))
-#             await self.accept()  # Accept WebSocket connection even if waiting
-#             return
-
-#         self.room_name = f"match_{match_data['id']}"
-
-#         await self.channel_layer.group_add(self.room_name, self.channel_name)
-#         await self.accept()
-
-        # self.player_id = self.channel_name
-        # self.room_name = None # for two players remote
-        # players[self.player_id] = self
-        # print(f"Player {self.player_id} connected.", flush=True)
-
-        # # Gul? change below to fucntion that pairs/assigns a room
-        # self.room_name = await create_match(self.player_id)
-        # # channel_layer manages groups/messages
-        # # group_add adds a websocket connection via the id, to a named group/room
-        # await self.channel_layer.group_add(self.room_name, self.channel_name)
-
-        # await self.accept()  # accept socket connection
+    async def check_connection_timeout(self):
+        await asyncio.sleep(30)  # 30-second timeout
+        if not hasattr(self, 'match_name') or not self.match_name:
+            await self.send(text_data=json.dumps({
+                "type": "connection_timeout",
+                "message": "Connection timed out"
+            }))
+            await self.close()
 
     async def disconnect(self, close_code):
+        print(f"Player {self.player_id} disconnected unexpectedly. Close code: {close_code}", flush=True)
+
         print(f"Player {self.player_id} disconnected.", flush=True)
-        if self.player_id in players:
-            del players[self.player_id]
-        
-        # rm the player from any active games
+
         for game_id, game in games.items():
             if self.player_id in game.players:
                 game.remove_player(self.player_id)
@@ -80,33 +63,121 @@ class GameConsumer(AsyncWebsocketConsumer):
                     game.stop_game("No players")
                     del games[game_id]
 
-        if self.room_name:
-            await self.channel_layer.group_discard(self.room_name, self.channel_name)
+        try:
+            if hasattr(self, 'match_name'):
+                await self.channel_layer.group_discard(self.match_name, self.channel_name)
+        except Exception as e:
+            print(f"Error during disconnection: {e}")
+        
         await self.close()
     
     async def send_json(self, content):
         await self.send(text_data=json.dumps(content))
+    
+    async def update(self, event):
+        await self.send_json(event["data"])
+
+    async def send_match_data(self, player_id, match_data):
+        print(f"Sending match data to Player {player_id}: {match_data}", flush=True)
+        await self.send(text_data=json.dumps(match_data))
+
+    async def send_game_state(self, game):
+        game_state = game.get_state()
+        game_state_str_keys = {
+            str(k): v if not isinstance(v, dict) else {str(inner_k): inner_v for inner_k, inner_v in v.items()}
+            for k, v in game_state.items()
+        }
+
+        await self.channel_layer.group_send(
+            self.match_name,
+            {
+                "type": "update",
+                "data": game_state_str_keys,
+            }
+        )
+        print(f"out of send_game_sate {self.player_id}", flush=True)
+
+    async def find_match(self):
+        print(f"Player {self.player_id} entered find_match()", flush=True)
+        # timeout = 300  # 5 min max
+        # start_time = asyncio.get_event_loop().time()
+
+        self.match_name = f"waiting_room_{self.player_id}"
+        await self.channel_layer.group_add(self.match_name, self.channel_name)
+
+        while True:
+            # if asyncio.get_event_loop().time() - start_time > timeout:
+            #     await self.send(text_data=json.dumps({"message": "Matchmaking timed out."}))
+            #     print(f"Matchmaking timed out.", flush=True)
+            #     await self.channel_layer.group_discard(self.match_name, self.channel_name)
+            #     break
+            self.match_data = await create_match(self, self.player_id)
+            print(f"Player {self.player_id} received match_data: {self.match_data}", flush=True)
+
+            # if self.match_data == "waiting":
+            #     await asyncio.sleep(5)
+            #     continue
+
+            if isinstance(self.match_data, dict) and 'id' in self.match_data:
+                match_id = self.match_data['id']
+                # self.match_data = {str(k): v for k, v in self.match_data.items()}
+                self.match_name = str(f"match_{match_id}")
+                print(f"Player {self.player_id} assigned match_name: {self.match_name}", flush=True)
+
+                await self.channel_layer.group_add(self.match_name, self.channel_name)
+
+                print(f"Match found: {match_id} with player IDs {self.match_data['player_1']} and {self.match_data['player_2']}", flush=True)
+
+                game = Game("Two Players (remote)")
+                games[self.match_name] = game
+                game.add_player(self.match_data['player_1'])
+                game.add_player(self.match_data['player_2'])
+
+                await self.send_json({
+                    "type": "match_found",
+                    "game_id": match_id,
+                    "player_1": self.match_data['player_1'],
+                    "player_2": self.match_data['player_2']
+                })
+
+                print(f"Sending match update: {self.match_name} -> {game.get_state()}", flush=True)
+
+                await self.send_game_state(game)
+                print(f"Breaking loop for Player {self.player_id}, match_name: {self.match_name}", flush=True)
+                break
+
+            print(f"Invalid match data received: {self.match_data}", flush=True)
+            await asyncio.sleep(5)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
         game_id = data.get("game_id")
-        mode = data.get("mode", "One Player")  # default to "One Player" if no mode sent
+        mode = data.get("mode", "One Player")
 
         if action == "connect":
-            game_id = f"game_{self.player_id}"
+            print(f"Player {self.player_id} trying to connect to game.", flush=True)
+            if mode == "Two Players (remote)":
+                await self.find_match()
+                print(f"Player {self.player_id} finished matchmaking, match_name: {self.match_name}", flush=True)
+                if self.match_name is None:
+                    print(f"ERROR: Player {self.player_id} failed matchmaking, re-entering queue!", flush=True)
+                    await self.send(text_data=json.dumps({"error": "Matchmaking failed"}))
+                    return
+                game_id = self.match_name
+            else:
+                game_id = f"game_{self.player_id}"
             if game_id in games:
                 game = games[game_id]
-                if not game.running:
-                    game.reset_game(mode)
+                # if not game.running:
+                #     game.reset_game(mode)
             else:
-                # Create a new game for this player
                 game = Game(mode)
                 games[game_id] = game
 
             if self.player_id not in game.players:
                 game.add_player(self.player_id)
-            print(f"Game mode set to: {mode}", flush=True)
+            print(f"Game mode set to: {mode}, with game_id {game_id}", flush=True)
 
         elif action == "move":
             direction = data.get("direction")
@@ -161,7 +232,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 }))
 
         elif action == "disconnect":
-            del players[self.player_id]
+            # if self.player_id in players:
+            #     del players[self.player_id]
             await self.close()
             print(f"WebSocket disconnected", flush=True)
             await self.channel_layer.group_discard(
@@ -170,14 +242,18 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
         
         #broadcasts the updated game state to the group (for two players remote)
-        await self.channel_layer.group_send(
-            self.room_name,
-            {
-                "type": "update", #this correct or we want another type?
-                "game_id": game_id,
-                "data": games[game_id].get_state(), #data or game_update
-            },
-        )
+        if game_id in games and mode == "Two Players (remote": # or tournament??
+            await self.send_game_state(game)
+
+            # await self.channel_layer.group_send(
+            #     self.match_name,
+            #     {
+            #         "type": "update", #this correct or we want another type?
+            #         # "game_id": game_id,
+            #         "data": games[game_id].get_state(), #data or game_update
+            #     },
+            # )
+
 
     async def broadcast_game_state(self, game_id):
         if game_id in games:

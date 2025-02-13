@@ -25,7 +25,7 @@ def create_users():
     with open(CSV_FILE_PATH, "r") as file:
         reader = csv.DictReader(file)
         users = [
-            User(
+            CustomUser(
                 name=row["name"],
                 location=row["location"],
                 email=row["email"],
@@ -36,13 +36,13 @@ def create_users():
             )
             for row in reader
         ]
-    User.objects.bulk_create(users)
+    CustomUser.objects.bulk_create(users)
     print(f"Created {len(users)} users")
 
 
 def create_matches():
     """Creates match records using test users."""
-    users = list(User.objects.all())
+    users = list(CustomUser.objects.all())
 
     if len(users) < 9:
         print("Not enough users to create matches")
@@ -70,7 +70,7 @@ def create_matches():
 
 def create_tournament():
     """Creates a tournament and assigns matches to it."""
-    users = list(User.objects.all())
+    users = list(CustomUser.objects.all())
     matches = list(Match.objects.all())
 
     if len(users) < 8 or len(matches) < 7:
