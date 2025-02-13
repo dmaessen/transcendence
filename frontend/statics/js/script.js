@@ -1,6 +1,7 @@
 const gameMenuElementFirst = document.getElementById("gameMenuFirst");
 const gameMenuElement = document.getElementById("gameMenu");
 const gameMenuElementTournament = document.getElementById("gameMenuTournament");
+const signInMenuElement = document.getElementById("SignInMenu");
 
 const gameTitle = document.getElementById("gameTitle");
 const exitButton = document.getElementById("exitButton");
@@ -35,6 +36,11 @@ const gameMenuTournament = new bootstrap.Modal(gameMenuElementTournament, {
     keyboard: false,
 });
 
+const SignInMenu = new bootstrap.Modal(signInMenuElement, {
+    backdrop: "static",
+    keyboard: false,
+});
+
 const gameState = { 
     mode: null,
     gameId: null,
@@ -43,6 +49,15 @@ const gameState = {
     // tournamentOngoing: false,
     playerId: null, // does Laura need?
 };
+
+async function login(email,password){
+    const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+}
 
 function startGame(mode) {
     keyboardEnabled = true;

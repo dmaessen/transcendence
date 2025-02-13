@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
-from data.models import User, Match
+from data.models import CustomUser, Match
 from data.serializers import UserSerializer, MatchSerializer
 from .game_state import player_queue
 from types import SimpleNamespace

@@ -12,12 +12,12 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from datetime import timedelta
 
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -32,7 +32,6 @@ DEBUG = True
 # ensures only recognized hosts can serve your app
 ALLOWED_HOSTS = ['*', 'localhost']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -42,19 +41,25 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'channels',
     'corsheaders',
+    # 'dj_rest_auth',
+    # 'dj_rest_auth.registration',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     # 'game_server',
-
 
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
     'data.apps.DataConfig',
     'authentication.apps.AuthenticationConfig'
-
-
 ]
 
 MIDDLEWARE = [
@@ -75,13 +80,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://frontend:8080",
     "http://localhost:8080",  # for local development, later change it
     "http://localhost:8000", 
+    "http://localhost;80",
 ]
 
 #CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE': 10
 }
 
 CHANNEL_LAYERS = {
@@ -95,7 +104,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -152,29 +160,28 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
+STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')  # Where collectstatic will store files
 
 # No need to set STATICFILES_DIRS if frontend is handling static files
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+    os.path.join(STATIC_ROOT, '/css/'),  # Ensure Django knows where to find them
+    os.path.join(STATIC_ROOT, '/js/'),
+    os.path.join(STATIC_ROOT, '/html/'),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -182,7 +189,27 @@ STATICFILES_DIRS = []
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
-AUTH_USER_MODEL = 'data.User'
+AUTH_USER_MODEL = 'data.CustomUser'
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False, 
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    "SIGNING_KEY": "complexsigningkey", # generate a key and replace me
+    "ALGORITHM": "HS512",
+}
+
+SITE_ID = 1  # make sure SITE_ID is set
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": False,
+}
 
 CACHES = {
     'default': {

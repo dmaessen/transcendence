@@ -1,14 +1,15 @@
 import os
 import csv
 from django.test import TestCase
-from .models import User, Match, Tournament
+from .models import *
+from .services import *
 from datetime import timedelta
 from datetime import datetime
 from django.db.models import Q
 
 class ModelFromFileTest(TestCase):
     def print_users_table(self):
-        users = User.objects.all()
+        users = CustomUser.objects.all()
         print(f"{'ID':<5} {'Name':<15} {'Location':<20} {'Score':<10} {'Victories':<10} {'Tournaments':<20}")
         print("=" * 60)
         for user in users:
@@ -58,36 +59,41 @@ class ModelFromFileTest(TestCase):
             reader = csv.DictReader(file)
             self.csv_users = [row for row in reader]
             for row in self.csv_users:
-                User.objects.create(
+                CustomUser.objects.create(
                     name=row['name'],
                     location=row['location'],
+                    email=row['email'],
+                    username=row['username'],
+                    is_active=row['is_active'],
+                    is_staff=row['is_staff'],
+                    oauth_tokens=row['oauth_tokens'],
                 )
-        print(f"Users were set and {User.objects.count()} users have been created!")
+        print(f"Users were set and {CustomUser.objects.count()} users have been created!")
         # self.print_users_table()
 
     def test_users_created(self):
         print("Testing users table\n")
         # Verify the total number of users matches the CSV
-        self.assertEqual(User.objects.count(), len(self.csv_users))
+        self.assertEqual(CustomUser.objects.count(), len(self.csv_users))
 
         # Validate each user's data
         for csv_user in self.csv_users:
-            user = User.objects.get(name=csv_user['name'])
+            user = CustomUser.objects.get(name=csv_user['name'])
             self.assertEqual(user.location, csv_user['location'])
 
         print("All users validated successfully.")
 
     def setUpMatches(self):
         # Retrieve the users needed for the matches
-        self.user1 = User.objects.get(name=self.csv_users[0]['name'])
-        self.user2 = User.objects.get(name=self.csv_users[1]['name'])
-        self.user3 = User.objects.get(name=self.csv_users[2]['name'])
-        self.user4 = User.objects.get(name=self.csv_users[3]['name'])
-        self.user5 = User.objects.get(name=self.csv_users[4]['name'])
-        self.user6 = User.objects.get(name=self.csv_users[5]['name'])
-        self.user7 = User.objects.get(name=self.csv_users[6]['name'])
-        self.user8 = User.objects.get(name=self.csv_users[7]['name'])
-        self.user9 = User.objects.get(name=self.csv_users[8]['name'])
+        self.user1 = CustomUser.objects.get(name=self.csv_users[0]['name'])
+        self.user2 = CustomUser.objects.get(name=self.csv_users[1]['name'])
+        self.user3 = CustomUser.objects.get(name=self.csv_users[2]['name'])
+        self.user4 = CustomUser.objects.get(name=self.csv_users[3]['name'])
+        self.user5 = CustomUser.objects.get(name=self.csv_users[4]['name'])
+        self.user6 = CustomUser.objects.get(name=self.csv_users[5]['name'])
+        self.user7 = CustomUser.objects.get(name=self.csv_users[6]['name'])
+        self.user8 = CustomUser.objects.get(name=self.csv_users[7]['name'])
+        self.user9 = CustomUser.objects.get(name=self.csv_users[8]['name'])
 
         # Create match entries
         Match.objects.create(
@@ -232,7 +238,7 @@ class ModelFromFileTest(TestCase):
 
         # Create the tournament
         self.tournament = Tournament.objects.create(
-        number_of_players=8,
+        max_players=8,
         start_date=start_time,
         end_date=end_time
         )
@@ -320,7 +326,7 @@ class ModelFromFileTest(TestCase):
             self.assertGreater(matches.count(), 0, f"Tournament {tournament.id} has no matches.")
 
         # Check how many tournaments each user has joined
-        users = User.objects.all()
+        users = CustomUser.objects.all()
         for user in users:
             tournaments_joined = user.tournaments.count()
             print(f"User {user.name} ({user.id}) has joined {tournaments_joined} tournaments.")
@@ -343,3 +349,9 @@ class ModelFromFileTest(TestCase):
         print("Here are ze tables\n")
         self.print_users_table()
         self.print_match_table()
+
+    def test_services(self):
+
+        #User1
+        expected_matches = [self.mat]
+        self.assertEqual(get_user_matches(user1.id))
