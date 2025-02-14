@@ -16,7 +16,6 @@ const tournamentBanner = document.getElementById("tournamentBanner");
 
 let timerInterval;
 let keyboardEnabled = true;
-let tournamentSpotsOpen = false;
 
 instructions1.style.display = "none";
 instructions2.style.display = "none";
@@ -94,8 +93,6 @@ function startGame(mode) {
         instructions1.style.display = "block";
         //connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
-        tournamentSpotsOpen = true;
-        localStorage.setItem("tournamentSpotsOpen", "true");
         gameMenuTournament.hide();
         alert(`${mode} mode is not yet implemented.`);
         gameTitle.textContent = `${mode}`;
@@ -114,10 +111,18 @@ function startGame(mode) {
 document.getElementById("playBtn").addEventListener("click", () => {
     gameMenuFirst.hide();
     gameMenu.show();
-    if (tournamentSpotsOpen)
-        tournamentMenuBtn.style.display = "none";
-    else
-        tournamentMenuBtn.style.display = "block";
+
+    fetchTournamentStatus();
+    fetch("http://localhost:8080/api/tournament-status/") // without /api here
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched tournament status:", data);
+            if (data.remaining_spots != 0) // data.tournament_active && 
+                tournamentMenuBtn.style.display = "none";
+            else
+                tournamentMenuBtn.style.display = "block";
+        })
+        .catch(error => console.error("Error fetching tournament status:", error));
 });
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
@@ -126,20 +131,17 @@ document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => s
 document.getElementById("twoPlayersFriendsBtn").addEventListener("click", () => startGame("Two Players (with a friend)"));
 
 document.getElementById("tournamentBtn").addEventListener("click", () => {
-    if (!tournamentSpotsOpen) {
         gameMenuTournament.show();
         gameMenu.hide();
-    } else {
-        alert("A tournament is already ongoing.");
-}});
+});
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    disableTournamentButtons();
+    disableTournamentButtons(); // needed in the end??
     // showTournamentAdBanner();
 });
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    disableTournamentButtons();
+    disableTournamentButtons(); // needed in the end??
     // showTournamentAdBanner();
 });
 
@@ -167,9 +169,15 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
 });
 
 tournamentBanner.addEventListener("click", () => {
-    if (localStorage.getItem("tournamentSpotsOpen") === "true") {
-        connectWebSocket("tournament");
-    }
+    fetchTournamentStatus();
+    fetch("http://localhost:8080/api/tournament-status/") // without /api here
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched tournament status:", data);
+            if (data.remaining_spots != 0) // data.tournament_active && 
+                connectWebSocket("tournament");
+        })
+        .catch(error => console.error("Error fetching tournament status:", error));
 });
 
 async function fetchTournamentStatus() {
@@ -181,10 +189,12 @@ async function fetchTournamentStatus() {
         const data = await response.json();
         console.log("Tournament Status:", data);
 
-        if (data.tournament_active) {
+        if (data.remaining_spots > 0) {
             console.log("tournament active in fetchTournamentStatus()")
             showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
         }
+        //else
+            // hide the banner
     } catch (error) {
         console.error("Error fetching tournament status:", error);
     }
@@ -195,11 +205,11 @@ window.addEventListener("load", () => {
     
     fetchTournamentStatus();
 
-    fetch("http://localhost:8080/api/tournament-status/")
+    fetch("http://localhost:8080/api/tournament-status/") // without /api here
         .then(response => response.json())
         .then(data => {
             console.log("Fetched tournament status:", data);
-            if (data.tournament_active && data.remaining_spots != 0) {
+            if (data.remaining_spots > 0 && data.tournament_active != false) { // data.tournament_active && 
                 showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
             }
         })
@@ -212,14 +222,11 @@ function disableTournamentButtons() {
 }
 
 function showTournamentAdBanner(players_in, total_spots) {// Show banner to promote for other players
-    if (tournamentSpotsOpen && players_in < total_spots) {
-        localStorage.setItem("tournamentSpotOpen", "true"); // needed again here??
+    if (players_in < total_spots) {
         tournamentBanner.style.display = "block"; 
         const playersInTournament = document.getElementById("playersInTournament");
         playersInTournament.textContent = `${players_in}/${total_spots}`;
     } else {
-        tournamentSpotsOpen = false;
-        localStorage.setItem("tournamentSpotsOpen", "false");
         tournamentBanner.style.display = "none";  // Hide it if no tournament or full
     }
 }

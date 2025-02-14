@@ -172,16 +172,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')  # Where collectstatic will store files
+# STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')  # Where collectstatic will store files
 
-# No need to set STATICFILES_DIRS if frontend is handling static files
-STATICFILES_DIRS = [
-    os.path.join(STATIC_ROOT, '/css/'),  # Ensure Django knows where to find them
-    os.path.join(STATIC_ROOT, '/js/'),
-    os.path.join(STATIC_ROOT, '/html/'),
-]
+# # No need to set STATICFILES_DIRS if frontend is handling static files
+# STATICFILES_DIRS = [
+#     os.path.join(STATIC_ROOT, '/css/'),  # Ensure Django knows where to find them
+#     os.path.join(STATIC_ROOT, '/js/'),
+#     os.path.join(STATIC_ROOT, '/html/'),
+# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

@@ -17,11 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from data.views import get_user_data
+from game_server.views import get_tournament_status
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('matchmaking/', include('matchmaking.urls'), name='matchmaking'),
-    path('game_server/', include('game_server.urls'), name='game_server'),
-	path('api/authentication/', include('authentication.urls'), name='authentication'),
+    path('matchmaking/', include('matchmaking.urls')),
+    path('game_server/', include('game_server.urls')),
+	path('api/authentication/', include('authentication.urls')),
+    #path('api/', include('game_server.urls')),
     path("get_user_data/", get_user_data, name="get_user_data"),
+    path('tournament-status/', get_tournament_status, name='tournament-status'),
 ]
