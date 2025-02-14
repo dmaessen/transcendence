@@ -7,6 +7,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 from django.core.cache import cache
+import uuid
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     tournament = None  # keeps track of the tournament instance
@@ -21,7 +22,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await sync_to_async(session.create)()
             
             User = get_user_model()
+            unique_username = f"Guest_{uuid.uuid4().hex[:12]}"  # Generate a unique username
             guest_user = await sync_to_async(User.objects.create)(
+                username=unique_username,  # Set the unique username
                 name=f"Guest_{session.session_key[:12]}",
                 email=f"{session.session_key[:10]}",
                 is_active=False
@@ -129,6 +132,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if self.tournament:
             state = {
                 "action": "update_tournament",
+                
                 "players_in": len(self.tournament.players),
                 "remaining_spots": self.tournament.num_players - len(self.tournament.players),
             }

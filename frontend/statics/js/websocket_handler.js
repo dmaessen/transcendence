@@ -1,4 +1,3 @@
-//const serverUrl = "ws://localhost:8000/ws/game_server/";
 const websocket = `ws://${window.location.host}/ws/game_server/`;
 const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
 
@@ -9,11 +8,11 @@ let tournament_mode;
 let tournamentOpen = false; // switch back to off at some point maybe after xxx minutes or whatever
 
 function connectWebSocket(mode) {
-    if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
-        console.log("WebSocket already connected.");
-        startGameMenu(); // or not
-        return;
-    }
+    // if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
+    //     console.log("WebSocket already connected.");
+    //     startGameMenu(); // or not
+    //     return;
+    // }
 
     if (reconnecting) {
         console.warn("Reconnection already in progress.");
@@ -38,14 +37,21 @@ function connectWebSocket(mode) {
         if (mode != "4" && mode != "8") {
             startGameMenu();
         } else if (mode == "4" || mode == "8") {
-            if (tournamentOpen == false) {
-                tournament_mode = mode;
-                socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
-                console.log("start_tounrment from connectWebsocket undergoing");
-                tournamentOpen = true;
+            fetchTournamentStatus();
+            fetch("http://localhost:8080/api/tournament-status/") // without /api here
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Fetched tournament status:", data);
+                    if (data.players_in == 0 && data.tournament_active == false) { // data.tournament_active && 
+                        tournament_mode = mode;
+                        socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+                        console.log("start_tounrment from connectWebsocket undergoing");
+                    }
+                    socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
+                    showWaitingRoomTournament();
+                })
+                .catch(error => console.error("Error fetching tournament status:", error));
             }
-            socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
-            showWaitingRoomTournament();
         }
     };
 
