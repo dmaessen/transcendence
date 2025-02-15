@@ -98,7 +98,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         #     str(k): v if not isinstance(v, dict) else {str(inner_k): inner_v for inner_k, inner_v in v.items()}
         #     for k, v in game_state.items()
         # }
-        game_state_serializable = msgspec.json.encode(game_state).decode("utf-8")  # Ensures proper JSON formatting
+        #game_state_serializable = msgspec.json.encode(game_state).decode("utf-8")  # Ensures proper JSON formatting
+        game_state_serializable = msgspec.json.encode(game_state).decode("utf-8")
 
         await self.channel_layer.group_send(
             self.match_name,
@@ -153,6 +154,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             if len(game.players) == 2: #start game if two players connected
                     game.start_game()
                     await self.send_json({"type": "started", "game_id": game_id})
+                    await self.send_game_state(game)
                     asyncio.create_task(self.broadcast_game_state(game_id))
 
         elif action == "move":
@@ -247,12 +249,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             match = await sync_to_async(match.first)()
             self.match_name = await self.join_game(match, 2, self.player_id)
 
-        # if get_all_matches_count() == 0:
-        #     await self.create_game(user)
-        # else:
-        #     await self.join_game(game, 2, user)
-
-        # await sync_to_async(game.save)()
         player_queue.remove(self.player_id)
         #player_queue[user.id] = f"{game.id}"
         #return self.match_name
@@ -340,6 +336,8 @@ class GameConsumer(AsyncWebsocketConsumer):
             #game.players[user.id] = user
             game.add_player(user.id)
             game.status = "started"
+            self.match_name = str(f"match_{match.id}")
+            await self.channel_layer.group_add(self.match_name, self.channel_name)
         
         #await self.send_game_state(game)
 
