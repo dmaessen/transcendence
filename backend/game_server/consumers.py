@@ -127,6 +127,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                     print(f"ERROR: Player {player_id} failed matchmaking, re-entering queue!", flush=True)
                     await self.send(text_data=json.dumps({"error": "Matchmaking failed"}))
                     return
+                await self.send_json({"type": "match_info", "match_name": self.match_name}) #new
+
                 game_id = int(self.match_name[6:])
                 print("GAME_ID ", game_id)
 
@@ -144,11 +146,18 @@ class GameConsumer(AsyncWebsocketConsumer):
                 if self.player_id not in game.players:
                     game.add_player(player_id)
             print(f"Game mode set to: {mode}, with game_id {game_id}", flush=True)
+            game = games[game_id]
 
             if game_id in games:
                 print("LAAAAAAA")
+            if len(game.players) == 2: #start game if two players connected
+                    game.start_game()
+                    await self.send_json({"type": "started", "game_id": game_id})
+                    asyncio.create_task(self.broadcast_game_state(game_id))
+
         elif action == "move":
             direction = data.get("direction")
+            print("KOOOO")
             if game_id in games:
                 game = games[game_id]
                 game.move_player(player_id, direction)
@@ -212,7 +221,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         #broadcasts the updated game state to the group (for two players remote)
         if game_id in games and mode == "Two Players (remote)": # or tournament??
             game = games[game_id]
-            await self.send_game_state(game)
+            #await self.send_game_state(game)
 
             # await self.channel_layer.group_send(
             #     self.match_name,
@@ -231,12 +240,12 @@ class GameConsumer(AsyncWebsocketConsumer):
         #self.match_name = f"waiting_room_{player_id}"
         #await self.channel_layer.group_add(self.match_name, self.channel_name)
 
-        game = await sync_to_async(Match.objects.filter)(player_2__isnull=True, tournament__isnull=True)
-        if await sync_to_async(game.count)() == 0:
+        match = await sync_to_async(Match.objects.filter)(player_2__isnull=True, tournament__isnull=True)
+        if await sync_to_async(match.count)() == 0:
             await self.create_game(self.player_id)
         else:
-            game = await sync_to_async(game.first)()
-            self.match_name = await self.join_game(game, 2, self.player_id)
+            match = await sync_to_async(match.first)()
+            self.match_name = await self.join_game(match, 2, self.player_id)
 
         # if get_all_matches_count() == 0:
         #     await self.create_game(user)
@@ -305,7 +314,8 @@ class GameConsumer(AsyncWebsocketConsumer):
             'gameId': match.id
         }))
         game = Game("Two Players (remote)")
-        game.players[user.id] = user
+        game.add_player(player_id)
+        #game.players[user.id] = user
         #adding a game to games dict. game by gameid
         games[match.id] = game
         print("MATCH.ID ", match.id)
@@ -313,20 +323,21 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.match_name, self.channel_name)
         
         #join_game with 1 player??? (game, 1, user)
-        await self.join_game(game, 1, player_id)
+        await self.join_game(match, 1, player_id)
 
-    async def join_game(self, game, numb_of_players, player_id):
+    async def join_game(self, match, numb_of_players, player_id):
         user = await get_user_by_id(player_id)
         if numb_of_players == 1:
-            game.players[user.id] = user
+            game = games[match.id]
+            #game.players[user.id] = user
             game.add_player(user.id)
             game.status = "waiting"
         else:
-            game.player_2 = user
-            self.match_name = str(f"match_{game.id}")
-            await sync_to_async(game.save)()
-            game = games[game.id] #this game represents Game(), not Match model
-            game.players[user.id] = user
+            match.player_2 = user
+            self.match_name = str(f"match_{match.id}")
+            await sync_to_async(match.save)()
+            game = games[match.id] #this game represents Game(), not Match model
+            #game.players[user.id] = user
             game.add_player(user.id)
             game.status = "started"
         
