@@ -2,6 +2,15 @@
 
 ls -la
 
+
+echo "Waiting for PostgreSQL to start..."
+
+while ! nc -z "$POSTGRES_HOST" "$POSTGRES_PORT"; do
+  sleep 2
+done
+
+echo "PostgreSQL is up - executing command"
+
 # echo "Checking for pending migrations..."
 # python manage.py makemigrations data
 
