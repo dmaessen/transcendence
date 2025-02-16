@@ -6,6 +6,7 @@ from game_server.player import Player
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
+from django.core.cache import cache
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     tournament = None  # keeps track of the tournament instance
@@ -131,7 +132,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 "players_in": len(self.tournament.players),
                 "remaining_spots": self.tournament.num_players - len(self.tournament.players),
             }
+
             print(f"(BACKEND) Sending update: {state}", flush=True)
+            print(f"Setting tournament_state in cache: {state}")
+            cache.set("tournament_state", state)
+            print(f"Retrieved tournament_state from cache: {state}")
+
             await self.channel_layer.group_send(
                 self.room_name, {
                     "type": "tournament_update",
