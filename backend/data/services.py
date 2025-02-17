@@ -1,14 +1,14 @@
-from .models import User, Match, Tournament
+from .models import CustomUser, Match, Tournament
 from django.db.models import Q
 
 def get_all_users():
-    return User.objects.all()
+    return CustomUser.objects.all()
 
 def get_user_matches(user_id):
     return Match.objects.filter(player_id=user_id)
 
 def get_user_tournaments(user_id):
-    user = User.objects.get(id=user_id)
+    user = CustomUser.objects.get(id=user_id)
     return list(user.tournaments.values_list('id', flat=True))
 
 def get_win_cout(user_id):
