@@ -22,10 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("hey");
             fetch("/get_user_data/") // Django API endpoint
                 .then(response => response.json())
-                // .then(text => {
-                //     console.log("Raw response:", text); // Loga a resposta bruta
-                //     return JSON.parse(text); // Converte para JSON manualmente
-                // })
+                .then(text => {
+                    console.log("Raw response:", text); // Loga a resposta bruta
+                    return JSON.parse(text); // Converte para JSON manualmente
+                })
                 .then(data => {
                     document.getElementById("userAvatar").src = data.avatar;
                     document.getElementById("username").textContent = data.username;
