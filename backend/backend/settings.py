@@ -35,6 +35,7 @@ ALLOWED_HOSTS = ['*', 'localhost']
 # Application definition
 
 INSTALLED_APPS = [
+    'data.apps.DataConfig',
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -58,7 +59,6 @@ INSTALLED_APPS = [
 
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
-    'data.apps.DataConfig',
     'authentication.apps.AuthenticationConfig'
 ]
 
