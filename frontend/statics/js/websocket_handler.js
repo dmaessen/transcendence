@@ -50,8 +50,7 @@ function connectWebSocket(mode) {
                     socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
                     showWaitingRoomTournament();
                 })
-                .catch(error => console.error("Error fetching tournament status:", error));
-            }
+            .catch(error => console.error("Error fetching tournament status:", error));
         }
     };
 
