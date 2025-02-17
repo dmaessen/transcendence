@@ -17,7 +17,7 @@ from asgiref.sync import sync_to_async
 #from data.services import get_all_matches_count, get_user_by_id
 
 from game_server.player import Player
-from data.models import User, Match
+from data.models import CustomUser, Match
 
 games = {}  # games[game.id] = game ----game is Game()
 #player_queue = {} # self.player_queue[user.id] = f"{game.id}"
@@ -32,7 +32,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             session = await sync_to_async(SessionStore)()
             await sync_to_async(session.create)()
             
-            User = get_user_model()
+            CustomUser = get_user_model()
             unique_username = f"Guest_{uuid.uuid4().hex[:12]}"  # Generate a unique username
             guest_user = await sync_to_async(User.objects.create)(
                 username=unique_username,  # Set the unique username
