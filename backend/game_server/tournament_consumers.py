@@ -24,7 +24,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             
             CustomUser = get_user_model()
             unique_username = f"Guest_{uuid.uuid4().hex[:12]}"  # Generate a unique username
-            guest_user = await sync_to_async(User.objects.create)(
+            guest_user = await sync_to_async(CustomUser.objects.create)(
                 username=unique_username,  # Set the unique username
                 name=f"Guest_{session.session_key[:12]}",
                 email=f"{session.session_key[:10]}",

@@ -14,18 +14,10 @@
     <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
 </head>
 <body>
-    <!--<div id="tournamentWaitingRoom" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert">
-        <p id="tournamentCountdown"></p>
-        <p>🚀 A tournament is about to start! <span id="playersInTournament">0/8</span> players in.</p>
-        <button onclick="joinTournament()">Join now!</button>
-    </div>-->
     <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">
         🚀 A tournament is about to start!<br><span id="playersInTournament">0/8</span> players in. 
         <a href="#" class="alert-link" id="joinTournamentLink">Join now!</a>
       </div>
-
-
-    <!--<div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert"> </div>-->
     
     <h1 id="gameTitle" class="text-center my-3 display-6">Pong Game</h1>
     <button id="exitButton" type="button" class="btn btn-outline-dark position-fixed top-0 end-0 m-3">Exit</button>
@@ -36,7 +28,7 @@
 
 
     <!-- MAIN FIRST Menu -->
-    <div class="modal fade" id="gameMenuFirst" tabindex="-1" aria-labelledby="gameMenuLabelFirst">
+    <div class="modal fade" id="gameMenuFirst" tabindex="-1" aria-labelledby="gameMenuLabelFirst" data-backdrop="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -54,7 +46,7 @@
     </div>
 
     <!-- SECOND Game Menu Modal -->
-    <div class="modal fade" id="gameMenu" tabindex="-1" aria-labelledby="gameMenuLabel">
+    <div class="modal fade" id="gameMenu" tabindex="-1" aria-labelledby="gameMenuLabel" data-backdrop="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -73,7 +65,7 @@
     </div>
 
     <!-- User Registration Menu Modal -->
-    <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel" aria-hidden="true">
+    <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -106,7 +98,7 @@
     </div>
 
     <!-- Profile Modal -->
-    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -155,7 +147,7 @@
     </div>
 
     <!-- Friends Modal -->
-    <div class="modal fade" id="friendsModal" tabindex="-1" aria-labelledby="friendsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="friendsModal" tabindex="-1" aria-labelledby="friendsModalLabel" inert>
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
