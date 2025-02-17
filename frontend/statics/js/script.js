@@ -117,9 +117,9 @@ document.getElementById("playBtn").addEventListener("click", () => {
         .then(response => response.json())
         .then(data => {
             console.log("Fetched tournament status:", data);
-            if (data.remaining_spots != 0) // data.tournament_active && 
+            if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
                 tournamentMenuBtn.style.display = "none";
-            else
+            else // check on this
                 tournamentMenuBtn.style.display = "block";
         })
         .catch(error => console.error("Error fetching tournament status:", error));
@@ -189,10 +189,10 @@ async function fetchTournamentStatus() {
         const data = await response.json();
         console.log("Tournament Status:", data);
 
-        if (data.remaining_spots > 0) {
-            console.log("tournament active in fetchTournamentStatus()")
-            showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
-        }
+        // if (data.remaining_spots > 0) {
+        //     console.log("tournament active in fetchTournamentStatus()")
+        //     showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
+        // }
         //else
             // hide the banner
     } catch (error) {
@@ -209,7 +209,7 @@ window.addEventListener("load", () => {
         .then(response => response.json())
         .then(data => {
             console.log("Fetched tournament status:", data);
-            if (data.remaining_spots > 0 && data.tournament_active != false) { // data.tournament_active && 
+            if (data.remaining_spots > 0 && data.players_in != 0) {
                 showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
             }
         })
