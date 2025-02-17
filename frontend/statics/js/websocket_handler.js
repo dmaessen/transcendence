@@ -101,6 +101,8 @@ const returnToStartMenu = async () => {
 }
 
 function handleServerMessage(message) {
+    console.log(`(FRONTEND) message.typ here is: ${message.type}`);
+
     const tournamentBanner = document.getElementById("tournamentBanner");
     switch (message.type) {
         case "started":
@@ -146,7 +148,7 @@ function handleServerMessage(message) {
             console.log(`Players in tournament: ${message.players_in}`); // to rm
             console.log(`Remaining spots: ${message.remaining_spots}`); // to rm
             // if (message.remaining_spots > 0) {
-            showTournamentAdBanner(message.players_in, message.remaining_spots + message.players_in);
+            //showTournamentAdBanner(message.players_in, message.remaining_spots + message.players_in);
             // } else {
             //     tournamentBanner.style.display = "none";
             // }
