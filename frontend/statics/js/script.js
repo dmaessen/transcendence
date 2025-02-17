@@ -170,11 +170,11 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
 
 tournamentBanner.addEventListener("click", () => {
     fetchTournamentStatus();
-    fetch("http://localhost:8080/api/tournament-status/") // without /api here
+    fetch("http://localhost:8080/api/tournament-status/")
         .then(response => response.json())
         .then(data => {
             console.log("Fetched tournament status:", data);
-            if (data.remaining_spots != 0) // data.tournament_active && 
+            if (data.remaining_spots > 0)
                 connectWebSocket("tournament");
         })
         .catch(error => console.error("Error fetching tournament status:", error));
