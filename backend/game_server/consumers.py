@@ -161,7 +161,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             if game_id in games:
                 print("LAAAAAAA")
-            if len(game.players) == 2: #start game if two players connected
+            if len(game.players) == 2 and mode == "Two Players (remote)": #start game if two players connected
                     game.start_game()
                     await self.send_json({"type": "started", "game_id": game_id})
                     await self.send_game_state(game)
