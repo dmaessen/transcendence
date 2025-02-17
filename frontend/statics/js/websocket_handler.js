@@ -24,7 +24,7 @@ function connectWebSocket(mode) {
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
     if (mode == "tournament")
-        mode = tournament_mode;
+        mode = tournament_mode; // needs to be reset when tournament over btw
     if (mode == "4" || mode == "8") // or full name of it??
         socket = new WebSocket(tournamentwebsocket);
     else
@@ -42,7 +42,7 @@ function connectWebSocket(mode) {
                 .then(response => response.json())
                 .then(data => {
                     console.log("Fetched tournament status:", data);
-                    if (data.players_in == 0 && data.tournament_active == false) { // data.tournament_active && 
+                    if (data.players_in == 0) {
                         tournament_mode = mode;
                         socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
                         console.log("start_tounrment from connectWebsocket undergoing");
