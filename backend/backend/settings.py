@@ -107,10 +107,12 @@ CHANNEL_LAYERS = {
 
 ROOT_URLCONF = 'backend.urls'
 
+STATIC_URL = '/static/'
+STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(Path(__file__).resolve().parent.parent.parent, '/static/templates')],
+        'DIRS': [os.path.join(STATIC_ROOT, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -171,17 +173,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'static/')
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
 # STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')  # Where collectstatic will store files
 
 # # No need to set STATICFILES_DIRS if frontend is handling static files
 STATICFILES_DIRS = [
-    os.path.join(STATIC_ROOT, '/frontend/css/'),  # Ensure Django knows where to find them
-    os.path.join(STATIC_ROOT, '/frontend/js/'),
-    os.path.join(STATIC_ROOT, '/frontend/html/'),
+    os.path.join(STATIC_ROOT, 'frontend'),  # Ensure Django knows where to find them
 ]
 
 MEDIA_URL = '/media/'
@@ -232,24 +230,24 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'views': {  # Explicitly enable logs for views.py
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'serializers': {  # Explicitly enable logs for serializers.py
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
     },

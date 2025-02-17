@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css">
     <!-- Link CSS -->
     <!-- <link rel="stylesheet" type="text/css" href="../frontend/static/styles.css"> -->
-    <link rel="stylesheet" type="text/css" href="./statics/css/styles.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
     <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
 </head>
 <body>
@@ -164,11 +164,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <!-- Link JS -->
     <!-- <script src="../frontend/static/script.js"></script> -->
-    <script src="./static/frontend/js/websocket_handler.js"></script>
-    <script src="./static/js/frontend/tournament.js"></script>
-    <script src="./static/frontend/js/script.js"></script>
+    <script src="{% static 'js/websocket_handler.js' %}"></script>
+    <script src="{% static 'js/tournament.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
     <!-- <script src="/static/script.js"></script> -->
     <!-- profile page -->
-    <script src="./static/frontend/js/profile.js"></script>
+    <script src="{% static 'js/profile.js' %}"></script>
 </body>
 </html>
