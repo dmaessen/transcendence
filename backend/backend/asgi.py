@@ -26,13 +26,14 @@ django_asgi_app = get_asgi_application()
 #application = get_asgi_application()
 
 application = ProtocolTypeRouter({
-    "http": django_asgi_app,
+    #"http": django_asgi_app,
+    "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
+        URLRouter(websocket_urlpatterns)
         # URLRouter({
         #     "game_server/": GameConsumer.as_asgi(),
         #     path("ws/game_server/", GameConsumer.as_asgi()),
         # })
-        URLRouter(websocket_urlpatterns)
     ),
 })
 

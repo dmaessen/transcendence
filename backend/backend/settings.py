@@ -35,6 +35,7 @@ ALLOWED_HOSTS = ['*', 'localhost']
 # Application definition
 
 INSTALLED_APPS = [
+    'data.apps.DataConfig',
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -54,23 +55,22 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    # 'game_server',
+    #'game_server',
 
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
-    'data.apps.DataConfig',
     'authentication.apps.AuthenticationConfig'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 
 ]
 
@@ -80,8 +80,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://frontend:8080",
     "http://localhost:8080",  # for local development, later change it
     "http://localhost:8000", 
-    "http://localhost;80",
+    "http://localhost:80",
 ]
+
+#CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -170,16 +172,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')  # Where collectstatic will store files
+# STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')  # Where collectstatic will store files
 
-# No need to set STATICFILES_DIRS if frontend is handling static files
-STATICFILES_DIRS = [
-    os.path.join(STATIC_ROOT, 'css/'),  # Ensure Django knows where to find them
-    os.path.join(STATIC_ROOT, 'js/'),
-    os.path.join(STATIC_ROOT, 'html/'),
-]
+# # No need to set STATICFILES_DIRS if frontend is handling static files
+# STATICFILES_DIRS = [
+#     os.path.join(STATIC_ROOT, '/css/'),  # Ensure Django knows where to find them
+#     os.path.join(STATIC_ROOT, '/js/'),
+#     os.path.join(STATIC_ROOT, '/html/'),
+# ]
 
 MEDIA_URL = '/media/'
 
@@ -215,8 +218,12 @@ REST_AUTH = {
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',  # In-memory cache
-        'LOCATION': 'tournament_cache'
+        #'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',  # In-memory cache
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379/1',  # Redis server address and database number
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 

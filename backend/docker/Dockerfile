@@ -10,6 +10,8 @@ COPY ../ /app/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
 EXPOSE 8000
 
 RUN pip install -r requirements.txt
