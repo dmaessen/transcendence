@@ -137,7 +137,15 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             else:
                 game_id = f"game_{player_id}"
-
+                match = await sync_to_async(Match.objects.create)(
+                    player_1=user, 
+                    match_time=timedelta(minutes=2)
+                )
+                self.match_name = game_id
+                await self.send(text_data=json.dumps({
+                    'action': 'created',
+                    'gameId': match.id
+                }))
                 if game_id in games:
                     game = games[game_id]
                     # if not game.running:
