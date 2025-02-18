@@ -59,7 +59,7 @@ async function login(email,password){
 }
 
 function startGame(mode) {
-    keyboardEnabled = true;
+    keyboardEnabled = true; // this needed here??
     gameState.running = false;
     gameState.mode = mode; 
     resetGame(mode);
@@ -168,14 +168,19 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     gameMenuFirst.show();
 });
 
-tournamentBanner.addEventListener("click", () => {
+tournamentBanner.addEventListener("click", function(event) {
+    event.preventDefault(); // as href empty, else it refreshes
     fetchTournamentStatus();
     fetch("http://localhost:8080/api/tournament-status/")
         .then(response => response.json())
         .then(data => {
-            console.log("Fetched tournament status:", data);
-            if (data.remaining_spots > 0)
-                connectWebSocket("tournament");
+            console.log("(TOURNAMENT BANNER) Fetched tournament status:", data);
+            if (data.remaining_spots > 0) {
+                gameMenuFirst.hide();
+                gameMenu.hide();
+                gameMenuTournament.hide();
+                connectWebSocket(data.players_in + data.remaining_spots); // to have the mode
+            }
         })
         .catch(error => console.error("Error fetching tournament status:", error));
 });
@@ -188,13 +193,6 @@ async function fetchTournamentStatus() {
         }
         const data = await response.json();
         console.log("Tournament Status:", data);
-
-        // if (data.remaining_spots > 0) {
-        //     console.log("tournament active in fetchTournamentStatus()")
-        //     showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
-        // }
-        //else
-            // hide the banner
     } catch (error) {
         console.error("Error fetching tournament status:", error);
     }
@@ -231,14 +229,21 @@ function showTournamentAdBanner(players_in, total_spots) {// Show banner to prom
     }
 }
 
-function showWaitingRoomTournament() {
-    gameContext.font = "50px Courier New";
-    gameContext.fillStyle = "#000000";
-    gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
-    gameContext.fillStyle = "#ffffff";
-    gameContext.textAlign = "center";
-    gameContext.fillText("Waiting for players to join...", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
+function showWaitingRoomTournament(mode) {
+    console.log("showWaitingRoomTournament called with mode:", mode);
     keyboardEnabled = false;
+    gameState.running = false;
+    tournamentBanner.hide();
+    gameTitle.style.display = "none";
+    gameCanvas.style.display = "none";
+    drawBracket(mode); // working on it
+
+    // gameContext.font = "50px Courier New";
+    // gameContext.fillStyle = "#000000";
+    // gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
+    // gameContext.fillStyle = "#ffffff";
+    // gameContext.textAlign = "center";
+    // gameContext.fillText("Waiting for players to join...", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
 }
 
 function updateGameState(data) {

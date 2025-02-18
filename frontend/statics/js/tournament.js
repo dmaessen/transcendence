@@ -1,87 +1,98 @@
-//{/* <canvas id="tournamentBracket" width="800" height="600"></canvas> */}
+const tournCanvas = document.getElementById('tournamentBracket');
+// const gameCanvas = document.getElementById("game");
+const tournContext = tournCanvas.getContext('2d');
 
-// const gameCanvas = document.getElementById('tournamentBracket');
-const tournContext = gameCanvas.getContext('2d');
-
-let players = [];
-let matches = [];
+let players = []; // from backnend with usernames
+let matches = []; // from backend
 
 function drawBracket(mode) {
-    tournContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+    console.log("drawBracket called with mode:", mode);
+
+    tournCanvas.style.display = 'block';
+    tournCanvas.width = 800; // Set the width of the canvas
+    tournCanvas.height = 600; // Set the height of the canvas
+
+    tournContext.clearRect(0, 0, tournCanvas.width, tournCanvas.height);
+    tournContext.fillStyle = "#000000";
+    tournContext.fillRect(0, 0, tournCanvas.width, tournCanvas.height);
     tournContext.font = "20px Courier New";
     tournContext.textAlign = "center";
+    tournContext.strokeStyle = "#FFFFFF";
+    tournContext.fillStyle = "#FFFFFF";
 
+    if (mode == "4") {
+        drawBracketStructure4();
+    } else if (mode == "8") {
+        drawBracketStructure8();
+    }
+
+    fetchTournamentStatus();
+    fetch("http://localhost:8080/api/tournament-status/")
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched tournament status:", data);
+            if (data) { 
+                players = data.players; // check on this
+                updateBracketWithPlayers(mode);
+            }
+        })
+        .catch(error => console.error("Error fetching tournament status:", error));
+}
+
+function drawBracketStructure4() {
+    tournContext.beginPath();
+    tournContext.moveTo(tournCanvas.width / 4, 100);
+    tournContext.lineTo(tournCanvas.width / 2, 100);
+    tournContext.moveTo(tournCanvas.width * 3 / 4, 100);
+    tournContext.lineTo(tournCanvas.width / 2, 100);
+    tournContext.moveTo(tournCanvas.width / 2, 100);
+    tournContext.lineTo(tournCanvas.width / 2, 200);
+    tournContext.stroke();
+}
+
+function drawBracketStructure8() {
+    tournContext.beginPath();
+    tournContext.moveTo(tournCanvas.width / 8, 50);
+    tournContext.lineTo(tournCanvas.width / 4, 50);
+    tournContext.moveTo(tournCanvas.width * 3 / 8, 50);
+    tournContext.lineTo(tournCanvas.width / 4, 50);
+    tournContext.moveTo(tournCanvas.width / 4, 50);
+    tournContext.lineTo(tournCanvas.width / 4, 150);
+    tournContext.moveTo(tournCanvas.width * 5 / 8, 50);
+    tournContext.lineTo(tournCanvas.width * 3 / 4, 50);
+    tournContext.moveTo(tournCanvas.width * 7 / 8, 50);
+    tournContext.lineTo(tournCanvas.width * 3 / 4, 50);
+    tournContext.moveTo(tournCanvas.width * 3 / 4, 50);
+    tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
+    tournContext.moveTo(tournCanvas.width / 4, 150);
+    tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
+    tournContext.moveTo(tournCanvas.width / 2, 150);
+    tournContext.lineTo(tournCanvas.width / 2, 250);
+    tournContext.stroke();
+}
+
+function updateBracketWithPlayers(mode) {
     if (mode === '4') {
-        draw4PlayerBracket();
+        tournContext.fillText(players[0] || "Player 1", tournCanvas.width / 4, 90);
+        tournContext.fillText(players[1] || "Player 2", tournCanvas.width * 3 / 4, 90);
+        tournContext.fillText(players[2] || "Winner 1", tournCanvas.width / 2, 190);
+        tournContext.fillText(players[3] || "Final Winner", tournCanvas.width / 2, 290);
     } else if (mode === '8') {
-        draw8PlayerBracket();
+        tournContext.fillText(players[0] || "Player 1", tournCanvas.width / 8, 40);
+        tournContext.fillText(players[1] || "Player 2", tournCanvas.width * 3 / 8, 40);
+        tournContext.fillText(players[2] || "Player 3", tournCanvas.width * 5 / 8, 40);
+        tournContext.fillText(players[3] || "Player 4", tournCanvas.width * 7 / 8, 40);
+        tournContext.fillText(players[4] || "Player 5", tournCanvas.width / 8, 140);
+        tournContext.fillText(players[5] || "Player 6", tournCanvas.width * 3 / 8, 140);
+        tournContext.fillText(players[6] || "Player 7", tournCanvas.width * 5 / 8, 140);
+        tournContext.fillText(players[7] || "Player 8", tournCanvas.width * 7 / 8, 140);
+        tournContext.fillText(players[8] || "Winner 1", tournCanvas.width / 4, 240);
+        tournContext.fillText(players[9] || "Winner 2", tournCanvas.width * 3 / 4, 240);
+        tournContext.fillText(players[10] || "Final Winner", tournCanvas.width / 2, 340);
     }
 }
 
-function draw4PlayerBracket() {
-    // Draw lines for 4 player bracket
-    tournContext.beginPath();
-    tournContext.moveTo(gameCanvas.width / 2, 50);
-    tournContext.lineTo(gameCanvas.width / 2, 150);
-    tournContext.moveTo(gameCanvas.width / 4, 150);
-    tournContext.lineTo(gameCanvas.width * 3 / 4, 150);
-    tournContext.moveTo(gameCanvas.width / 4, 150);
-    tournContext.lineTo(gameCanvas.width / 4, 250);
-    tournContext.moveTo(gameCanvas.width * 3 / 4, 150);
-    tournContext.lineTo(gameCanvas.width * 3 / 4, 250);
-    tournContext.stroke();
 
-    // Draw player names or placeholders
-    tournContext.fillText("Player 1", gameCanvas.width / 4, 130);
-    tournContext.fillText("Player 2", gameCanvas.width * 3 / 4, 130);
-    tournContext.fillText("Winner 1", gameCanvas.width / 2, 50);
-    tournContext.fillText("Winner 2", gameCanvas.width / 2, 230);
-}
-
-function draw8PlayerBracket() {
-    // Draw lines for 8 player bracket
-    tournContext.beginPath();
-    tournContext.moveTo(gameCanvas.width / 2, 50);
-    tournContext.lineTo(gameCanvas.width / 2, 100);
-    tournContext.moveTo(gameCanvas.width / 2, 150);
-    tournContext.lineTo(gameCanvas.width / 2, 200);
-    tournContext.moveTo(gameCanvas.width / 4, 100);
-    tournContext.lineTo(gameCanvas.width * 3 / 4, 100);
-    tournContext.moveTo(gameCanvas.width / 4, 200);
-    tournContext.lineTo(gameCanvas.width * 3 / 4, 200);
-    tournContext.moveTo(gameCanvas.width / 4, 100);
-    tournContext.lineTo(gameCanvas.width / 4, 150);
-    tournContext.moveTo(gameCanvas.width * 3 / 4, 100);
-    tournContext.lineTo(gameCanvas.width * 3 / 4, 150);
-    tournContext.moveTo(gameCanvas.width / 4, 200);
-    tournContext.lineTo(gameCanvas.width / 4, 250);
-    tournContext.moveTo(gameCanvas.width * 3 / 4, 200);
-    tournContext.lineTo(gameCanvas.width * 3 / 4, 250);
-    tournContext.stroke();
-
-    // Draw player names or placeholders
-    tournContext.fillText("Player 1", gameCanvas.width / 4, 80);
-    tournContext.fillText("Player 2", gameCanvas.width * 3 / 4, 80);
-    tournContext.fillText("Player 3", gameCanvas.width / 4, 180);
-    tournContext.fillText("Player 4", gameCanvas.width * 3 / 4, 180);
-    tournContext.fillText("Winner 1", gameCanvas.width / 2, 50);
-    tournContext.fillText("Winner 2", gameCanvas.width / 2, 150);
-    tournContext.fillText("Winner 3", gameCanvas.width / 2, 250);
-}
-
-function updateBracket(winners) {
-    // Update the bracket with the winners of the matches
-    // This function should be called after each match to update the bracket
-    // winners is an array of objects with matchId and winnerId
-    // Example: [{matchId: 1, winnerId: 'Player 1'}, {matchId: 2, winnerId: 'Player 3'}]
-
-    // Update the bracket based on the winners
-    // This is a placeholder for the actual update logic
-    drawBracket(mode);
-}
-
-// Example usage
-drawBracket(mode);
 
 
 

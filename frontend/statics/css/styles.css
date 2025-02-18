@@ -48,7 +48,8 @@ body {
     padding: 0;
 }
 
-canvas {
+/* for the game canvas */
+#game {
     display: none;
     border: 1px solid #ccc; /* Optional border for the game canvas */
     margin: auto;
