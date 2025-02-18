@@ -109,6 +109,7 @@ ROOT_URLCONF = 'backend.urls'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -184,7 +185,7 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'data/media')
+MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
