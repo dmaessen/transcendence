@@ -4,8 +4,7 @@ const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
 let socket;
 let reconnecting = false;
 let resetting = false;
-let tournament_mode;
-let tournamentOpen = false; // switch back to off at some point maybe after xxx minutes or whatever
+//let tournamentOpen = false; // switch back to off at some point maybe after xxx minutes or whatever
 
 function connectWebSocket(mode) {
     // if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
@@ -19,13 +18,9 @@ function connectWebSocket(mode) {
         return;
     }
 
-    console.log(`websocket: ${websocket} | tournament: ${tournamentwebsocket}`);
-
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
-    if (mode == "tournament")
-        mode = tournament_mode; // needs to be reset when tournament over btw
-    if (mode == "4" || mode == "8") // or full name of it??
+    if (mode == "4" || mode == "8")
         socket = new WebSocket(tournamentwebsocket);
     else
         socket = new WebSocket(websocket);
@@ -43,12 +38,11 @@ function connectWebSocket(mode) {
                 .then(data => {
                     console.log("Fetched tournament status:", data);
                     if (data.players_in == 0) {
-                        tournament_mode = mode;
                         socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
                         console.log("start_tounrment from connectWebsocket undergoing");
                     }
                     socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
-                    showWaitingRoomTournament();
+                    showWaitingRoomTournament(mode);
                 })
             .catch(error => console.error("Error fetching tournament status:", error));
         }
@@ -142,7 +136,7 @@ function handleServerMessage(message) {
         //     // ADD STUFF
         //     break;
         case "tournament_full":
-            tournamentOpen = false;
+            //tournamentOpen = false;
             break;
         case "update_tournament":
             console.log(`Players in tournament: ${message.players_in}`); // to rm
