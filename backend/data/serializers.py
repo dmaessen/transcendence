@@ -88,6 +88,6 @@ class TournamentSummarySerializer(serializers.ModelSerializer):
         model = Tournament
         fields = ["start_date", "winner"]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        logging.info(f"Tournament winner: {self.validated_data.get('winner', 'Unknown')}")
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     logging.info(f"Tournament winner: {self.validated_data.get('winner', 'Unknown')}")

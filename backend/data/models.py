@@ -30,7 +30,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)  # Unique email for login
     name = models.CharField(max_length=30)  # Non-unique name field
     username = models.CharField(unique=True, max_length=30) # Unique as well
-    avatar = models.ImageField(upload_to='data/media', default='data/media/defaut.png')
+    avatar = models.ImageField(upload_to='avatars/', default='default.png')
     location = models.CharField(max_length=30, blank=True, null=True)
     oauth_tokens = models.JSONField(null=True, blank=True)
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)
