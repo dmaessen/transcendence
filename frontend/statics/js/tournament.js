@@ -5,16 +5,15 @@ const tournContext = gameCanvas.getContext('2d');
 
 let players = [];
 let matches = [];
-let currentMode = '4players'; // or '8players'
 
 function drawBracket(mode) {
     tournContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     tournContext.font = "20px Courier New";
     tournContext.textAlign = "center";
 
-    if (mode === '4players') {
+    if (mode === '4') {
         draw4PlayerBracket();
-    } else if (mode === '8players') {
+    } else if (mode === '8') {
         draw8PlayerBracket();
     }
 }
@@ -78,11 +77,11 @@ function updateBracket(winners) {
 
     // Update the bracket based on the winners
     // This is a placeholder for the actual update logic
-    drawBracket(currentMode);
+    drawBracket(mode);
 }
 
 // Example usage
-drawBracket(currentMode);
+drawBracket(mode);
 
 
 
