@@ -7,6 +7,7 @@ import math
 
 class Game:
     def __init__(self, mode):
+        #self.id = None
         self.mode = mode
         self.width = 1400
         self.height = 1000
@@ -101,6 +102,7 @@ class Game:
     def move_player(self, player_id, direction):
         if self.mode == "Two Players (hot seat)" and player_id in self.players:
             print(f"Moving player {player_id} with direction {direction}", flush=True)
+            print("111111")
             #paddle = self.players[player_id]
             player = self.players[player_id]
             opponent = self.players["opponent"]
@@ -115,6 +117,7 @@ class Game:
 
         elif player_id in self.players:
             print(f"Moving player {player_id} with direction {direction}", flush=True)
+            print("22222")
             paddle = self.players[player_id]
             if direction == "up" and paddle["y"] > 0:
                 paddle["y"] -= 10

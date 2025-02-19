@@ -158,4 +158,3 @@ function handleServerMessage(message) {
         //     console.warn("Unknown message type received:", message.type);
     }
 }
-
