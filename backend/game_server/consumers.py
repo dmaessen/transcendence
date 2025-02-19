@@ -197,7 +197,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         elif action == "start":
             mode = data.get("mode")
             print("STAAAAART ", player_id)
-            self.game_id = f"game_{player_id}"
+            #self.game_id = f"game_{player_id}"
             if self.game_id in games:
                 game = games[self.game_id]
                 game.start_game()
