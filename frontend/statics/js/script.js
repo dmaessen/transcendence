@@ -232,9 +232,9 @@ function showWaitingRoomTournament(mode) {
     console.log("showWaitingRoomTournament called with mode:", mode);
     keyboardEnabled = false;
     gameState.running = false;
-    tournamentBanner.style.display = "none";
-    gameTitle.style.display = "none"; // needed??
-    gameCanvas.style.display = "none"; // needed??
+    // tournamentBanner.style.display = "none";
+    // gameTitle.style.display = "none"; // needed??
+    // gameCanvas.style.display = "none"; // needed??
     drawBracket(mode); // working on it
 
     // gameContext.font = "50px Courier New";
