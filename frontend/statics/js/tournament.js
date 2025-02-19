@@ -1,46 +1,66 @@
 const tournCanvas = document.getElementById('tournamentBracket');
-// const gameCanvas = document.getElementById("game");
 const tournContext = tournCanvas.getContext('2d');
-
-let players = []; // from backnend with usernames
-let matches = []; // from backend
 
 function drawBracket(mode) {
     console.log("drawBracket called with mode:", mode);
 
     tournCanvas.style.display = 'block';
-    tournCanvas.width = 800; // Set the width of the canvas
-    tournCanvas.height = 600; // Set the height of the canvas
-
+    tournCanvas.width = 800;
+    tournCanvas.height = 600;
     tournContext.clearRect(0, 0, tournCanvas.width, tournCanvas.height);
     tournContext.fillStyle = "#000000";
     tournContext.fillRect(0, 0, tournCanvas.width, tournCanvas.height);
     tournContext.font = "20px Courier New";
     tournContext.textAlign = "center";
-    tournContext.strokeStyle = "#FFFFFF";
     tournContext.fillStyle = "#FFFFFF";
 
-    if (mode == "4") {
-        drawBracketStructure4();
-    } else if (mode == "8") {
-        drawBracketStructure8();
-    }
+    fetchTournamentStatus(mode);
+    setInterval(() => fetchTournamentStatus(mode), 5000); // auto-update every 5s
+}
 
-    fetchTournamentStatus();
+function fetchTournamentStatus(mode) {
     fetch("http://localhost:8080/api/tournament-status/")
         .then(response => response.json())
         .then(data => {
             console.log("Fetched tournament status:", data);
-            if (data) { 
-                players = data.players; // check on this
-                updateBracketWithPlayers(mode);
+            if (data) {
+                updateBracket(mode, data.bracket, data.players, data.winners, data.current_round);
             }
         })
         .catch(error => console.error("Error fetching tournament status:", error));
 }
 
-function drawBracketStructure4() {
+function updateBracket(mode, bracket, players, winners, currentRound) {
+    tournContext.clearRect(0, 0, tournCanvas.width, tournCanvas.height);
+    drawBracketStructure(mode);
+    
+    players.forEach((player, index) => {
+        const x = tournCanvas.width / 8 * (index % 2 === 0 ? 1 : 7);
+        const y = 40 + Math.floor(index / 2) * 100;
+        tournContext.fillText(player.username || `Player ${index + 1}`, x, y);
+    });
+
+    winners.forEach((winner, index) => {
+        const x = tournCanvas.width / 2;
+        const y = 240 + index * 100;
+        tournContext.fillText(winner.username || `Winner ${index + 1}`, x, y);
+    });
+
+    if (winners.length === 1) {
+        displayChampion(winners[0].username);
+    }
+}
+
+function drawBracketStructure(mode) {
     tournContext.beginPath();
+    if (mode === '4') {
+        drawBracketStructure4();
+    } else if (mode === '8') {
+        drawBracketStructure8();
+    }
+}
+
+function drawBracketStructure4() {
     tournContext.moveTo(tournCanvas.width / 4, 100);
     tournContext.lineTo(tournCanvas.width / 2, 100);
     tournContext.moveTo(tournCanvas.width * 3 / 4, 100);
@@ -51,7 +71,6 @@ function drawBracketStructure4() {
 }
 
 function drawBracketStructure8() {
-    tournContext.beginPath();
     tournContext.moveTo(tournCanvas.width / 8, 50);
     tournContext.lineTo(tournCanvas.width / 4, 50);
     tournContext.moveTo(tournCanvas.width * 3 / 8, 50);
@@ -71,25 +90,10 @@ function drawBracketStructure8() {
     tournContext.stroke();
 }
 
-function updateBracketWithPlayers(mode) {
-    if (mode === '4') {
-        tournContext.fillText(players[0] || "Player 1", tournCanvas.width / 4, 90);
-        tournContext.fillText(players[1] || "Player 2", tournCanvas.width * 3 / 4, 90);
-        tournContext.fillText(players[2] || "Winner 1", tournCanvas.width / 2, 190);
-        tournContext.fillText(players[3] || "Final Winner", tournCanvas.width / 2, 290);
-    } else if (mode === '8') {
-        tournContext.fillText(players[0] || "Player 1", tournCanvas.width / 8, 40);
-        tournContext.fillText(players[1] || "Player 2", tournCanvas.width * 3 / 8, 40);
-        tournContext.fillText(players[2] || "Player 3", tournCanvas.width * 5 / 8, 40);
-        tournContext.fillText(players[3] || "Player 4", tournCanvas.width * 7 / 8, 40);
-        tournContext.fillText(players[4] || "Player 5", tournCanvas.width / 8, 140);
-        tournContext.fillText(players[5] || "Player 6", tournCanvas.width * 3 / 8, 140);
-        tournContext.fillText(players[6] || "Player 7", tournCanvas.width * 5 / 8, 140);
-        tournContext.fillText(players[7] || "Player 8", tournCanvas.width * 7 / 8, 140);
-        tournContext.fillText(players[8] || "Winner 1", tournCanvas.width / 4, 240);
-        tournContext.fillText(players[9] || "Winner 2", tournCanvas.width * 3 / 4, 240);
-        tournContext.fillText(players[10] || "Final Winner", tournCanvas.width / 2, 340);
-    }
+function displayChampion(championName) {
+    tournContext.fillStyle = "#FFD700";
+    tournContext.font = "30px Courier New";
+    tournContext.fillText(`Champion: ${championName}`, tournCanvas.width / 2, 300);
 }
 
 

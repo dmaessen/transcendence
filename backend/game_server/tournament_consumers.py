@@ -131,12 +131,14 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def broadcast_tournament_state(self):
         """Broadcasts the current tournament state to all connected clients"""
         if self.tournament:
-            state = {
-                "action": "update_tournament",
+            # state = {
+            #     "action": "update_tournament",
                 
-                "players_in": len(self.tournament.players),
-                "remaining_spots": self.tournament.num_players - len(self.tournament.players),
-            }
+            #     "players_in": len(self.tournament.players),
+            #     "remaining_spots": self.tournament.num_players - len(self.tournament.players),
+            # }
+            state = self.tournament.get_tournament_state()
+            state["action"] = "update_tournament"
 
             print(f"(BACKEND) Sending update: {state}", flush=True)
             cache.set("tournament_state", state)
@@ -144,10 +146,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_send(
                 self.room_name, {
                     "type": "tournament_update",
-                    "message": json.dumps({
-                        "type": "update_tournament",
-                        "players_in": len(self.tournament.players),
-                        "remaining_spots": self.tournament.num_players - len(self.tournament.players),
-                    })
+                    "message": json.dumps(state)
                 }
             )
