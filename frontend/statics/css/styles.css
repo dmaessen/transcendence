@@ -49,6 +49,12 @@ body {
 }
 
 /* for the game canvas */
+canvas {
+    display: none;
+    border: 1px solid #ccc; /* Optional border for the game canvas */
+    margin: auto;
+}
+
 #game {
     display: none;
     border: 1px solid #ccc; /* Optional border for the game canvas */
