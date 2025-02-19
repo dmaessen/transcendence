@@ -202,7 +202,6 @@ window.addEventListener("load", () => {
     gameMenuFirst.show();
     
     fetchTournamentStatus();
-
     fetch("http://localhost:8080/api/tournament-status/") // without /api here
         .then(response => response.json())
         .then(data => {
@@ -233,9 +232,9 @@ function showWaitingRoomTournament(mode) {
     console.log("showWaitingRoomTournament called with mode:", mode);
     keyboardEnabled = false;
     gameState.running = false;
-    tournamentBanner.hide();
-    gameTitle.style.display = "none";
-    gameCanvas.style.display = "none";
+    tournamentBanner.style.display = "none";
+    gameTitle.style.display = "none"; // needed??
+    gameCanvas.style.display = "none"; // needed??
     drawBracket(mode); // working on it
 
     // gameContext.font = "50px Courier New";
@@ -281,6 +280,7 @@ function updateGameState(data) {
 }
 
 function displayStartPrompt() {
+    gameCanvas.style.display = "block";
     gameContext.font = "50px Courier New";
     gameContext.fillStyle = "#000000";
     gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
