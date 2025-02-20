@@ -75,7 +75,7 @@ p {
 
 /* Optional: Limit the modal width */
 .modal-dialog {
-    max-width: 400px;
+    max-width: 1400px;
 }
 
 /* Optional: Customize the header and button styles */
@@ -98,8 +98,18 @@ p {
 }
 
 #profileModal .avatar img {
-    width: 300px;
+    width: 10%;
+    max-width: 150px;  /* Limits the image size */
     height: auto;
+    float: left;
+    /* border-radius: */
+    border-radius: 15px 50px 30px;
+}
+
+#uAvatar {
+    width: 200;
+    max-width: 150px;  /* Limits the image size */
+    height: 200px;
     float: left;
     /* border-radius: */
     border-radius: 15px 50px 30px;

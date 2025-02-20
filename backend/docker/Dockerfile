@@ -16,6 +16,7 @@ EXPOSE 8000
 
 RUN pip install -r requirements.txt
 RUN pip install python-decouple
+RUN pip install rich
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 

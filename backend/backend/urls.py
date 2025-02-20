@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from data.views import get_user_data
+from data.views import *
 from django.conf import settings
 from django.conf.urls.static import static
 from game_server.views import get_tournament_status
@@ -26,7 +26,10 @@ urlpatterns = [
     path('matchmaking/', include('matchmaking.urls')),
     path('game_server/', include('game_server.urls')),
 	path('api/authentication/', include('authentication.urls')),
+    path('data/', include('data.urls')),
     #path('api/', include('game_server.urls')),
-    path("get_user_data/", get_user_data, name="get_user_data"),
+    # path("get_user_data/", get_user_data, name="get_user_data"),
+    # path("get_user_matches/", get_user_matches, name="get_user_matches"),
+    # path("get_user_tournaments/", get_user_tournaments, name="get_user_tournaments"),
     path('tournament-status/', get_tournament_status, name='tournament-status'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
