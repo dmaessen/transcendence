@@ -44,7 +44,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     # Use email for authentication
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name']  # Name is required when creating a superuser
+    REQUIRED_FIELDS = ['name', 'username']  # Name is required when creating a superuser
    
     def _str_(self):
         return self.name

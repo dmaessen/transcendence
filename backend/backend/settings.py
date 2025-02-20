@@ -286,3 +286,4 @@ LOGGING = {
 # }
 
 
+#TODO for ngnix change path for all media and statics
