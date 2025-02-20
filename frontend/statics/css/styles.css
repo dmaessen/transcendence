@@ -53,6 +53,7 @@ canvas {
     display: none;
     border: 1px solid #ccc; /* Optional border for the game canvas */
     margin: auto;
+    background-color: #040202;
 }
 
 #game {

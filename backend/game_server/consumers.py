@@ -162,9 +162,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             print(f"Game mode set to: {mode}, with game_id {self.game_id}", flush=True)
             game = games[self.game_id]
 
-            if game_id in games:
-                print("LAAAAAAA")
-            if len(game.players) == 2 and mode == "Two Players (remote)": #start game if two players connected
+            # if game_id in games:
+            #     print("LAAAAAAA")
+            if len(game.players) == 2: #start game if two players connected  and mode == "Two Players (remote)"
                     game.start_game()
                     await self.send_json({"type": "started", "game_id": self.game_id})
                     await self.send_game_state(game)

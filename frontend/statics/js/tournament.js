@@ -1,7 +1,7 @@
 const tournCanvas = document.getElementById('tournamentBracket');
 const tournContext = tournCanvas.getContext('2d');
 
-function drawBracket(mode) {
+async function drawBracket(mode) {
     console.log("drawBracket called with mode:", mode);
 
     tournCanvas.style.display = 'block';
@@ -10,24 +10,34 @@ function drawBracket(mode) {
     tournContext.clearRect(0, 0, tournCanvas.width, tournCanvas.height);
     tournContext.fillStyle = "#000000";
     tournContext.fillRect(0, 0, tournCanvas.width, tournCanvas.height);
+    tournContext.strokeStyle = "#FFFFFF";
+    tournContext.fillStyle = "#FFFFFF";
     tournContext.font = "20px Courier New";
     tournContext.textAlign = "center";
-    tournContext.fillStyle = "#FFFFFF";
 
-    fetchTournamentStatus(mode);
-    setInterval(() => fetchTournamentStatus(mode), 5000); // auto-update every 5s
+    await updateBracketWithData(mode);
+    let tournamentInterval = setInterval(async () => await updateBracketWithData(mode), 5000); // auto-update every 5s 
+    // make the above stop when tournament over or if someone quits the tournament
 }
 
-function fetchTournamentStatus(mode) {
-    fetch("http://localhost:8080/api/tournament-status/")
-        .then(response => response.json())
-        .then(data => {
-            console.log("Fetched tournament status:", data);
-            if (data) {
-                updateBracket(mode, data.bracket, data.players, data.winners, data.current_round);
-            }
-        })
-        .catch(error => console.error("Error fetching tournament status:", error));
+// call stopTournamentUpdates() below when the tournament ends or a player quits
+function stopTournamentUpdates() {
+    if (tournamentInterval) {
+        clearInterval(tournamentInterval);
+        console.log("Tournament updates stopped.");
+    }
+}
+
+async function updateBracketWithData(mode) {
+    try {
+        const data = await fetchData("http://localhost:8080/api/tournament-status/");
+        console.log("Fetched tournament status:", data);
+        if (data) {
+            updateBracket(mode, data.bracket, data.players, data.winners, data.current_round);
+        }
+    } catch (error) {
+        console.error("Error fetching tournament status:", error);
+    }
 }
 
 function updateBracket(mode, bracket, players, winners, currentRound) {
@@ -53,11 +63,13 @@ function updateBracket(mode, bracket, players, winners, currentRound) {
 
 function drawBracketStructure(mode) {
     tournContext.beginPath();
-    if (mode === '4') {
+    tournContext.strokeStyle = "#FFFFFF";
+    if (mode == "4") {
         drawBracketStructure4();
-    } else if (mode === '8') {
+    } else if (mode == "8") {
         drawBracketStructure8();
     }
+    tournContext.stroke();
 }
 
 function drawBracketStructure4() {
@@ -67,7 +79,6 @@ function drawBracketStructure4() {
     tournContext.lineTo(tournCanvas.width / 2, 100);
     tournContext.moveTo(tournCanvas.width / 2, 100);
     tournContext.lineTo(tournCanvas.width / 2, 200);
-    tournContext.stroke();
 }
 
 function drawBracketStructure8() {
@@ -87,11 +98,10 @@ function drawBracketStructure8() {
     tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
     tournContext.moveTo(tournCanvas.width / 2, 150);
     tournContext.lineTo(tournCanvas.width / 2, 250);
-    tournContext.stroke();
 }
 
 function displayChampion(championName) {
-    tournContext.fillStyle = "#FFD700";
+    tournContext.fillStyle = "#FFD700"; // gold champ
     tournContext.font = "30px Courier New";
     tournContext.fillText(`Champion: ${championName}`, tournCanvas.width / 2, 300);
 }
