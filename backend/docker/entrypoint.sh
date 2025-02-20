@@ -1,6 +1,11 @@
 #!/bin/bash
 
-ls -la
+echo "Waiting for PostgreSQL to start..."
+while ! nc -z "$POSTGRES_HOST" "$POSTGRES_PORT"; do
+  sleep 2
+done
+echo "PostgreSQL is up - executing command"
+
 
 echo "Checking for pending migrations..."
 python manage.py makemigrations data
@@ -32,13 +37,6 @@ python manage.py migrate
 # else
 #   echo "No migrations needed."
 # fi
-
-echo "Waiting for PostgreSQL to start..."
-while ! nc -z "$POSTGRES_HOST" "$POSTGRES_PORT"; do
-  sleep 2
-done
-echo "PostgreSQL is up - executing command"
-
 
 echo "Starting Django server..."
 exec python manage.py runserver 0.0.0.0:8000

@@ -18,7 +18,7 @@ class Tournament:
     def add_player(self, player_id):
         if len(self.players) < self.num_players:
             self.players.append(player_id)
-            print(f"Player {player_id} joined the tournament.", flush=True)
+            print(f"Player {player_id} joined the tournament. Total players: {len(self.players)}", flush=True)
         else:
             print(f"Tournament is full. Player {player_id} cannot join.", flush=True) # do something extra??
 
@@ -83,9 +83,17 @@ class Tournament:
 
     def get_tournament_state(self):
         return {
+            "mode": self.mode,
+            "num_players": self.num_players,
             "players": self.players,
             "bracket": self.bracket,
             "current_round": self.current_round,
+            "tournament_active": self.running,
             "running": self.running,
-            "final_winner": self.final_winner
+            "final_winner": self.final_winner,
+            "matches": self.matches,
+            "winners": self.winners,
+            "players_in": len(self.players),
+            "remaining_spots": self.num_players - len(self.players),
         }
+
