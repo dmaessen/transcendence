@@ -25,26 +25,38 @@ function connectWebSocket(mode) {
     else
         socket = new WebSocket(websocket);
 
-    socket.onopen = () => {
+    socket.onopen = async() => {
         console.log("Connected to the game server.");
         socket.send(JSON.stringify({ action: "connect", mode: mode }));
         reconnecting = false;
         if (mode != "4" && mode != "8") {
             startGameMenu();
         } else if (mode == "4" || mode == "8") {
-            fetchTournamentStatus();
-            fetch("http://localhost:8080/api/tournament-status/") // without /api here
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Fetched tournament status:", data);
-                    if (data.players_in == 0) {
-                        socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
-                        console.log("start_tounrment from connectWebsocket undergoing");
-                    }
-                    socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
-                    showWaitingRoomTournament(mode);
-                })
-            .catch(error => console.error("Error fetching tournament status:", error));
+            try {
+                const data = await fetchData("http://localhost:8080/api/tournament-status/");
+                console.log("Fetched tournament status:", data);
+                if (data.players_in == 0) {
+                    socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+                    console.log("start_tounrment from connectWebsocket undergoing");
+                }
+                socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
+                showWaitingRoomTournament(mode);
+            } catch (error) {
+                console.error("Error fetching tournament status:", error);
+            }
+            // fetchTournamentStatus();
+            // fetch("http://localhost:8080/api/tournament-status/") // without /api here
+            //     .then(response => response.json())
+            //     .then(data => {
+            //         console.log("Fetched tournament status:", data);
+            //         if (data.players_in == 0) {
+            //             socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+            //             console.log("start_tounrment from connectWebsocket undergoing");
+            //         }
+            //         socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
+            //         showWaitingRoomTournament(mode);
+            //     })
+            // .catch(error => console.error("Error fetching tournament status:", error));
         }
     };
 
