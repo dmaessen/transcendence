@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css">
     <!-- Link CSS -->
     <!-- <link rel="stylesheet" type="text/css" href="../frontend/static/styles.css"> -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
      <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
 </head>
 <body>
@@ -113,14 +114,7 @@
                     <button class="btn btn-primary">Edit Profile</button>
                     <div class="matches">
                         <div class="divider">Matches</div>
-                        <table id="matchesTable">
-                            <thead>
-                                <tr>
-                                    <th>Match Date</th>
-                                    <th>Winner</th>
-                                    <th>Opponent</th>
-                                </tr>
-                            </thead>
+                        <table id="matchesTable" class="table">
                             <tbody>
                                 <!-- Filled dynamically -->
                             </tbody>
@@ -128,13 +122,7 @@
                     </div>
                     <div class="matches">
                         <div class="divider">Tournaments</div> 
-                        <table id="tournamentTable">
-                            <thead>
-                                <tr>
-                                    <th>Tournament date</th>
-                                    <th>Winer</th>
-                                </tr>
-                            </thead>
+                        <table id="tournamentsTable" class="table">
                             <tbody>
                                 <!-- Filled dynamically -->
                             </tbody>
