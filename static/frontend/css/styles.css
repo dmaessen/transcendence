@@ -75,7 +75,7 @@ p {
 
 /* Optional: Limit the modal width */
 .modal-dialog {
-    max-width: 1400px;
+    max-width: 400px;
 }
 
 /* Optional: Customize the header and button styles */
@@ -98,18 +98,8 @@ p {
 }
 
 #profileModal .avatar img {
-    width: 10%;
-    max-width: 150px;  /* Limits the image size */
+    width: 200px;
     height: auto;
-    float: left;
-    /* border-radius: */
-    border-radius: 15px 50px 30px;
-}
-
-#uAvatar {
-    width: 200;
-    max-width: 150px;  /* Limits the image size */
-    height: 200px;
     float: left;
     /* border-radius: */
     border-radius: 15px 50px 30px;
@@ -140,3 +130,13 @@ p {
     background-color: black;
     margin: 1px;
   }
+
+#profileThead {
+    display: table-header-group !important;
+}
+
+#profileTh {
+    width: 25%;
+    text-align: left; /* Or center if needed */
+    font-weight: bold;
+}

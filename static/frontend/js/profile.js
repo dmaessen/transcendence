@@ -1,72 +1,4 @@
-// function populateTable(table, data, columns) {
-//     console.log("table: ",table);
-//     console.log("data: ", data);
-//     console.log("columns: ", columns);
-//     if (!table) {
-//         console.error("Table not found!");
-//         return;
-//     }
-//     console.log("Populating table with columns:", columns);
-
-//     // Clear existing rows
-//     table.innerHTML = "";
-
-//     // Populate new data
-//     data.forEach(item => {
-//         const row = document.createElement("tr");
-//         columns.forEach(col => {
-//             const cell = document.createElement("td");
-//             cell.textContent = item[col] || "N/A"; // Handle missing data
-//             row.appendChild(cell);
-//         });
-//         table.appendChild(row);
-//     });
-// }
-
-// document.addEventListener("DOMContentLoaded", function () {
-//     const profileBtn = document.getElementById("profileBtn");
-//     const profileModal = new bootstrap.Modal(document.getElementById("profileModal"));
-//     if (profileBtn) {
-//         profileBtn.addEventListener("click", function () {
-//             console.log("hey");
-//             fetch("/get_user_data/") // Django API endpoint
-//                 .then(response => response.json())
-//                 .then(data => {
-//                     console.log("Raw response:", data); // Loga a resposta bruta
-
-//                     document.getElementById("userAvatar").src = data.avatar || "default.png";
-//                     document.getElementById("username").textContent = data.username;
-//                     document.getElementById("userEmail").textContent = data.email
-
-//                     profileModal.show();
-
-//                 })
-                
-//             fetch("/get_user_matches/") // Django API endpoint
-//                 .then(response => response.json())
-//                 .then(data => {
-//                     console.log("Raw response:", data); // Loga a resposta bruta
-
-//                     //figure out how to populate the tables here
-//                     profileModal.show();
-
-//                 })
-
-//             fetch("/get_user_tournaments/") // Django API endpoint
-//                 .then(response => response.json())
-//                 .then(data => {
-//                     console.log("Raw response:", data); // Loga a resposta bruta
-//                     //figure out how to populate the tables here
-
-//                     profileModal.show();
-
-//                 })
-//                 .catch(error => console.error("Error fetching profile:", error));
-//         });
-//     }
-// });
-
-function populateTable(table, data, columns) {
+function populateTable(table, data, columns, flag) {
     console.log("table:", table);
     console.log("data:", data);
     console.log("columns:", columns);
@@ -83,6 +15,24 @@ function populateTable(table, data, columns) {
 
     // Clear existing rows
     table.innerHTML = "";
+
+    // Create a table head and append headers
+    let thead = table.querySelector('thead');
+    if (!thead) {
+        thead = document.createElement('thead');
+        table.appendChild(thead);
+    }
+
+    // Deal with headers
+    let headerRow = document.createElement("tr");
+    if (flag == 1) {
+        headerRow.innerHTML = "<th>Match date</th><th>Winner</th><th>Opponent</th>";
+    }
+    if (flag == 2) {
+        headerRow.innerHTML = "<th>Tournament date</th><th>Winner</th>";
+    }
+    thead.innerHTML = "";  // Clear existing header content
+    thead.appendChild(headerRow);
 
     // Populate new data
     data.forEach(item => {
@@ -103,7 +53,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (profileBtn) {
         profileBtn.addEventListener("click", function () {
             console.log("hey");
-
+            // const matchesTable = document.getElementById("matchesTable").querySelector("tbody");
+            // const tournamentsTable = document.getElementById("tournamentTable").querySelector("tbody");
+            
             fetch("/data/api/userData/") // Fetch user info
                 .then(response => response.json())
                 .then(data => {
@@ -117,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
                 // .catch(error => console.error("Error fetching data:", error));
 
-                fetch("/data/api/userMatches/")
+            fetch("/data/api/userMatches/")
                 .then(response => response.json())
                 .then(data => {
                     console.log("Raw response:", data);  // Log the whole response
@@ -125,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
                     // Ensure that we're checking 'data.matches' correctly
                     if (Array.isArray(data.matches)) {
-                        populateTable(matchesTable, data.matches, ["match_start", "winner", "opponent"]);
+                        populateTable(matchesTable, data.matches, ["match_start", "winner_name", "opponent"], 1);
                     } else {
                         console.error("Data.matches is not an array:", data.matches);
                     }
@@ -140,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // Ensure that we're checking 'data.matches' correctly
                     if (Array.isArray(data.tournaments)) {
-                        populateTable(tournamentsTable, data.tournaments, ["start_date", "winner"]);
+                        populateTable(tournamentsTable, data.tournaments, ["start_date", "winner"], 2);
                     } else {
                         console.error("Data.tournaments is not an array:", data.tournaments);
                     }

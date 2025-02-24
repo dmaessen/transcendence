@@ -65,10 +65,11 @@ class TournamentSerializer(serializers.ModelSerializer):
 
 class MatchSummarySerializer(serializers.ModelSerializer):
     opponent = serializers.SerializerMethodField()
-
+    winner_name = serializers.CharField(source='winner.username')
+    
     class Meta:
         model = Match
-        fields = ["match_start", "winner", "opponent"]
+        fields = ["match_start", "winner_name", "opponent"]
 
     def get_opponent(self, obj):
         """Return the name of the opponent."""
@@ -78,6 +79,7 @@ class MatchSummarySerializer(serializers.ModelSerializer):
             logging.info(f"Opponent: {opponent}")  # Log the opponent here
             return opponent
         return "Unknown"
+    
 
 
 class TournamentSummarySerializer(serializers.ModelSerializer):
