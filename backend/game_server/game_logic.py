@@ -11,21 +11,21 @@ class Game:
         self.mode = mode
         self.width = 1400
         self.height = 1000
-        self.players = {}  # Use a dictionary to store players by player_id
-        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
+        self.players = {}
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 7}
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
         self.status = None #default can be "waiting", "started"
 
-    def add_player(self, player_id):
+    def add_player(self, player_id, username):
         if player_id not in self.players:
             if len(self.players) == 0: #first player
-                self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "player"}
-                print(f"Player {player_id} added as Player 1.", flush=True)
+                self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "player", "username": username}
+                print(f"Player {player_id} added as Player 1. With username: {username}", flush=True)
             elif len(self.players) == 1: #second player
-                self.players[player_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
-                print(f"Player {player_id} added as Player 2 (opponent).", flush=True)
+                self.players[player_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": username}
+                print(f"Player {player_id} added as Player 2 (opponent). With username: {username}", flush=True)
             else:
                 print(f"Cannot add more players. Maximum supported is 2.", flush=True)
             
@@ -38,13 +38,13 @@ class Game:
         # automatically add a bot if only one player (in One Player mode)
         if self.mode == "One Player" and len(self.players) == 1:
             bot_id = "bot"
-            self.players[bot_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
-            print(f"Bot added as opponent: {bot_id}", flush=True)
+            self.players[bot_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": "Bot"}
+            print(f"Bot added as opponent: {bot_id}. With username: {username}", flush=True)
 
         if self.mode == "Two Players (hot seat)" and len(self.players) == 1:
             opponent_id = "opponent"
-            self.players[opponent_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent"}
-            print(f"Opponent added as opponent: {opponent_id}", flush=True) 
+            self.players[opponent_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": "Opponent"}
+            print(f"Opponent added as opponent: {opponent_id}. With username: {username}", flush=True) 
 
     def remove_player(self, player_id):
         if player_id in self.players:
@@ -79,10 +79,6 @@ class Game:
                 else:  # Right paddle
                     self.ball["dir_x"] = -abs(self.ball["dir_x"])
 
-                # adjusts ball speed slightly
-                # self.ball["dir_x"] *= 1.1
-                # self.ball["dir_y"] *= 1.1
-
         # Ball out of bounds
         if self.ball["x"] < 0:
             self.score["opponent"] += 1
@@ -91,9 +87,14 @@ class Game:
             self.score["player"] += 1
             self._reset_ball(direction=-1)
 
-        if self.score["player"] >= 2 or self.score["opponent"] >= 2:
-            winner = "Player" if self.score["player"] >= 2 else "Opponent"
-            self.stop_game(winner)
+        if self.mode == "4" or self.mode == "8":
+            if self.score["player"] >= 3 or self.score["opponent"] >= 3:
+                winner = "Player" if self.score["player"] >= 2 else "Opponent"
+                self.stop_game(winner) # or use usernames here
+        else:
+            if self.score["player"] >= 10 or self.score["opponent"] >= 10:
+                winner = "Player" if self.score["player"] >= 2 else "Opponent"
+                self.stop_game(winner) # or use usernames here
 
         # Opponent AI movement (only in single-player mode)
         if self.mode == "One Player" and len(self.players) > 1: # or should it be =
@@ -157,11 +158,10 @@ class Game:
         self.ball["x"] = self.width // 2
         self.ball["y"] = random.randint(200, self.height // 2)
         angle = random.uniform(0.2, 0.8)
-        #speed = random.uniform(6, 10) #speed = 8
-        speed = math.sqrt(self.ball["dir_x"] ** 2 + self.ball["dir_y"] ** 2)
+        self.ball["speed"] = self.ball["speed"] * 1.2
         
-        self.ball["dir_x"] = direction * (speed * 1.2) * angle
-        self.ball["dir_y"] = (speed * 1.2) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
+        self.ball["dir_x"] = direction * (self.ball["speed"]) * angle
+        self.ball["dir_y"] = (self.ball["speed"]) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
 
     def _move_ai(self):
         opponent = None
@@ -186,7 +186,7 @@ class Game:
     def start_game(self):
         self.running = True
 
-    def stop_game(self, winner):
+    def stop_game(self, winner): # do we mis other things here??
         self.running = False
         self.players = {}  # Clear players
         self.score = {"player": 0, "opponent": 0}

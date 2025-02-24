@@ -45,8 +45,7 @@ const gameState = {
     gameId: null,
     players: [],
     running: false,
-    // tournamentOngoing: false,
-    playerId: null, // does Laura need?
+    playerId: null,
 };
 
 async function login(email,password){
@@ -59,7 +58,7 @@ async function login(email,password){
 }
 
 function startGame(mode) {
-    keyboardEnabled = true; // this needed here??
+    keyboardEnabled = true;
     gameState.running = false;
     gameState.mode = mode; 
     resetGame(mode);
@@ -82,7 +81,7 @@ function startGame(mode) {
         gameTitle.textContent = "Two Players (hot seat)";
         instructions2.style.display = "block";
         connectWebSocket(mode);
-    } if (mode === "Two Players (remote)") { // TODO
+    } if (mode === "Two Players (remote)") {
         alert(`${mode} mode is not yet implemented.`);
         gameTitle.textContent = "Two Players (remote)";
         instructions1.style.display = "block";
@@ -122,18 +121,6 @@ document.getElementById("playBtn").addEventListener("click", async() => {
     } catch (error) {
         console.error("Error fetching tournament status:", error);
     }
-
-    // fetchTournamentStatus();
-    // fetch("http://localhost:8080/api/tournament-status/") // without /api here
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         console.log("Fetched tournament status:", data);
-    //         if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
-    //             tournamentMenuBtn.style.display = "none";
-    //         else // check on this
-    //             tournamentMenuBtn.style.display = "block";
-    //     })
-    //     .catch(error => console.error("Error fetching tournament status:", error));
 });
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
@@ -147,13 +134,11 @@ document.getElementById("tournamentBtn").addEventListener("click", () => {
 });
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    disableTournamentButtons(); // needed in the end??
-    // showTournamentAdBanner();
+    disableTournamentButtons();
 });
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    disableTournamentButtons(); // needed in the end??
-    // showTournamentAdBanner();
+    disableTournamentButtons();
 });
 
 document.getElementById("previous1Btn").addEventListener("click", () => {
@@ -182,8 +167,7 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
 });
 
 tournamentBanner.addEventListener("click", async(event) => {
-    event.preventDefault(); // as href empty, else it refreshes
-
+    event.preventDefault();
     try {
         const data = await fetchData("http://localhost:8080/api/tournament-status/");
         console.log("Tournament Status:", data);
@@ -191,43 +175,12 @@ tournamentBanner.addEventListener("click", async(event) => {
             gameMenuFirst.hide();
             gameMenu.hide();
             gameMenuTournament.hide();
-            connectWebSocket(data.players_in + data.remaining_spots); // to have the mode
+            connectWebSocket(data.players_in + data.remaining_spots);
         }
     } catch (error) {
         console.error("Error fetching tournament status:", error);
     }
-
-    // fetchTournamentStatus();
-    // fetch("http://localhost:8080/api/tournament-status/")
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         console.log("(TOURNAMENT BANNER) Fetched tournament status:", data);
-    //         if (data.remaining_spots > 0) {
-    //             gameMenuFirst.hide();
-    //             gameMenu.hide();
-    //             gameMenuTournament.hide();
-    //             connectWebSocket(data.players_in + data.remaining_spots); // to have the mode
-    //         }
-    //     })
-    //     .catch(error => console.error("Error fetching tournament status:", error));
 });
-
-// async function fetchTournamentStatus() {
-//     try {
-//         const response = await fetch("http://localhost:8080/api/tournament-status/");
-//         if (!response.ok) {
-//             throw new Error(`HTTP error! Status: ${response.status}`);
-//         }
-//         const data = await response.json();
-//         console.log("Tournament Status:", data);
-//         // if (data.remaining_spots > 0 && data.players_in > 0) {
-//         //     console.log("YEAH YEAH YEAH in the fetch tournamentstatus"); // to rm
-//         //     showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
-//         // }
-//     } catch (error) {
-//         console.error("Error fetching tournament status:", error);
-//     }
-// }
 
 window.addEventListener("load", async () => {
     gameMenuFirst.show();
@@ -241,19 +194,6 @@ window.addEventListener("load", async () => {
     } catch (error) {
         console.error("Error fetching tournament status:", error);
     }
-
-    // fetchTournamentStatus();
-    // fetch("http://localhost:8080/api/tournament-status/") // without /api here
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         console.log("Fetched tournament status:", data);
-    //         console.log("SUUUUUUPER"); // to rm
-    //         if (data.remaining_spots > 0 && data.players_in != 0) {
-    //             console.log("YEAH in load soon showing tounrament banner"); // . to rm
-    //             showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
-    //         }
-    //     })
-    //     .catch(error => console.error("Error fetching tournament status:", error));
 });
 
 function disableTournamentButtons() {
@@ -319,9 +259,18 @@ function updateGameState(data) {
     }
 
     // draw scores
-    gameContext.font = "60px Courier New";
-    gameContext.fillText(score.player, gameCanvas.width / 4, 80);
-    gameContext.fillText(score.opponent, (gameCanvas.width * 3) / 4, 80);
+    gameContext.font = "30px Courier New";
+    // gameContext.fillText(score.player, gameCanvas.width / 4, 80);
+    // gameContext.fillText(score.opponent, (gameCanvas.width * 3) / 4, 80);
+    const playerIds = Object.keys(players);
+    if (playerIds.length >= 1) {
+        const player1 = players[playerIds[0]];
+        gameContext.fillText(`${player1.username}: ${score.player}`, gameCanvas.width / 4, 80);
+    }
+    if (playerIds.length >= 2) {
+        const player2 = players[playerIds[1]];
+        gameContext.fillText(`${player2.username}: ${score.opponent}`, (gameCanvas.width * 3) / 4, 80);
+    }
 }
 
 function displayStartPrompt() {

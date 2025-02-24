@@ -12,7 +12,7 @@ async function drawBracket(mode) {
     tournContext.fillRect(0, 0, tournCanvas.width, tournCanvas.height);
     tournContext.strokeStyle = "#FFFFFF";
     tournContext.fillStyle = "#FFFFFF";
-    tournContext.font = "20px Courier New";
+    tournContext.font = "14px Courier New";
     tournContext.textAlign = "center";
 
     await updateBracketWithData(mode);
@@ -43,16 +43,18 @@ async function updateBracketWithData(mode) {
 function updateBracket(mode, bracket, players, winners, currentRound) {
     tournContext.clearRect(0, 0, tournCanvas.width, tournCanvas.height);
     drawBracketStructure(mode);
-    
+
+    tournContext.font = "18px Courier New";
     players.forEach((player, index) => {
         const x = tournCanvas.width / 8 * (index % 2 === 0 ? 1 : 7);
-        const y = 40 + Math.floor(index / 2) * 100;
+        const y = 60 + Math.floor(index / 2) * 120; // Increase spacing
         tournContext.fillText(player.username || `Player ${index + 1}`, x, y);
     });
 
+    tournContext.font = "20px Courier New"; // Slightly larger font for winners
     winners.forEach((winner, index) => {
         const x = tournCanvas.width / 2;
-        const y = 240 + index * 100;
+        const y = 280 + index * 120; // Increase spacing
         tournContext.fillText(winner.username || `Winner ${index + 1}`, x, y);
     });
 
@@ -81,28 +83,82 @@ function drawBracketStructure4() {
     tournContext.lineTo(tournCanvas.width / 2, 200);
 }
 
+// function drawBracketStructure8() {
+//     tournContext.moveTo(tournCanvas.width / 8, 50);
+//     tournContext.lineTo(tournCanvas.width / 4, 50);
+//     tournContext.moveTo(tournCanvas.width * 3 / 8, 50);
+//     tournContext.lineTo(tournCanvas.width / 4, 50);
+//     tournContext.moveTo(tournCanvas.width / 4, 50);
+//     tournContext.lineTo(tournCanvas.width / 4, 150);
+//     tournContext.moveTo(tournCanvas.width * 5 / 8, 50);
+//     tournContext.lineTo(tournCanvas.width * 3 / 4, 50);
+//     tournContext.moveTo(tournCanvas.width * 7 / 8, 50);
+//     tournContext.lineTo(tournCanvas.width * 3 / 4, 50);
+//     tournContext.moveTo(tournCanvas.width * 3 / 4, 50);
+//     tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
+//     tournContext.moveTo(tournCanvas.width / 4, 150);
+//     tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
+//     tournContext.moveTo(tournCanvas.width / 2, 150);
+//     tournContext.lineTo(tournCanvas.width / 2, 250);
+// }
+
 function drawBracketStructure8() {
-    tournContext.moveTo(tournCanvas.width / 8, 50);
-    tournContext.lineTo(tournCanvas.width / 4, 50);
-    tournContext.moveTo(tournCanvas.width * 3 / 8, 50);
-    tournContext.lineTo(tournCanvas.width / 4, 50);
-    tournContext.moveTo(tournCanvas.width / 4, 50);
-    tournContext.lineTo(tournCanvas.width / 4, 150);
-    tournContext.moveTo(tournCanvas.width * 5 / 8, 50);
-    tournContext.lineTo(tournCanvas.width * 3 / 4, 50);
-    tournContext.moveTo(tournCanvas.width * 7 / 8, 50);
-    tournContext.lineTo(tournCanvas.width * 3 / 4, 50);
-    tournContext.moveTo(tournCanvas.width * 3 / 4, 50);
-    tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
-    tournContext.moveTo(tournCanvas.width / 4, 150);
-    tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
-    tournContext.moveTo(tournCanvas.width / 2, 150);
-    tournContext.lineTo(tournCanvas.width / 2, 250);
+    // First round lines
+    tournContext.moveTo(tournCanvas.width / 16, 60);
+    tournContext.lineTo(tournCanvas.width / 8, 60);
+    tournContext.moveTo(tournCanvas.width * 3 / 16, 60);
+    tournContext.lineTo(tournCanvas.width / 8, 60);
+    tournContext.moveTo(tournCanvas.width / 8, 60);
+    tournContext.lineTo(tournCanvas.width / 8, 120);
+
+    tournContext.moveTo(tournCanvas.width * 5 / 16, 60);
+    tournContext.lineTo(tournCanvas.width * 3 / 8, 60);
+    tournContext.moveTo(tournCanvas.width * 7 / 16, 60);
+    tournContext.lineTo(tournCanvas.width * 3 / 8, 60);
+    tournContext.moveTo(tournCanvas.width * 3 / 8, 60);
+    tournContext.lineTo(tournCanvas.width * 3 / 8, 120);
+
+    tournContext.moveTo(tournCanvas.width * 9 / 16, 60);
+    tournContext.lineTo(tournCanvas.width * 5 / 8, 60);
+    tournContext.moveTo(tournCanvas.width * 11 / 16, 60);
+    tournContext.lineTo(tournCanvas.width * 5 / 8, 60);
+    tournContext.moveTo(tournCanvas.width * 5 / 8, 60);
+    tournContext.lineTo(tournCanvas.width * 5 / 8, 120);
+
+    tournContext.moveTo(tournCanvas.width * 13 / 16, 60);
+    tournContext.lineTo(tournCanvas.width * 7 / 8, 60);
+    tournContext.moveTo(tournCanvas.width * 15 / 16, 60);
+    tournContext.lineTo(tournCanvas.width * 7 / 8, 60);
+    tournContext.moveTo(tournCanvas.width * 7 / 8, 60);
+    tournContext.lineTo(tournCanvas.width * 7 / 8, 120);
+
+    // Second round lines
+    tournContext.moveTo(tournCanvas.width / 8, 120);
+    tournContext.lineTo(tournCanvas.width / 4, 120);
+    tournContext.moveTo(tournCanvas.width * 3 / 8, 120);
+    tournContext.lineTo(tournCanvas.width / 4, 120);
+    tournContext.moveTo(tournCanvas.width / 4, 120);
+    tournContext.lineTo(tournCanvas.width / 4, 240);
+
+    tournContext.moveTo(tournCanvas.width * 5 / 8, 120);
+    tournContext.lineTo(tournCanvas.width * 3 / 4, 120);
+    tournContext.moveTo(tournCanvas.width * 7 / 8, 120);
+    tournContext.lineTo(tournCanvas.width * 3 / 4, 120);
+    tournContext.moveTo(tournCanvas.width * 3 / 4, 120);
+    tournContext.lineTo(tournCanvas.width * 3 / 4, 240);
+
+    // Final round lines
+    tournContext.moveTo(tournCanvas.width / 4, 240);
+    tournContext.lineTo(tournCanvas.width / 2, 240);
+    tournContext.moveTo(tournCanvas.width * 3 / 4, 240);
+    tournContext.lineTo(tournCanvas.width / 2, 240);
+    tournContext.moveTo(tournCanvas.width / 2, 240);
+    tournContext.lineTo(tournCanvas.width / 2, 360);
 }
 
 function displayChampion(championName) {
     tournContext.fillStyle = "#FFD700"; // gold champ
-    tournContext.font = "30px Courier New";
+    tournContext.font = "20px Courier New";
     tournContext.fillText(`Champion: ${championName}`, tournCanvas.width / 2, 300);
 }
 
