@@ -27,6 +27,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
+            self.username = self.scope["user"].username
         else:
             # Use sync_to_async for session creation
             session = await sync_to_async(SessionStore)()
@@ -44,6 +45,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             
             self.player_id = guest_user.id
             self.session_key = session.session_key
+            self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
         #player = Player(self.player_id, self.session_key, 'online')
@@ -158,14 +160,13 @@ class GameConsumer(AsyncWebsocketConsumer):
                     games[self.game_id] = game
 
                 if self.player_id not in game.players:
-                    game.add_player(player_id)
+                    game.add_player(player_id, self.username)
             print(f"Game mode set to: {mode}, with game_id {self.game_id}", flush=True)
             game = games[self.game_id]
 
-            # if game_id in games:
-            #     print("LAAAAAAA")
-            if len(game.players) == 2: #start game if two players connected  and mode == "Two Players (remote)"
-                    game.start_game()
+            # what about play with friends for the below
+            if len(game.players) == 2 and mode != "One Player" and mode != "Two players (hot seat)": #start game if two players connected  and mode == "Two Players (remote)"
+                    game.start_game() # this makes them start without having to press on a key
                     await self.send_json({"type": "started", "game_id": self.game_id})
                     await self.send_game_state(game)
                     asyncio.create_task(self.broadcast_game_state(self.game_id))
@@ -293,7 +294,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         if numb_of_players == 1:
             game = games[match.id]
             #game.players[user.id] = user
-            game.add_player(user.id)
+            game.add_player(user.id, self.username)
             game.status = "waiting"
         else:
             match.player_2 = user
@@ -301,7 +302,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await sync_to_async(match.save)()
             game = games[match.id] #this game represents Game(), not Match model
             #game.players[user.id] = user
-            game.add_player(user.id)
+            game.add_player(user.id, self.username)
             game.status = "started"
             #self.match_name = str(f"match_{match.id}")
             #await self.channel_layer.group_add(self.match_name, self.channel_name)
@@ -320,6 +321,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         if game_id in games:
             game = games[game_id]
             # print("game yes+++++++++++++++++++++++++++++++")
+            if game.mode == "4" or game.mode == "8":
+                points = 3
+            else:
+                points = 10
             while game.running:
                 # print("-----------------------------------")
                 game.update_state()
@@ -330,7 +335,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 })
 
                 if not game.running: 
-                    winner = "Player" if game.score["player"] >= 2 else "Opponent"
+                    winner = "Player" if game.score["player"] >= points else "Opponent"
+                    #winner = "Player" if game.score["player"] >= 2 else "Opponent" # worked too
                     # improve the below with data/name from laura about the player_id
                     await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
                     # socket.close() ???

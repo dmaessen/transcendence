@@ -17,6 +17,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
+            self.username = self.scope["user"].username
         else:
             # Use sync_to_async for session creation
             session = await sync_to_async(SessionStore)()
@@ -34,6 +35,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             
             self.player_id = guest_user.id
             self.session_key = session.session_key
+            self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
         player = Player(self.player_id, self.session_key, 'online')
@@ -108,7 +110,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.tournament = Tournament(mode=data.get("mode"))
 
         if len(self.tournament.players) < self.tournament.num_players:
-            self.tournament.add_player(self.player_id)
+            self.tournament.add_player(self.player_id, self.username)
             print(f"Player {self.player_id} joined the tournament.")
             await self.broadcast_tournament_state()
             if len(self.tournament.players) == self.tournament.num_players:

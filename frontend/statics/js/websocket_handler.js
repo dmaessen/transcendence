@@ -4,7 +4,6 @@ const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
 let socket;
 let reconnecting = false;
 let resetting = false;
-//let tournamentOpen = false; // switch back to off at some point maybe after xxx minutes or whatever
 
 function connectWebSocket(mode) {
     // if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
@@ -44,19 +43,6 @@ function connectWebSocket(mode) {
             } catch (error) {
                 console.error("Error fetching tournament status:", error);
             }
-            // fetchTournamentStatus();
-            // fetch("http://localhost:8080/api/tournament-status/") // without /api here
-            //     .then(response => response.json())
-            //     .then(data => {
-            //         console.log("Fetched tournament status:", data);
-            //         if (data.players_in == 0) {
-            //             socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
-            //             console.log("start_tounrment from connectWebsocket undergoing");
-            //         }
-            //         socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
-            //         showWaitingRoomTournament(mode);
-            //     })
-            // .catch(error => console.error("Error fetching tournament status:", error));
         }
     };
 
