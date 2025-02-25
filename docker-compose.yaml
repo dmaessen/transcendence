@@ -10,14 +10,15 @@ services:
       env_file:
           - ./dot_env/.env
       volumes:
-          - pgdata:/var/lib/postgresql/data/
+          #- pgdata:/var/lib/postgresql/data/
+          - ${HOME}/.tranceanddance/pgdata:/var/lib/postgresql/data/
 
   backend:
     build: ./backend/docker
     container_name: backend
     volumes:
       - ./backend/:/app/
-      - ./logs:/var/log/django
+      - ./monitoring/logs:/var/log/django
     ports:
       - "8000:8000"
     env_file:
@@ -38,7 +39,7 @@ services:
       container_name: frontend
       volumes:
           - ./frontend/statics/:/usr/share/nginx/html/static/
-          - ./logs/nginx:/var/log/nginx
+          - ./monitoring/logs/nginx:/var/log/nginx
       ports:
           - "8080:80"
       networks:
@@ -53,14 +54,13 @@ services:
       - backend
       - psql
 
-  # Elasticsearch: Stores all the logs
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: elasticsearch
     environment:
-      - discovery.type=single-node    # Run as single node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m  # Set Java heap size
-      - xpack.security.enabled=false  # Disable security for dev
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m 
+      #- xpack.security.enabled=false  # Disable security for dev ??
     ports:
       - "9200:9200"
     volumes:
@@ -68,27 +68,26 @@ services:
     networks:
       - transcendence
 
-  # Logstash: Processes and forwards logs
   logstash:
     image: docker.elastic.co/logstash/logstash:8.17.0
     container_name: logstash
     ports:
       - "5044:5044"
     volumes:
-      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./monitoring/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - elasticsearch
     networks:
       - transcendence
 
-  # Kibana: Web interface to view logs
   kibana:
     image: docker.elastic.co/kibana/kibana:8.17.0
     container_name: kibana
     ports:
       - "5601:5601"
     volumes:
-      - ./kibana-data:/usr/share/kibana/data
+      #- kibanadata:/usr/share/kibana/data
+      - ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
@@ -100,9 +99,9 @@ services:
     image: docker.elastic.co/beats/filebeat:8.17.0
     container_name: filebeat
     volumes:
-      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./logs:/var/log/django:ro
-      - ./logs/nginx:/var/log/nginx:ro
+      - ./monitoring/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./monitoring/logs:/var/log/django:ro
+      - ./monitoring/logs/nginx:/var/log/nginx:ro
 
       # - /var/lib/docker/containers:/var/lib/docker/containers:ro
       # - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -119,6 +118,13 @@ networks:
 
 volumes:
   elasticsearch_data:
+  kibanadata:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: $HOME/.tranceanddance/kibanadata
+
   pgdata:
         driver: local
         driver_opts:
