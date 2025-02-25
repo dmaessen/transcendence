@@ -175,6 +175,7 @@ tournamentBanner.addEventListener("click", async(event) => {
             gameMenuFirst.hide();
             gameMenu.hide();
             gameMenuTournament.hide();
+            gameState.mode = data.players_in + data.remaining_spots; 
             connectWebSocket(data.players_in + data.remaining_spots);
         }
     } catch (error) {
@@ -327,11 +328,26 @@ function stopTimer() {
 document.addEventListener("keydown", (event) => {
     if (keyboardEnabled === false)
         return;
-    if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Key pressed. Starting the game...");
-        gameState.running = true;
-        socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
-        startTimer();
+    // if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+    //     console.log("Key pressed. Starting the game...");
+    //     gameState.running = true;
+    //     socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+    //     startTimer();
+    // }
+    if (gameState.mode != "One Player" && gameState.mode != "Two Players (hot seat)") {
+        if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+            console.log("Key pressed, 'ready' state, waiting for the other player to start the game...");
+            socket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
+            // startTimer();
+        }
+    }
+    else {
+        if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+            console.log("Key pressed. Starting the game...");
+            gameState.running = true;
+            socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+            startTimer();
+        }
     }
 });
 
