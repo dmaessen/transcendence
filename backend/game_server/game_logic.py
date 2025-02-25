@@ -12,7 +12,8 @@ class Game:
         self.width = 1400
         self.height = 1000
         self.players = {}
-        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 7}
+        self.ready_players = set()
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
@@ -56,7 +57,8 @@ class Game:
     def reset_game(self, mode):
         self.mode = mode
         self.players = {}
-        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
+        self.ready_players.clear()
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
@@ -89,12 +91,20 @@ class Game:
 
         if self.mode == "4" or self.mode == "8":
             if self.score["player"] >= 3 or self.score["opponent"] >= 3:
-                winner = "Player" if self.score["player"] >= 2 else "Opponent"
-                self.stop_game(winner) # or use usernames here
+                winner_id = next(
+                    (pid for pid, pdata in self.players.items() if self.score[pdata["role"]] >= 3),
+                    None
+                )
+                winner_name = self.players[winner_id]["username"] if winner_id else "Unknown"
+                self.stop_game(winner_name)  # Use username instead of "Player" or "Opponent"
         else:
             if self.score["player"] >= 10 or self.score["opponent"] >= 10:
-                winner = "Player" if self.score["player"] >= 2 else "Opponent"
-                self.stop_game(winner) # or use usernames here
+                winner_id = next(
+                    (pid for pid, pdata in self.players.items() if self.score[pdata["role"]] >= 10),
+                    None
+                )
+                winner_name = self.players[winner_id]["username"] if winner_id else "Unknown"
+                self.stop_game(winner_name)
 
         # Opponent AI movement (only in single-player mode)
         if self.mode == "One Player" and len(self.players) > 1: # or should it be =
@@ -130,6 +140,7 @@ class Game:
     def get_state(self):
         return {
             "players": self.players,
+            "ready_players": list(self.ready_players),
             "ball": self.ball,
             "score": self.score,
             "net": self.net,
@@ -186,9 +197,13 @@ class Game:
     def start_game(self):
         self.running = True
 
-    def stop_game(self, winner): # do we mis other things here??
+    def stop_game(self, winner): # do we miss other things here??
         self.running = False
-        self.players = {}  # Clear players
-        self.score = {"player": 0, "opponent": 0}
+        # self.players = {}  # Clear players
+        # self.score = {"player": 0, "opponent": 0}
         self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
         print(f"Game ended. Winner: {winner}", flush=True)
+
+    def clear_game(self):
+        self.players = {}  # Clear players
+        self.score = {"player": 0, "opponent": 0}

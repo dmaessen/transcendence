@@ -6,6 +6,7 @@ from game_server.tournament_logic import Tournament
 from matchmaking.utils import create_match
 import uuid
 import msgspec
+from autobahn.websocket.protocol import Disconnected
 
 from datetime import timedelta
 
@@ -22,6 +23,7 @@ from data.models import CustomUser, Match
 games = {}  # games[game.id] = game ----game is Game()
 #player_queue = {} # self.player_queue[user.id] = f"{game.id}"
 player_queue = [] #player_id s int
+# ready_players = set() #stores ids for 1v1 matches
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -110,11 +112,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             {
                 "type": "update",
                 "data": game_state_serializable,
-                #"game": games[game.id]
             }
         )
-        print(f"out of send_game_sate {self.player_id}", flush=True)
-
+        # print(f"out of send_game_sate {self.player_id}", flush=True)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -166,8 +166,8 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             # what about play with friends for the below
             if len(game.players) == 2 and mode != "One Player" and mode != "Two players (hot seat)": #start game if two players connected  and mode == "Two Players (remote)"
-                    game.start_game() # this makes them start without having to press on a key
-                    await self.send_json({"type": "started", "game_id": self.game_id})
+                    #game.start_game() # this makes them start without having to press on a key
+                    #await self.send_json({"type": "started", "game_id": self.game_id})
                     await self.send_game_state(game)
                     asyncio.create_task(self.broadcast_game_state(self.game_id))
     
@@ -215,8 +215,30 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "type": "started",
                     "game_id": self.game_id,
                 }))
+        
+        elif action == "ready":
+            if self.game_id in games:
+                game = games[self.game_id]
+                game.ready_players.add(player_id)
+                print(f"Player {player_id} is ready! Ready count: {len(game.ready_players)}", flush=True)
+
+            if mode == "Two Players (remote)" or mode == "4" or mode == "8" or mode == "Two players (with a friend)":
+                if len(game.ready_players) == 2:
+                    print("Both players are ready. Starting game!", flush=True)
+                    game.start_game() # this makes them start without having to press on a key
+                    await self.send_json({"type": "started", "game_id": self.game_id})
+                    await self.send_game_state(game)
+                    asyncio.create_task(self.broadcast_game_state(self.game_id))
+                    # game.ready_players.clear()
+        
+        elif action == "end":
+            if self.game_id in games:
+                game = games[self.game_id]
+                game.clear_game()
 
         elif action == "stop":
+        #     # if player_id in ready_players:
+        #     #     ready_players.remove(player_id)
             if self.game_id in games:
                 del games[self.game_id]
                 await self.broadcast_game_state(self.game_id)
@@ -226,28 +248,20 @@ class GameConsumer(AsyncWebsocketConsumer):
                 }))
 
         elif action == "disconnect":
-            # if player_id in players:
-            #     del players[player_id]
-            await self.close()
-            print(f"WebSocket disconnected", flush=True)
-            await self.channel_layer.group_discard(
-                "game_group",
-                self.channel_name
-            )
-        
-        #broadcasts the updated game state to the group (for two players remote)
-        # if self.game_id in games and mode == "Two Players (remote)": # or tournament??
-        #     game = games[self.game_id]
-            #await self.send_game_state(game)
+            for game_id in list(games.keys()):
+                game = games[game_id]
+                if self.player_id in game.players:
+                    game.remove_player(self.player_id)
+                    if not game.players:
+                        game.stop_game("No players")
+                        del games[game_id]
+                        print(f"Game {game_id} ended. Winner: No players", flush=True)
 
-            # await self.channel_layer.group_send(
-            #     self.match_name,
-            #     {
-            #         "type": "update", #this correct or we want another type?
-            #         # "game_id": game_id,
-            #         "data": games[game_id].get_state(), #data or game_update
-            #     },
-            # )
+            await self.close()
+            print(f"WebSocket disconnected for player {self.player_id}", flush=True)
+
+            if hasattr(self, 'match_name'):
+                await self.channel_layer.group_discard(self.match_name, self.channel_name)
 
     async def find_match(self, user):
         print(f"Player {self.player_id} entered find_match()", flush=True)
@@ -260,6 +274,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         match = await sync_to_async(Match.objects.filter)(player_2__isnull=True, tournament__isnull=True)
         if await sync_to_async(match.count)() == 0:
             await self.create_game(self.player_id)
+            match = await sync_to_async(Match.objects.latest)('id')
         else:
             match = await sync_to_async(match.first)()
             self.match_name = await self.join_game(match, 2, self.player_id)
@@ -316,34 +331,78 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         return self.match_name
 
+    # async def broadcast_game_state(self, game_id):
+    #     if game_id in games:
+    #         game = games[game_id]
+    #         # print("game yes+++++++++++++++++++++++++++++++")
+    #         if game.mode == "4" or game.mode == "8":
+    #             points = 3
+    #         else:
+    #             points = 10
+    #         while game.running:
+    #             # print("-----------------------------------")
+    #             game.update_state()
+
+    #             await self.send_json({
+    #                 "type": "update",
+    #                 "data": game.get_state()
+    #             })
+
+    #             if not game.running: 
+    #                 winner = "Player" if game.score["player"] >= points else "Opponent"
+    #                 #winner = "Player" if game.score["player"] >= 2 else "Opponent" # worked too
+    #                 # improve the below with data/name from laura about the player_id
+    #                 await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+    #                 # socket.close() ???
+    #                 break
+
+    #             await asyncio.sleep(0.05)
 
     async def broadcast_game_state(self, game_id):
         if game_id in games:
             game = games[game_id]
-            # print("game yes+++++++++++++++++++++++++++++++")
-            if game.mode == "4" or game.mode == "8":
-                points = 3
-            else:
-                points = 10
+            points = 3 if game.mode in ["4", "8"] else 10
+
             while game.running:
-                # print("-----------------------------------")
                 game.update_state()
 
+                await self.send_game_state(game)
                 await self.send_json({
-                    "type": "update",
-                    "data": game.get_state()
-                })
+                        "type": "update",
+                        "data": game.get_state()
+                    })
 
-                if not game.running: 
-                    winner = "Player" if game.score["player"] >= points else "Opponent"
-                    #winner = "Player" if game.score["player"] >= 2 else "Opponent" # worked too
-                    # improve the below with data/name from laura about the player_id
-                    await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
-                    # socket.close() ???
+                if not game.running:
+                    player_username = None
+                    opponent_username = None
+
+                    #print(f"Game State: {game.__dict__}", flush=True)
+
+                    for player_id, player in game.players.items():
+                        if player.get("role") == "player":
+                            player_username = player.get("username")
+                        elif player.get("role") == "opponent":
+                            opponent_username = player.get("username")
+
+                    if player_username and opponent_username:
+                        winner = player_username if game.score.get("player", 0) >= points else opponent_username
+                        print(f"Winner determined: {winner}", flush=True)
+
+                        await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                        await self.channel_layer.group_send(
+                            self.match_name,
+                            {
+                                "type": "end",
+                                "reason": f"Game Over: {winner} wins"
+                            }
+                        )
+                    else:
+                        print("Error: Could not determine usernames for winner announcement.", flush=True)
+                        print(f"player_username: {player_username}, opponent_username: {opponent_username}", flush=True)
                     break
 
                 await asyncio.sleep(0.05)
-    
+
 async def get_all_matches_count():
     return await sync_to_async(Match.objects.all().count)()
 

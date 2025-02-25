@@ -93,14 +93,18 @@ const returnToStartMenu = async () => {
 }
 
 function handleServerMessage(message) {
-    console.log(`(FRONTEND) message.typ here is: ${message.type}`);
+    console.log(`(FRONTEND) message.type here is: ${message.type}`);
 
     const tournamentBanner = document.getElementById("tournamentBanner");
     switch (message.type) {
         case "started":
+            gameState.running = true;
             gameState.gameId = message.game_id;
             console.log(`Game initialized with ID: ${gameState.gameId}`);
-            gameState.running = true;
+            if (gameState.mode != "One Player" && gameState.mode != "Two Players (hot seat)") {
+                startTimer();
+                updateGameState(message.data);
+            }
             break;
         case "reset":
             gameState.gameId = message.game_id;
