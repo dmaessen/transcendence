@@ -87,11 +87,6 @@ function startGame(mode) {
         gameTitle.textContent = "Two Players (remote)";
         instructions1.style.display = "block";
         connectWebSocket(mode);
-    } if (mode === "Two Players (with a friend)") { // TODO
-        alert(`${mode} mode is not yet implemented.`);
-        gameTitle.textContent = "Two Players (with a friend)";
-        instructions1.style.display = "block";
-        //connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
         gameMenuTournament.hide();
         alert(`${mode} mode is not yet implemented.`);
@@ -128,7 +123,6 @@ document.getElementById("playBtn").addEventListener("click", () => {
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
-document.getElementById("twoPlayersFriendsBtn").addEventListener("click", () => startGame("Two Players (with a friend)"));
 
 document.getElementById("tournamentBtn").addEventListener("click", () => {
         gameMenuTournament.show();
