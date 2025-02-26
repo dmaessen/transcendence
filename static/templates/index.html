@@ -133,6 +133,8 @@
         </div>
     </div>
 
+    <!--Edit profile Modal-->
+
     <!-- Friends Modal -->
     <div class="modal fade" id="friendsModal" tabindex="-1" aria-labelledby="friendsModalLabel" inert>
         <div class="modal-dialog modal-dialog-centered">
@@ -148,6 +150,10 @@
         </div>
     </div>
 
+    {% comment %} Modals {% endcomment %}
+    {% include 'game_server/modals/profile_modal.html' %}
+    {% include 'game_server/modals/edit_profile_modal.html' %}
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <!-- Link JS -->
     <!-- <script src="../frontend/static/script.js"></script> -->
@@ -157,5 +163,6 @@
     <!-- <script src="/static/script.js"></script> -->
     <!-- profile page -->
     <script src="{% static 'js/profile.js' %}"></script>
+
 </body>
 </html>
