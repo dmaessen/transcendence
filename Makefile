@@ -5,7 +5,7 @@ all: build_folder build updetach
 
 build_folder:
 	mkdir -p $(HOME)/.tranceanddance/pgdata
-	mkdir -p $(HOME)/.tranceanddance/backenddata
+	mkdir -p $(HOME)/.tranceanddance/kibanadata
 
 build up:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
@@ -42,10 +42,18 @@ clean:
 fclean: rmi
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) down --rmi all -v --remove-orphans
 
-resetall: fclean
+pruneall:
 	@docker system prune -af
 	@docker volume prune -af
 	@docker image prune -af
-	@rm -rf $(HOME)/.tranceanddance
+
+removedb: 
+	@rm -rf $(HOME)/.tranceanddance/pgdata
+
+removelogs:
+	@rm -rf $(HOME)/.tranceanddance/kibanadata
+
+resetall: pruneall fclean
+	@rm -rf $(HOME)/.tranceanddance/
 
 .PHONY: all build up down kill updateach buildclean show run re clean fclean
