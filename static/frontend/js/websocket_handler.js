@@ -4,8 +4,6 @@ const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
 let socket;
 let reconnecting = false;
 let resetting = false;
-let tournament_mode;
-let tournamentOpen = false; // switch back to off at some point maybe after xxx minutes or whatever
 
 function connectWebSocket(mode) {
     // if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
@@ -19,38 +17,32 @@ function connectWebSocket(mode) {
         return;
     }
 
-    console.log(`websocket: ${websocket} | tournament: ${tournamentwebsocket}`);
-
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
-    if (mode == "tournament")
-        mode = tournament_mode;
-    if (mode == "4" || mode == "8") // or full name of it??
+    if (mode == "4" || mode == "8")
         socket = new WebSocket(tournamentwebsocket);
     else
         socket = new WebSocket(websocket);
 
-    socket.onopen = () => {
+    socket.onopen = async() => {
         console.log("Connected to the game server.");
         socket.send(JSON.stringify({ action: "connect", mode: mode }));
         reconnecting = false;
         if (mode != "4" && mode != "8") {
             startGameMenu();
         } else if (mode == "4" || mode == "8") {
-            fetchTournamentStatus();
-            fetch("http://localhost:8080/api/tournament-status/") // without /api here
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Fetched tournament status:", data);
-                    if (data.players_in == 0 && data.tournament_active == false) { // data.tournament_active && 
-                        tournament_mode = mode;
-                        socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
-                        console.log("start_tounrment from connectWebsocket undergoing");
-                    }
-                    socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
-                    showWaitingRoomTournament();
-                })
-            .catch(error => console.error("Error fetching tournament status:", error));
+            try {
+                const data = await fetchData("http://localhost:8080/api/tournament-status/");
+                console.log("Fetched tournament status:", data);
+                if (data.players_in == 0) {
+                    socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+                    console.log("start_tounrment from connectWebsocket undergoing");
+                }
+                socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
+                showWaitingRoomTournament(mode);
+            } catch (error) {
+                console.error("Error fetching tournament status:", error);
+            }
         }
     };
 
@@ -101,14 +93,18 @@ const returnToStartMenu = async () => {
 }
 
 function handleServerMessage(message) {
-    console.log(`(FRONTEND) message.typ here is: ${message.type}`);
+    console.log(`(FRONTEND) message.type here is: ${message.type}`);
 
     const tournamentBanner = document.getElementById("tournamentBanner");
     switch (message.type) {
         case "started":
+            gameState.running = true;
             gameState.gameId = message.game_id;
             console.log(`Game initialized with ID: ${gameState.gameId}`);
-            gameState.running = true;
+            if (gameState.mode != "One Player" && gameState.mode != "Two Players (hot seat)") {
+                startTimer();
+                updateGameState(message.data);
+            }
             break;
         case "reset":
             gameState.gameId = message.game_id;
@@ -142,7 +138,7 @@ function handleServerMessage(message) {
         //     // ADD STUFF
         //     break;
         case "tournament_full":
-            tournamentOpen = false;
+            //tournamentOpen = false;
             break;
         case "update_tournament":
             console.log(`Players in tournament: ${message.players_in}`); // to rm
@@ -160,4 +156,3 @@ function handleServerMessage(message) {
         //     console.warn("Unknown message type received:", message.type);
     }
 }
-

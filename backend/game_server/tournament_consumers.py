@@ -17,6 +17,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
+            self.username = self.scope["user"].username
         else:
             # Use sync_to_async for session creation
             session = await sync_to_async(SessionStore)()
@@ -34,6 +35,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             
             self.player_id = guest_user.id
             self.session_key = session.session_key
+            self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
         player = Player(self.player_id, self.session_key, 'online')
@@ -83,20 +85,41 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         print(f"Starting a {mode}-player tournament. Initiator: {self.initiator}")
         await self.broadcast_tournament_state()
 
+    # async def handle_join_tournament(self, data):
+    #     """Player wants to join the tournament."""
+    #     if self.tournament:
+    #         if len(self.tournament.players) < self.tournament.num_players:
+    #             self.tournament.add_player(self.player_id)
+    #             await self.broadcast_tournament_state()
+    #             print(f"Player {self.player_id} joined the tournament.")
+    #             if len(self.tournament.players) == self.tournament.num_players:
+    #                 print(f"Tournament started in handle_join_tournament")
+    #                 tournament.start_tournament() # follow from here where it gpes next and what to do
+    #                 await self.broadcast_tournament_state()
+    #         else:
+    #             self.tournament_full()
+    #             print(f"Tournament is full. Player {self.player_id} cannot join.")
+
     async def handle_join_tournament(self, data):
-        """Player wants to join the tournament."""
-        if self.tournament:
-            if len(self.tournament.players) < self.tournament.num_players:
-                self.tournament.add_player(self.player_id)
+        tournament_state = cache.get('tournament_state')
+        if tournament_state:
+            tournament_state = json.loads(tournament_state)
+            self.tournament = Tournament(mode=tournament_state['mode'])
+            self.tournament.players = tournament_state['players']
+        else:
+            self.tournament = Tournament(mode=data.get("mode"))
+
+        if len(self.tournament.players) < self.tournament.num_players:
+            self.tournament.add_player(self.player_id, self.username)
+            print(f"Player {self.player_id} joined the tournament.")
+            await self.broadcast_tournament_state()
+            if len(self.tournament.players) == self.tournament.num_players:
+                print(f"Tournament starting from handle_join_tournament")
+                self.tournament.start_tournament()
                 await self.broadcast_tournament_state()
-                print(f"Player {self.player_id} joined the tournament.")
-                if len(self.tournament.players) == self.tournament.num_players:
-                    print(f"Tournament started in handle_join_tournament")
-                    tournament.start_tournament() # follow from here where it gpes next and what to do
-                    # await self.broadcast_tournament_state()
-            else:
-                self.tournament_full()
-                print(f"Tournament is full. Player {self.player_id} cannot join.")
+        else:
+            await self.tournament_full()
+            print(f"Tournament is full. Player {self.player_id} cannot join.")
 
     async def handle_leave_tournament(self, data):
         """Player leaves before the tournament starts."""
@@ -131,25 +154,22 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def broadcast_tournament_state(self):
         """Broadcasts the current tournament state to all connected clients"""
         if self.tournament:
-            state = {
-                "action": "update_tournament",
+            # state = {
+            #     "action": "update_tournament",
                 
-                "players_in": len(self.tournament.players),
-                "remaining_spots": self.tournament.num_players - len(self.tournament.players),
-            }
+            #     "players_in": len(self.tournament.players),
+            #     "remaining_spots": self.tournament.num_players - len(self.tournament.players),
+            # }
+            state = self.tournament.get_tournament_state()
+            state["action"] = "update_tournament"
 
             print(f"(BACKEND) Sending update: {state}", flush=True)
-            print(f"Setting tournament_state in cache: {state}")
-            cache.set("tournament_state", state)
-            print(f"Retrieved tournament_state from cache: {state}")
+            # cache.set("tournament_state", state) # was working
+            cache.set("tournament_state", json.dumps(state))
 
             await self.channel_layer.group_send(
                 self.room_name, {
                     "type": "tournament_update",
-                    "message": json.dumps({
-                        "type": "update_tournament",
-                        "players_in": len(self.tournament.players),
-                        "remaining_spots": self.tournament.num_players - len(self.tournament.players),
-                    })
+                    "message": json.dumps(state)
                 }
             )
