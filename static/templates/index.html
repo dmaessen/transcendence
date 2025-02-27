@@ -11,9 +11,11 @@
     <!-- Link CSS -->
     <!-- <link rel="stylesheet" type="text/css" href="../frontend/static/styles.css"> -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/tournament.css' %}">
      <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
 </head>
 <body>
+    {% include 'tournament.html' %}
     <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">
         🚀 A tournament is about to start!<br><span id="playersInTournament">0/8</span> players in. 
         <a href="" class="alert-link" id="joinTournamentLink">Join now!</a> 
@@ -23,7 +25,7 @@
     <button id="exitButton" type="button" class="btn btn-outline-dark position-fixed top-0 end-0 m-3">Exit</button>
     <p id="timer">0m 0s</p>
     <canvas id="game" style="display:none;"></canvas>
-    <canvas id="tournamentBracket" width="800" height="600"></canvas>
+    <!-- <canvas id="tournamentBracket" width="800" height="600"></canvas> -->
         <p id="game-instruction1">Press the UP and DOWN keys to move your paddle.</p>
         <p id="game-instruction2">Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move.</p>
 

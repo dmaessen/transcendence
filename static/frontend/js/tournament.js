@@ -33,6 +33,7 @@ async function updateBracketWithData(mode) {
         const data = await fetchData("http://localhost:8080/api/tournament-status/");
         console.log("Fetched tournament status:", data);
         if (data) {
+            populatePlayerFields(data.players);
             updateBracket(mode, data.bracket, data.players, data.winners, data.current_round);
         }
     } catch (error) {
@@ -40,21 +41,41 @@ async function updateBracketWithData(mode) {
     }
 }
 
+function populatePlayerFields(players) {
+    document.getElementById('Player1').innerHTML = `<option>${players[0] ? players[0].username : 'Player 1'}</option>`;
+    document.getElementById('Player2').innerHTML = `<option>${players[1] ? players[1].username : 'Player 2'}</option>`;
+    document.getElementById('Player3').innerHTML = `<option>${players[2] ? players[2].username : 'Player 3'}</option>`;
+    document.getElementById('Player4').innerHTML = `<option>${players[3] ? players[3].username : 'Player 4'}</option>`;
+    document.getElementById('Player5').innerHTML = `<option>${players[4] ? players[4].username : 'Player 5'}</option>`;
+    document.getElementById('Player6').innerHTML = `<option>${players[5] ? players[5].username : 'Player 6'}</option>`;
+    document.getElementById('Player7').innerHTML = `<option>${players[6] ? players[6].username : 'Player 7'}</option>`;
+    document.getElementById('Player8').innerHTML = `<option>${players[7] ? players[7].username : 'Player 8'}</option>`;
+
+    document.getElementById('Player9').innerHTML = `<option>${players[8] ? players[8].username : 'Winner 1'}</option>`;
+    document.getElementById('Player10').innerHTML = `<option>${players[9] ? players[9].username : 'Winner 2'}</option>`;
+    document.getElementById('Player11').innerHTML = `<option>${players[10] ? players[10].username : 'Winner 1'}</option>`;
+    document.getElementById('Player12').innerHTML = `<option>${players[11] ? players[11].username : 'Winner 2'}</option>`;
+
+    document.getElementById('Player13').innerHTML = `<option>${players[12] ? players[12].username : 'Winner 1'}</option>`;
+    document.getElementById('Player14').innerHTML = `<option>${players[13] ? players[13].username : 'Winner 2'}</option>`;
+    // box only for winner
+}
+
 function updateBracket(mode, bracket, players, winners, currentRound) {
     tournContext.clearRect(0, 0, tournCanvas.width, tournCanvas.height);
     drawBracketStructure(mode);
 
-    tournContext.font = "18px Courier New";
+    tournContext.font = "16px Courier New";
     players.forEach((player, index) => {
-        const x = tournCanvas.width / 8 * (index % 2 === 0 ? 1 : 7);
-        const y = 60 + Math.floor(index / 2) * 120; // Increase spacing
+        const x = 70 + Math.floor(index / 2) * 200;
+        const y = tournCanvas.height / 8 * (index % 2 === 0 ? 1 : 7);
         tournContext.fillText(player.username || `Player ${index + 1}`, x, y);
     });
 
-    tournContext.font = "20px Courier New"; // Slightly larger font for winners
+    tournContext.font = "18px Courier New";
     winners.forEach((winner, index) => {
-        const x = tournCanvas.width / 2;
-        const y = 280 + index * 120; // Increase spacing
+        const x = 300 + index * 200;
+        const y = tournCanvas.height / 2;
         tournContext.fillText(winner.username || `Winner ${index + 1}`, x, y);
     });
 
@@ -75,92 +96,83 @@ function drawBracketStructure(mode) {
 }
 
 function drawBracketStructure4() {
-    tournContext.moveTo(tournCanvas.width / 4, 100);
-    tournContext.lineTo(tournCanvas.width / 2, 100);
-    tournContext.moveTo(tournCanvas.width * 3 / 4, 100);
-    tournContext.lineTo(tournCanvas.width / 2, 100);
-    tournContext.moveTo(tournCanvas.width / 2, 100);
-    tournContext.lineTo(tournCanvas.width / 2, 200);
-}
+    drawMatchBox(50, tournCanvas.height / 4, "Match 1");
+    drawMatchBox(50, tournCanvas.height * 3 / 4, "Match 2");
 
-// function drawBracketStructure8() {
-//     tournContext.moveTo(tournCanvas.width / 8, 50);
-//     tournContext.lineTo(tournCanvas.width / 4, 50);
-//     tournContext.moveTo(tournCanvas.width * 3 / 8, 50);
-//     tournContext.lineTo(tournCanvas.width / 4, 50);
-//     tournContext.moveTo(tournCanvas.width / 4, 50);
-//     tournContext.lineTo(tournCanvas.width / 4, 150);
-//     tournContext.moveTo(tournCanvas.width * 5 / 8, 50);
-//     tournContext.lineTo(tournCanvas.width * 3 / 4, 50);
-//     tournContext.moveTo(tournCanvas.width * 7 / 8, 50);
-//     tournContext.lineTo(tournCanvas.width * 3 / 4, 50);
-//     tournContext.moveTo(tournCanvas.width * 3 / 4, 50);
-//     tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
-//     tournContext.moveTo(tournCanvas.width / 4, 150);
-//     tournContext.lineTo(tournCanvas.width * 3 / 4, 150);
-//     tournContext.moveTo(tournCanvas.width / 2, 150);
-//     tournContext.lineTo(tournCanvas.width / 2, 250);
-// }
+    drawMatchBox(250, tournCanvas.height / 2, "Final");
+
+    tournContext.beginPath();
+    tournContext.moveTo(150, tournCanvas.height / 4);
+    tournContext.lineTo(200, tournCanvas.height / 2);
+    tournContext.moveTo(150, tournCanvas.height * 3 / 4);
+    tournContext.lineTo(200, tournCanvas.height / 2);
+    tournContext.stroke();
+}
 
 function drawBracketStructure8() {
-    // First round lines
-    tournContext.moveTo(tournCanvas.width / 16, 60);
-    tournContext.lineTo(tournCanvas.width / 8, 60);
-    tournContext.moveTo(tournCanvas.width * 3 / 16, 60);
-    tournContext.lineTo(tournCanvas.width / 8, 60);
-    tournContext.moveTo(tournCanvas.width / 8, 60);
-    tournContext.lineTo(tournCanvas.width / 8, 120);
+    drawMatchBox(50, tournCanvas.height / 8, "Match 1");
+    drawMatchBox(50, tournCanvas.height * 3 / 8, "Match 2");
+    drawMatchBox(50, tournCanvas.height * 5 / 8, "Match 3");
+    drawMatchBox(50, tournCanvas.height * 7 / 8, "Match 4");
 
-    tournContext.moveTo(tournCanvas.width * 5 / 16, 60);
-    tournContext.lineTo(tournCanvas.width * 3 / 8, 60);
-    tournContext.moveTo(tournCanvas.width * 7 / 16, 60);
-    tournContext.lineTo(tournCanvas.width * 3 / 8, 60);
-    tournContext.moveTo(tournCanvas.width * 3 / 8, 60);
-    tournContext.lineTo(tournCanvas.width * 3 / 8, 120);
+    drawMatchBox(250, tournCanvas.height / 4, "Semi 1");
+    drawMatchBox(250, tournCanvas.height * 3 / 4, "Semi 2");
 
-    tournContext.moveTo(tournCanvas.width * 9 / 16, 60);
-    tournContext.lineTo(tournCanvas.width * 5 / 8, 60);
-    tournContext.moveTo(tournCanvas.width * 11 / 16, 60);
-    tournContext.lineTo(tournCanvas.width * 5 / 8, 60);
-    tournContext.moveTo(tournCanvas.width * 5 / 8, 60);
-    tournContext.lineTo(tournCanvas.width * 5 / 8, 120);
+    drawMatchBox(450, tournCanvas.height / 2, "Final");
 
-    tournContext.moveTo(tournCanvas.width * 13 / 16, 60);
-    tournContext.lineTo(tournCanvas.width * 7 / 8, 60);
-    tournContext.moveTo(tournCanvas.width * 15 / 16, 60);
-    tournContext.lineTo(tournCanvas.width * 7 / 8, 60);
-    tournContext.moveTo(tournCanvas.width * 7 / 8, 60);
-    tournContext.lineTo(tournCanvas.width * 7 / 8, 120);
+    tournContext.beginPath();
+    tournContext.moveTo(150, tournCanvas.height / 8);
+    tournContext.lineTo(200, tournCanvas.height / 4);
+    tournContext.moveTo(150, tournCanvas.height * 3 / 8);
+    tournContext.lineTo(200, tournCanvas.height / 4);
 
-    // Second round lines
-    tournContext.moveTo(tournCanvas.width / 8, 120);
-    tournContext.lineTo(tournCanvas.width / 4, 120);
-    tournContext.moveTo(tournCanvas.width * 3 / 8, 120);
-    tournContext.lineTo(tournCanvas.width / 4, 120);
-    tournContext.moveTo(tournCanvas.width / 4, 120);
-    tournContext.lineTo(tournCanvas.width / 4, 240);
+    tournContext.moveTo(150, tournCanvas.height * 5 / 8);
+    tournContext.lineTo(200, tournCanvas.height * 3 / 4);
+    tournContext.moveTo(150, tournCanvas.height * 7 / 8);
+    tournContext.lineTo(200, tournCanvas.height * 3 / 4);
 
-    tournContext.moveTo(tournCanvas.width * 5 / 8, 120);
-    tournContext.lineTo(tournCanvas.width * 3 / 4, 120);
-    tournContext.moveTo(tournCanvas.width * 7 / 8, 120);
-    tournContext.lineTo(tournCanvas.width * 3 / 4, 120);
-    tournContext.moveTo(tournCanvas.width * 3 / 4, 120);
-    tournContext.lineTo(tournCanvas.width * 3 / 4, 240);
-
-    // Final round lines
-    tournContext.moveTo(tournCanvas.width / 4, 240);
-    tournContext.lineTo(tournCanvas.width / 2, 240);
-    tournContext.moveTo(tournCanvas.width * 3 / 4, 240);
-    tournContext.lineTo(tournCanvas.width / 2, 240);
-    tournContext.moveTo(tournCanvas.width / 2, 240);
-    tournContext.lineTo(tournCanvas.width / 2, 360);
+    tournContext.moveTo(350, tournCanvas.height / 4);
+    tournContext.lineTo(400, tournCanvas.height / 2);
+    tournContext.moveTo(350, tournCanvas.height * 3 / 4);
+    tournContext.lineTo(400, tournCanvas.height / 2);
+    tournContext.stroke();
 }
+
+function drawMatchBox(x, y, label) {
+    tournContext.strokeStyle = "#FFFFFF";
+    tournContext.fillStyle = "#FFFFFF";
+    tournContext.fillRect(x, y - 20, 100, 40);
+    tournContext.strokeRect(x, y - 20, 100, 40);
+    tournContext.fillStyle = "#000000";
+    tournContext.fillText(label, x + 50, y);
+}
+
 
 function displayChampion(championName) {
     tournContext.fillStyle = "#FFD700"; // gold champ
     tournContext.font = "20px Courier New";
     tournContext.fillText(`Champion: ${championName}`, tournCanvas.width / 2, 300);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
