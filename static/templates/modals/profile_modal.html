@@ -1,0 +1,36 @@
+ <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="avatar" id="uAvatar">
+                    <img id="userAvatar" src="defaut.jpg" alt="F****">
+                </div>
+                <h4 id="username">John Doe</h4>
+                <p id="userEmail">johndoe@example.com</p>
+                <button id="editProfileBtn" class="btn btn-outline-dark w-100 mb-2">Edit Profile</button>
+                <div class="matches">
+                    <div class="divider">Matches</div>
+                    <table id="matchesTable" class="table">
+                        <tbody>
+                            <!-- Filled dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="matches">
+                    <div class="divider">Tournaments</div> 
+                    <table id="tournamentsTable" class="table">
+                        <tbody>
+                            <!-- Filled dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'modals/edit_profile_modal.html' %}
