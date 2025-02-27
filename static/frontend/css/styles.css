@@ -31,6 +31,10 @@
     margin-top: 20px;
 }
 
+#tournamentBanner {
+    z-index: 1051;
+}
+
 body {
     text-align: center;
     background-color: rgb(245, 245, 248);
@@ -61,6 +65,9 @@ h1 {
 p {
     margin-top: 10px;
     color: grey;
+}
+.modal {
+    z-index: 1050;
 }
 
 /* Optional: Customize backdrop if needed */
