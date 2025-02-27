@@ -1,11 +1,11 @@
-DOCK_COMPOSE_CMD :=	docker compose
-DOCK_COMPOSE_FILE :=	docker-compose.yaml
+DOCK_COMPOSE_CMD := docker compose
+DOCK_COMPOSE_FILE :=    docker-compose.yaml
 
 all: build_folder build updetach
 
 build_folder:
 	mkdir -p $(HOME)/.tranceanddance/pgdata
-	mkdir -p $(HOME)/.tranceanddance/backenddata
+	mkdir -p $(HOME)/.tranceanddance/kibanadata
 
 build up:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
@@ -15,7 +15,7 @@ down kill:
 
 buildclean:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) build --no-cache
-	
+
 updetach:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) up -d
 
@@ -42,10 +42,27 @@ clean:
 fclean: rmi
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) down --rmi all -v --remove-orphans
 
-resetall:
+pruneall:
 	@docker system prune -af
 	@docker volume prune -af
 	@docker image prune -af
-	@rm -rf $(HOME)/.tranceanddance
 
+removedb:
+	@rm -rf $(HOME)/.tranceanddance/pgdata
+
+removelogs:
+	@rm -rf $(HOME)/.tranceanddance/kibanadata
+
+resetall: pruneall fclean
+	@rm -rf $(HOME)/.tranceanddance/
+	
 .PHONY: all build up down kill updateach buildclean show run re clean fclean
+
+
+
+
+
+
+
+
+

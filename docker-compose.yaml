@@ -60,7 +60,7 @@ services:
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m 
-      #- xpack.security.enabled=false  # Disable security for dev ??
+      - xpack.security.enabled=false  # Disable security for dev ??
     ports:
       - "9200:9200"
     volumes:
@@ -74,7 +74,7 @@ services:
     ports:
       - "5044:5044"
     volumes:
-      - ./monitoring/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./monitoring/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - elasticsearch
     networks:
@@ -99,7 +99,7 @@ services:
     image: docker.elastic.co/beats/filebeat:8.17.0
     container_name: filebeat
     volumes:
-      - ./monitoring/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./monitoring/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./monitoring/logs:/var/log/django:ro
       - ./monitoring/logs/nginx:/var/log/nginx:ro
 
