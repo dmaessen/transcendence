@@ -142,15 +142,23 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             else:
                 self.game_id = f"game_{player_id}"
-                match = await sync_to_async(Match.objects.create)(
-                    player_1=user, 
-                    match_time=timedelta(minutes=2)
-                )
                 self.match_name = self.game_id
                 await self.send(text_data=json.dumps({
                     'action': 'created',
-                    'gameId': match.id
+                    'gameId': self.game_id #in old version it was "'gameId': self.player_id" but it didnt make sense now,
+                                            # so i made it 'gameId': self.game_id, lmk if that breaks anything
                 }))
+
+                #  THIS COMMENT-OUT VERSION WAS THE REASON OF "KEY ERROR"
+                # match = await sync_to_async(Match.objects.create)(
+                #     player_1=user, 
+                #     match_time=timedelta(minutes=2)
+                # )
+                # self.match_name = self.game_id
+                # await self.send(text_data=json.dumps({
+                #     'action': 'created',
+                #     'gameId': match.id
+                # }))
                 if self.game_id in games:
                     game = games[self.game_id]
                     # if not game.running:
