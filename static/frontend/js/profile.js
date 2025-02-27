@@ -66,8 +66,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("userEmail").textContent = data.email;
 
                     profileModal.show();
-                });
-                // .catch(error => console.error("Error fetching data:", error));
+                })
+                .catch(error => console.error("Error fetching user data:", error));
 
             fetch("/data/api/userMatches/")
                 .then(response => response.json())
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         console.error("Data.matches is not an array:", data.matches);
                     }
                 })
-                .catch(error => console.error("Error fetching matches:", error));
+                .catch(error => console.error("Error fetching matches data:", error));
 
             fetch("/data/api/userTournaments/") // Fetch tournament data
                 .then(response => response.json())
@@ -97,6 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         console.error("Data.tournaments is not an array:", data.tournaments);
                     }
                 })
+                .catch(error => console.error("Error fetching tournament data:", error));
         });
     }
 });
