@@ -10,6 +10,7 @@ services:
         env_file:
             - ./dot_env/.env
         volumes:
+            # - pgdata:/var/lib/postgresql/data/
             - ${HOME}/.tranceanddance/pgdata:/var/lib/postgresql/data/
             - ./media/:/media/
 
