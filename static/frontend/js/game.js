@@ -152,7 +152,7 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     instructions2.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    tournCanvas.style.display = "none";
+    document.getElementById("tournamentBracket").style.display = "none";
     socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
     socket.close()
     gameMenuFirst.show();
@@ -178,6 +178,8 @@ tournamentBanner.addEventListener("click", async(event) => {
 
 window.addEventListener("load", async () => {
     gameMenuFirst.show();
+    const bracketElement = document.getElementById("tournamentBracket");
+    bracketElement.style.display = "none";
 
     try {
         const data = await fetchData("http://localhost:8080/api/tournament-status/");
@@ -214,7 +216,11 @@ function showWaitingRoomTournament(mode) {
     //gameTitle.textContent = "Tournament";
     gameTitle.style.display = "none"; // needed??
     gameCanvas.style.display = "none"; // needed??
-    drawBracket(mode); // working on it
+
+    // const bracketElement = document.getElementById("tournamentBracket");
+    // console.log("Bracket element:", bracketElement);
+    // bracketElement.style.display = "grid";
+    drawBracket(mode);
 
     // gameContext.font = "50px Courier New";
     // gameContext.fillStyle = "#000000";
