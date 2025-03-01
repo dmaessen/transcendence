@@ -1,10 +1,13 @@
+let tournamentInterval;
+
 async function drawBracket(mode) {
     console.log("drawBracket called with mode:", mode);
-    document.getElementById("tournamentBracket").style.display = "grid";
-    document.getElementById("tournamentBracket").style.background = "white"; // Remove black
+    document.getElementById("tournamentBracket").style.display = "block";
 
     await updateBracketWithData(mode);
-    let tournamentInterval = setInterval(async () => await updateBracketWithData(mode), 5000); // Auto-update every 5s
+    tournamentInterval = setInterval(async () => await updateBracketWithData(mode), 5000); // Auto-update every 5s
+    // make the above stop when tournament over or if someone quits the tournament
+    // doesn't register when someone that was waiting quits
 }
 
 function stopTournamentUpdates() {
@@ -18,64 +21,34 @@ async function updateBracketWithData(mode) {
     try {
         const data = await fetchData("http://localhost:8080/api/tournament-status/");
         console.log("Fetched tournament status:", data);
-
         if (data) {
             updatePlayerFields(data.players, data.results);
             updateBracket(mode, data.bracket, data.players, data.winners, data.current_round);
-
-            // Debugging logs
-            console.log("Tournament active:", data.tournament_active);
-            console.log("Players in:", data.players_in);
-            console.log("Mode:", mode);
-
-            // Stop updates if tournament is over or a player quits
-            // if (!data.tournament_active || data.players_in < mode) {
-            //     stopTournamentUpdates();
-            // }
         }
     } catch (error) {
         console.error("Error fetching tournament status:", error);
     }
 }
 
-function updatePlayerFields(players, results = []) {
-    for (let i = 0; i < 8; i++) { // Assuming a max of 8 players
+function updatePlayerFields(players, results) {
+    for (let i = 0; i < players.length; i++) {
         const playerElem = document.getElementById(`Player${i + 1}`);
         const resultElem = document.getElementById(`Result${i + 1}`);
-        document.querySelectorAll("[id^='Player']").forEach(elem => {
-            elem.style.display = "block";
-            elem.style.color = "black";
-            elem.style.fontSize = "14px"; // Ensure readable size
-        });
-        document.querySelectorAll("[id^='Result']").forEach(elem => {
-            elem.style.display = "block";
-            elem.style.color = "black";
-            elem.style.fontSize = "14px bold"; // Ensure readable size
-            elem.style.border = "1px solid blue"; // Debugging
-        });
 
-        if (playerElem) {
-            playerElem.innerText = players[i] ? players[i].username : `Waiting... `;
-        }
-        if (resultElem) {
-            resultElem.innerText = results[i] !== undefined ? results[i] : " 0 ";
-        }
+        if (playerElem) playerElem.textContent = players[i] ? players[i].username : "Waiting...";
+        if (resultElem) resultElem.textContent = results[i] !== undefined ? results[i] : "0";
     }
 }
 
-
 function updateBracket(mode, bracket, players, winners, currentRound) {
     console.log("Updating bracket with mode:", mode);
-    console.log("Bracket Winners:", winners);
 
     winners.forEach((winner, index) => {
         const winnerElem = document.getElementById(`Player${index + 9}`); // Winner fields start at Player9
-        if (winnerElem) {
-            winnerElem.textContent = winner ? winner.username : `Winner ${index + 1}`;
-        }
+        if (winnerElem) winnerElem.textContent = winner ? winner.username : `Winner ${index + 1}`;
     });
 
-    if (winners.length === 1 && winners[0]) {
+    if (winners.length === 1) {
         displayChampion(winners[0].username);
     }
 }
@@ -90,6 +63,12 @@ function displayChampion(championName) {
 
     document.body.appendChild(championElem);
 }
+
+
+
+
+
+
 
 
 
