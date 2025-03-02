@@ -70,8 +70,9 @@ services:
       - transcendence
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:8.17.0
+    #image: docker.elastic.co/logstash/logstash:8.17.0
     container_name: logstash
+    build: ./monitoring/logstash
     ports:
       - "5044:5044"
     volumes:
@@ -97,17 +98,16 @@ services:
       - transcendence
 
   filebeat:
-    image: docker.elastic.co/beats/filebeat:8.17.0
+    #image: docker.elastic.co/beats/filebeat:8.17.0
     container_name: filebeat
+    build: ./monitoring/filebeat
     volumes:
       - ./monitoring/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./monitoring/logs:/var/log/django:ro
       - ./monitoring/logs/nginx:/var/log/nginx:ro
 
-      # - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      # - /var/run/docker.sock:/var/run/docker.sock:ro
-    user: root  # Might be needed for file permissions
-    command: ["filebeat", "run", "-e", "--strict.perms=false"]  # Fixed command syntax
+    # user: root  # Might be needed for file permissions
+    # command: ["filebeat", "run", "-e", "--strict.perms=false"]  # Fixed command syntax
     depends_on:
       - logstash
     networks:
