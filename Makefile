@@ -6,6 +6,7 @@ all: build_folder build updetach
 build_folder:
 	mkdir -p $(HOME)/.tranceanddance/pgdata
 	mkdir -p $(HOME)/.tranceanddance/kibanadata
+	mkdir -p $(HOME)/.tranceanddance/elasticdata
 
 build up:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
@@ -17,7 +18,7 @@ buildclean:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) build --no-cache
 
 updetach:
-	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) up -d
+	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) up
 
 show:
 	@echo "\n Images:"
@@ -52,6 +53,7 @@ removedb:
 
 removelogs:
 	@rm -rf $(HOME)/.tranceanddance/kibanadata
+	@rm -rf $(HOME)/.tranceanddance/elasticdata
 
 resetall: pruneall fclean
 	@rm -rf $(HOME)/.tranceanddance/

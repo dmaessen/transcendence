@@ -55,16 +55,17 @@ services:
       - psql
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    #image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m 
-      - xpack.security.enabled=false  # Disable security for dev ??
+    build: ./monitoring/elastic
+    # environment:
+    #   - discovery.type=single-node
+    #   - ES_JAVA_OPTS=-Xms512m -Xmx512m 
+    #   - xpack.security.enabled=false  # Disable security for dev ??
     ports:
       - "9200:9200"
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
     networks:
       - transcendence
 
@@ -118,6 +119,11 @@ networks:
 
 volumes:
   elasticsearch_data:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: $HOME/.tranceanddance/elasticdata
   kibanadata:
         driver: local
         driver_opts:

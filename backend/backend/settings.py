@@ -184,13 +184,14 @@ LOGGING = {
     'formatters': {
         'json': {
             'class': 'pythonjsonlogger.jsonlogger.JsonFormatter',
-            'format': '{"name": "%(name)s", "@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "message": "%(message)s", "module": "%(module)s", "pathname": "%(pathname)s", "funcName": "%(funcName)s"}' 
+            'format': '{"name": "%(name)s", "@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "message": "%(message)s", "module": "%(module)s"}' 
+            #'format': '{"name": "%(name)s", "@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "message": "%(message)s", "module": "%(module)s", "pathname": "%(pathname)s", "funcName": "%(funcName)s"}' 
         }
     },
     'handlers': {
         'json_file': {
             'class': 'logging.FileHandler',
-            'filename': '/var/log/django/django.json',  # Make sure this directory exists
+            'filename': '/var/log/django/django.json',
             'formatter': 'json'
         }
     },
@@ -203,15 +204,7 @@ LOGGING = {
     }
 }
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'json': {
-#             'class': 'pythonjsonlogger.jsonlogger.JsonFormatter',
-#             'format': '{"@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "logger_name": "%(name)s", "message": "%(message)s", "module": "%(module)s", "pathname": "%(pathname)s", "funcName": "%(funcName)s"}' 
-#         }
-#     },
+
 #     'handlers': {
 #         'console': {
 #             'class': 'logging.StreamHandler',
