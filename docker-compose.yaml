@@ -83,13 +83,14 @@ services:
       - transcendence
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.17.0
+    #image: docker.elastic.co/kibana/kibana:8.17.0
     container_name: kibana
+    build: ./monitoring/kibana
     ports:
       - "5601:5601"
-    volumes:
+    #volumes:
       #- kibanadata:/usr/share/kibana/data
-      - ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
+      #- ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
@@ -124,12 +125,12 @@ volumes:
             type: none
             o: bind
             device: $HOME/.tranceanddance/elasticdata
-  kibanadata:
-        driver: local
-        driver_opts:
-            type: none
-            o: bind
-            device: $HOME/.tranceanddance/kibanadata
+  # kibanadata:
+  #       driver: local
+  #       driver_opts:
+  #           type: none
+  #           o: bind
+  #           device: $HOME/.tranceanddance/kibanadata
 
   pgdata:
         driver: local
