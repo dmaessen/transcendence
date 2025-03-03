@@ -69,16 +69,42 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="SignInMenuLabel">Select Game Mode</h5>
+                    <h5 class="modal-title" id="SignInMenuLabel">What now, hmm..?</h5>
                 </div>
                 <div class="modal-body">
-                    <button id="Register" class="btn btn-outline-dark w-100 mb-2">Register</button>
-                    <button id="LogIn" class="btn btn-outline-dark w-100 mb-2">Log in</button>
+                    <button id="showRegister" class="btn btn-outline-dark w-100 mb-2">Register</button>
+                    <button id="showLogin" class="btn btn-outline-dark w-100 mb-2">Log in</button>
                     <button id="Logout" class="btn btn-outline-dark w-100 mb-2">Log Out</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Back
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+<!-- Login Form -->
+<div id="loginContainer" style="display: none;">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="email" id="loginUsername" placeholder="Email" required><br>
+        <input type="password" id="loginPassword" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+    <button id="backToMain1" class="btn btn-secondary">Back</button>
+</div>
+
+<!-- Register Form -->
+<div id="registerContainer" style="display: none;">
+    <h2>Register</h2>
+    <form id="registerForm">
+        <input type="text" id="registerUsername" placeholder="Username" required><br>
+        <input type="email" id="registerEmail" placeholder="Email" required><br>
+        <input type="password" id="registerPassword" placeholder="Password" required><br>
+        <button type="submit">Register</button>
+    </form>
+    <button id="backToMain2" class="btn btn-secondary">Back</button>
+</div>
 
     <!-- THIRD Game Menu Modal Tournament -->
     <div class="modal fade" id="gameMenuTournament" tabindex="-1" aria-labelledby="gameMenuLabelTournament">
@@ -107,7 +133,7 @@
                 </div>
                 <div class="modal-body text-center">
                     <div class="avatar" id="uAvatar">
-                        <img id="userAvatar" src="defaut.jpg" alt="F****">
+                        <img id="userAvatar" src="{% static 'images/defaut.png' %}" alt="F****">
                     </div>
                     <h4 id="username">John Doe</h4>
                     <p id="userEmail">johndoe@example.com</p>
@@ -150,9 +176,6 @@
         </div>
     </div>
 
-    {% comment %} Modals
-    {% include 'game_server/modals/profile_modal.html' %}
-    {% include 'game_server/modals/edit_profile_modal.html' %} {% endcomment %}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <!-- Link JS -->
@@ -165,6 +188,7 @@
     <script src="{% static 'js/async.js' %}"></script>
     <script src="{% static 'js/tournament.js' %}"></script>
     <script src="{% static 'js/game.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
     <!-- <script src="/static/script.js"></script> -->
     <!-- profile page -->
     <script src="{% static 'js/profile.js' %}"></script>

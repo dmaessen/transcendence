@@ -377,5 +377,3 @@ window.addEventListener("beforeunload", () => {
         gameMenuFirst.show();
     }
 });
-
-
