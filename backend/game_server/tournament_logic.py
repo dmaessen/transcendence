@@ -33,7 +33,7 @@ class Tournament:
 
     def _create_bracket(self):
         """Creates the tournament bracket by pairing up players."""
-        random.shuffle(self.players)
+        # random.shuffle(self.players)
         self.bracket[self.current_round] = [
             (self.players[i], self.players[i + 1]) for i in range(0, len(self.players), 2)
         ]
@@ -97,4 +97,27 @@ class Tournament:
             "winners": self.winners,
             "players_in": len(self.players),
             "remaining_spots": self.num_players - len(self.players),
+        }
+
+    def get_tournamentstate(self):
+        return {
+            "mode": self.mode,
+            "num_players": self.num_players,
+            "players": self.players,
+            "bracket": self.bracket,
+            "current_round": self.current_round,
+            "tournament_active": self.running,
+            "running": self.running,
+            "final_winner": self.final_winner,
+            "winners": self.winners,
+            "players_in": len(self.players),
+            "remaining_spots": self.num_players - len(self.players),
+            "matches": [
+                    {
+                        "player1": match[0],
+                        "player2": match[1],
+                        "game_state": match[2].get_state()  # Extract state instead of raw object
+                    }
+                    for match in self.matches
+                ],
         }

@@ -9,6 +9,7 @@ from asgiref.sync import sync_to_async
 from django.core.cache import cache
 import uuid
 from data.models import CustomUser, Match
+import msgspec
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     tournament = None  # keeps track of the tournament instance
@@ -149,27 +150,31 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def tournament_update(self, event):
         """Receives the tournament state update and sends it to the frontend"""
-        await self.send(text_data=event["message"])
+        await self.send(text_data=event["data"])
 
     async def broadcast_tournament_state(self):
         """Broadcasts the current tournament state to all connected clients"""
         if self.tournament:
-            # state = {
-            #     "action": "update_tournament",
-                
-            #     "players_in": len(self.tournament.players),
-            #     "remaining_spots": self.tournament.num_players - len(self.tournament.players),
-            # }
-            state = self.tournament.get_tournament_state()
-            state["action"] = "update_tournament"
+            # state = self.tournament.get_tournament_state()
+            # state["action"] = "update_tournament"
+            state = self.tournament.get_tournamentstate()
 
             print(f"(BACKEND) Sending update: {state}", flush=True)
             # cache.set("tournament_state", state) # was working
-            cache.set("tournament_state", json.dumps(state))
+            # cache.set("tournament_state", json.dumps(state)) # was also working
 
+            # await self.channel_layer.group_send(
+            #     self.room_name, {
+            #         "type": "tournament_update",
+            #         "message": json.dumps(state)
+            #     }
+            # )
+
+            state_serializable = msgspec.json.encode(state).decode("utf-8")
+            cache.set("tournament_state", state_serializable)
             await self.channel_layer.group_send(
                 self.room_name, {
                     "type": "tournament_update",
-                    "message": json.dumps(state)
+                    "data": state_serializable,
                 }
             )

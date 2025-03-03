@@ -1,7 +1,13 @@
 async function drawBracket(mode) {
     console.log("drawBracket called with mode:", mode);
-    document.getElementById("tournamentBracket").style.display = "grid";
-    document.getElementById("tournamentBracket").style.background = "white"; // Remove black
+    if (mode == "4") {
+        document.getElementById("tournamentBracket4").style.display = "grid";
+        document.getElementById("tournamentBracket4").style.background = "white"; // Remove black
+    }
+    else {
+        document.getElementById("tournamentBracket").style.display = "grid";
+        document.getElementById("tournamentBracket").style.background = "white"; // Remove black
+    }
 
     await updateBracketWithData(mode);
     let tournamentInterval = setInterval(async () => await updateBracketWithData(mode), 5000); // Auto-update every 5s
@@ -20,7 +26,7 @@ async function updateBracketWithData(mode) {
         console.log("Fetched tournament status:", data);
 
         if (data) {
-            updatePlayerFields(data.players, data.results);
+            updatePlayerFields(mode, data.players, data.results);
             updateBracket(mode, data.bracket, data.players, data.winners, data.current_round);
 
             // Debugging logs
@@ -38,19 +44,27 @@ async function updateBracketWithData(mode) {
     }
 }
 
-function updatePlayerFields(players, results = []) {
-    for (let i = 0; i < 8; i++) { // Assuming a max of 8 players
-        const playerElem = document.getElementById(`Player${i + 1}`);
-        const resultElem = document.getElementById(`Result${i + 1}`);
+function updatePlayerFields(mode, players, results = []) {
+    let playerElem;
+    let resultElem;
+
+    for (let i = 0; i < mode; i++) {
+        if (mode == 8) {
+            playerElem = document.getElementById(`Player${i + 1}`);
+            resultElem = document.getElementById(`Result${i + 1}`);
+        } else if (mode == "4") {
+            playerElem = document.getElementById(`Player${i + 1}_`);
+            resultElem = document.getElementById(`Result${i + 1}_`);
+        }
         document.querySelectorAll("[id^='Player']").forEach(elem => {
             elem.style.display = "block";
             elem.style.color = "black";
-            elem.style.fontSize = "14px"; // Ensure readable size
+            elem.style.fontSize = "14px";
         });
         document.querySelectorAll("[id^='Result']").forEach(elem => {
             elem.style.display = "block";
             elem.style.color = "black";
-            elem.style.fontSize = "14px bold"; // Ensure readable size
+            elem.style.fontSize = "14px bold";
             elem.style.border = "1px solid blue"; // Debugging
         });
 
@@ -63,7 +77,7 @@ function updatePlayerFields(players, results = []) {
     }
 }
 
-
+// review this for 4 players
 function updateBracket(mode, bracket, players, winners, currentRound) {
     console.log("Updating bracket with mode:", mode);
     console.log("Bracket Winners:", winners);

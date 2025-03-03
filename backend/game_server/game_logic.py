@@ -147,7 +147,8 @@ class Game:
             "running": self.running,
             "mode": self.mode,
             "width": self.width,
-            "height": self.height
+            "height": self.height,
+            "status": self.status
         }
 
     def _check_collision(self, paddle):
