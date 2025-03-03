@@ -65,7 +65,7 @@ function updatePlayerFields(mode, players, results = []) {
             elem.style.display = "block";
             elem.style.color = "black";
             elem.style.fontSize = "14px bold";
-            elem.style.border = "1px solid blue"; // Debugging
+            elem.style.border = "1px solid blue"; // debugging
         });
 
         if (playerElem) {
