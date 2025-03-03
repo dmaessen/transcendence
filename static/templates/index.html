@@ -36,16 +36,14 @@
                 </div>
                 <div class="modal-body">
                     <button id="signIn" class="btn btn-outline-secondary w-100 mb-2">Sign in</button>
-                    <button id="profileBtn" class="btn btn-outline-secondary w-100 mb-2">Profile</button>
-                    <button id="tournamentInfoBtn" class="btn btn-outline-secondary w-100 mb-2">Tournament</button>
-                    <button id="friendsBtn" class="btn btn-outline-secondary w-100 mb-2">Friends</button>
-                    <button id="playBtn" class="btn btn-outline-dark w-100 mb-2">START PLAYING</button>
+                    <button id="profileBtn" data-bs-toggle="modal" data-bs-target="#profileModal" class="btn btn-outline-secondary w-100 mb-2">Profile</button>
+                    <button id="tournamentInfoBtn" data-bs-toggle="modal" data-bs-target="#gameMenuTournament" class="btn btn-outline-secondary w-100 mb-2">Tournament</button>
+                    <button id="friendsBtn" data-bs-toggle="modal" data-bs-target="#friendsModal" class="btn btn-outline-secondary w-100 mb-2">Friends</button>
+                    <button id="playBtn" data-bs-toggle="modal" data-bs-target="#gameMenu" class="btn btn-outline-dark w-100 mb-2">START PLAYING</button>
                 </div>
             </div>
         </div>
     </div>
-
-/
 
     <!-- User Registration Menu Modal -->
     <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel">
@@ -63,25 +61,6 @@
         </div>
     </div>
 
-    {% comment %} <!-- THIRD Game Menu Modal Tournament -->
-    <div class="modal fade" id="gameMenuTournament" tabindex="-1" aria-labelledby="gameMenuLabelTournament">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="gameMenuLabelTournament">Amount of players</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <button id="fourPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">4 Players</button>
-                    <button id="eightPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">8 Players</button>
-                    <button id="previous2Btn" class="btn btn-outline-secondary w-100 mb-2">Previous page</button>
-                </div>
-            </div>
-        </div>
-    </div> {% endcomment %}
-
-    <!--Edit profile Modal-->
-
     {% comment %} Modals {% endcomment %}
     {% include 'modals/profile_modal.html' %}
     {% include 'modals/game_menu_modal.html' %}
@@ -89,22 +68,15 @@
     {% include 'modals/edit_profile_modal.html' %}
     {% include 'modals/tournament_modal.html' %}
 
-    {% comment %} {% include 'modals/edit_profile_modal.html' %} {% endcomment %}
 
+    {% comment %} Scripts {% endcomment %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-    <!-- Link JS -->
-    <!-- <script src="../frontend/static/script.js"></script> -->
-    {% comment %} <script src="./statics/js/async.js"></script>
-    <script src="./statics/js/websocket_handler.js"></script>
-    <script src="./statics/js/tournament.js"></script>
-    <script src="./statics/js/game.js"></script> {% endcomment %}
     <script src="{% static 'js/websocket_handler.js' %}"></script>
     <script src="{% static 'js/async.js' %}"></script>
     <script src="{% static 'js/tournament.js' %}"></script>
     <script src="{% static 'js/game.js' %}"></script>
-    <!-- <script src="/static/script.js"></script> -->
-    <!-- profile page -->
     <script src="{% static 'js/profile.js' %}"></script>
+    <script src="{% static 'js/button.js' %}"></script>
 
 </body>
 </html>
