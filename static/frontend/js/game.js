@@ -152,7 +152,8 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     instructions2.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    document.getElementById("tournamentBracket").style.display = "none";
+    document.getElementById("tournamentBracket").style.display = "none"; // this working??
+    document.getElementById("tournamentBracket4").style.display = "none"; // this working??
     socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
     socket.close()
     gameMenuFirst.show();

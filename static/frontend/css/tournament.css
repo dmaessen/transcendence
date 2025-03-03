@@ -7,7 +7,21 @@
     padding: 5px;
     justify-content: center;
     align-items: start;
-    background-color: #c33a3a; /* Temporary background color for debugging */
+    /* background-color: #c33a3a; Temporary background color for debugging */
+    width: 800px; /* Enforce width */
+    height: 600px; /* Enforce height */
+}
+
+#tournamentBracket4 .bracket-container4 {
+    /* display: grid !important; */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Creates 3 equal columns */
+    grid-template-rows: repeat(3, auto);
+    gap: 10px;
+    padding: 5px;
+    justify-content: center;
+    align-items: start;
+    /* background-color: #c33a3a; Temporary background color for debugging */
     width: 800px; /* Enforce width */
     height: 600px; /* Enforce height */
 }
@@ -46,6 +60,7 @@
     text-align: left;
 }
 
+/* FOR 8 PLAYERS TOURNAMENT */
 /* Positioning for Match_1 */
 .Match_1:nth-child(1) { grid-row: 1; grid-column: 1; }
 .Match_1:nth-child(2) { grid-row: 3; grid-column: 1; }
@@ -58,3 +73,8 @@
 
 /* Positioning for Match_3 */
 .Match_3 { grid-row: 4; grid-column: 3; }
+
+/* FOR 4 PLAYERS TOURNAMENT */
+#tourn4Match_1.Match_1 { grid-row: 1; grid-column: 1; }
+#tourn4Match_2.Match_2 { grid-row: 3; grid-column: 1; }
+#tourn4Match_3.Match_3 { grid-row: 2; grid-column: 2; }
