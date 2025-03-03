@@ -20,14 +20,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username
         else:
-            # Use sync_to_async for session creation
             session = await sync_to_async(SessionStore)()
             await sync_to_async(session.create)()
             
             CustomUser = get_user_model()
-            unique_username = f"Guest_{uuid.uuid4().hex[:12]}"  # Generate a unique username
+            unique_username = f"Guest_{uuid.uuid4().hex[:12]}"
             guest_user = await sync_to_async(CustomUser.objects.create)(
-                username=unique_username,  # Set the unique username
+                username=unique_username,
                 name=f"Guest_{session.session_key[:12]}",
                 email=f"{session.session_key[:10]}",
                 is_active=False
