@@ -10,6 +10,7 @@ from django.core.cache import cache
 import uuid
 from data.models import CustomUser, Match
 import msgspec
+from channels.layers import get_channel_layer
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     tournament = None  # keeps track of the tournament instance
@@ -67,6 +68,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.handle_report_match(data)
         elif action == "disconnect":
             await self.handle_disconnect(data)
+        elif action == "game.created":
+            await self.game_created(data)
+        elif action == "game.result":
+            await self.game_result(data)
         else:
             print(f"Unknown action: {action}")
 
@@ -115,7 +120,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.broadcast_tournament_state()
             if len(self.tournament.players) == self.tournament.num_players:
                 print(f"Tournament starting from handle_join_tournament")
-                self.tournament.start_tournament()
+                await self.tournament.start_tournament()
                 await self.broadcast_tournament_state()
         else:
             await self.tournament_full()
@@ -146,6 +151,22 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         await self.send_json({
             "type": "tournament_full"
         })
+    
+    async def game_created(self, event):
+        game_id = event["game_id"]
+        player1 = event["player1"]
+        player2 = event["player2"]
+        self.matches.append((player1, player2, game_id))
+
+        print(f"Tournament match {game_id} added: {player1} vs {player2}.", flush=True)
+
+    async def game_result(self, event):
+        game_id = event["game_id"]
+        winner_username = event["winner"]
+
+        # updates the tournament bracket
+        self.tournament.register_match_result(game_id, winner_username)
+        await self.broadcast_tournament_state()
 
     async def tournament_update(self, event):
         """Receives the tournament state update and sends it to the frontend"""
