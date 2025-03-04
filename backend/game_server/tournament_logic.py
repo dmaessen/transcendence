@@ -2,6 +2,7 @@ import json
 import random
 import math
 from game_server.game_logic import Game  # import the normal game logic to use in individual matches
+from channels.layers import get_channel_layer
 
 class Tournament:
     def __init__(self, mode):
@@ -22,14 +23,14 @@ class Tournament:
         else:
             print(f"Tournament is full. Player {username} cannot join.", flush=True)
 
-    def start_tournament(self):
+    async def start_tournament(self):
         if len(self.players) != self.num_players:
             print("Not enough players to start the tournament.", flush=True)
             return
 
         self.running = True
         self._create_bracket()
-        self._start_next_round()
+        await self._start_next_round()
 
     def _create_bracket(self):
         """Creates the tournament bracket by pairing up players."""
@@ -39,33 +40,45 @@ class Tournament:
         ]
         print(f"Tournament bracket created: {self.bracket}", flush=True)
 
-    def _start_next_round(self):
+    async def _start_next_round(self):
         if self.final_winner:
             print(f"Tournament already ended. Winner: {self.final_winner}", flush=True)
             return
 
         self.matches = []
         self.winners = []
+        channel_layer = get_channel_layer()
 
         for player1, player2 in self.bracket[self.current_round]:
-            #match = Game("Two Players (remote)") # works
-            match = Game(self.mode)
-            match.add_player(player1["id"], player1["username"])
-            match.add_player(player2["id"], player2["username"])
-            match.start_game()
-            self.matches.append((player1, player2, match))
+            ##match = Game("Two Players (remote)") # works
+            # match = Game(self.mode)
+            # match.add_player(player1["id"], player1["username"])
+            # match.add_player(player2["id"], player2["username"])
+            # match.start_game()
+            # self.matches.append((player1, player2, match))
+            await channel_layer.group_send(
+                "tournament_lobby",
+                {
+                    "type": "create.game.tournament",
+                    # "action": "create.game.",
+                    "player1": player1,
+                    "player2": player2
+                }
+            )
 
-        print(f"Round {self.current_round} started with {len(self.matches)} matches.", flush=True)
+        # print(f"Round {self.current_round} started with {len(self.matches)} matches.", flush=True)
+        print(f"Round {self.current_round} started.", flush=True)
 
-    def update_match(self, player1_id, player2_id, winner_id):
+    def register_match_result(self, game_id, winner_username):
         """Updates the tournament after a match is completed."""
-        winner = next(player for player in self.players if player["id"] == winner_id)
+        winner = next(player for player in self.players if player["username"] == winner_username)
+        winner_id = winner["id"]
         self.winners.append(winner)
 
-        # Remove the finished match
-        self.matches = [(p1, p2, g) for p1, p2, g in self.matches if p1["id"] != player1_id and p2["id"] != player2_id]
+        # rm the finished match
+        self.matches = [(p1, p2, g) for p1, p2, g in self.matches if g.game_id != game_id]
 
-        if len(self.matches) == 0:  # All matches in this round are completed
+        if len(self.matches) == 0:
             self._advance_to_next_round()
 
     def _advance_to_next_round(self):

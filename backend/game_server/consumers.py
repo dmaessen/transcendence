@@ -124,6 +124,9 @@ class GameConsumer(AsyncWebsocketConsumer):
         player_id = self.player_id
         user = await get_user_by_id(player_id)
 
+        if data.get("type") == "create.game.tournament":
+            await self.create_game_tournament(data)
+
         if action == "connect":
             print(f"Player {player_id} trying to connect to game.", flush=True)
 
@@ -245,8 +248,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                 game.clear_game()
 
         elif action == "stop":
-        #     # if player_id in ready_players:
-        #     #     ready_players.remove(player_id)
             if self.game_id in games:
                 del games[self.game_id]
                 await self.broadcast_game_state(self.game_id)
@@ -339,6 +340,42 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         return self.match_name
 
+    async def create_game_tournament(self, data):
+        player1_id = data["player1"]
+        player2_id = data["player2"]
+
+        user1 = await get_user_by_id(player1_id)
+        user2 = await get_user_by_id(player2_id)
+
+        match = await sync_to_async(Match.objects.create)(
+            player_1=user1,
+            player_2=user2,
+            match_time=timedelta(minutes=2)
+        )
+
+        game_id = match.id
+        self.match_name = str(f"match_{match.id}")
+
+        await self.channel_layer.group_add(self.match_name, self.channel_name)
+
+        game = Game("Two Players (remote)") # this correct??
+        game.add_player(user1.id, user1.username)
+        game.add_player(user2.id, user2.username)
+        game.status = "started"
+        games[game_id] = game
+
+        await self.channel_layer.group_send(
+            "tournament_lobby",
+            {
+                "type": "game.created",
+                # "action": "game.created",
+                "game_id": game_id,
+                "player1": user1.username,
+                "player2": user2.username
+            }
+        )
+        print(f"Game {game_id} created for {user1.username} vs {user2.username}.", flush=True)
+
     # async def broadcast_game_state(self, game_id):
     #     if game_id in games:
     #         game = games[game_id]
@@ -397,6 +434,16 @@ class GameConsumer(AsyncWebsocketConsumer):
                         print(f"Winner determined: {winner}", flush=True)
 
                         await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                        if game.mode == "4" or game.mode == "8":
+                            await self.channel_layer.group_send(
+                                "tournament_lobby",  # tournament group name
+                                {
+                                    # "action": "game.result",
+                                    "type": "game.result",
+                                    "game_id": game_id,
+                                    "winner": winner
+                                }
+                            )
                         await self.channel_layer.group_send(
                             self.match_name,
                             {
