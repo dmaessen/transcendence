@@ -40,16 +40,23 @@ from data.serializers import *
 import logging
 import json
 from django.contrib.auth.decorators import login_required
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
  
 from rich import print
 
 logger = logging.getLogger(__name__)
 
-#@login_required
+# @login_required
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_user_data(request):
-    logging.info(f"Request:\n {request.user.id}")
+    logging.info(f"Request: {request.user.id}")
 
-    testUser = request.user.id
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User not authenticated"}, status=401)
+
+    testUser = request.user
     
     if not testUser:
         return JsonResponse({"error": "User not found"}, status=404)
