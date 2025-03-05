@@ -1,3 +1,5 @@
+const dataUrl = "http://localhost:8000/data/";
+
 function populateTable(table, data, columns, flag) {
     console.log("table:", table);
     console.log("data:", data);
@@ -52,22 +54,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (profileBtn) {
         profileBtn.addEventListener("click", function () {
-            console.log("hey");
+            // console.log("hey");
             // const matchesTable = document.getElementById("matchesTable").querySelector("tbody");
             // const tournamentsTable = document.getElementById("tournamentTable").querySelector("tbody");
             
-            fetch("/data/api/userData/") // Fetch user info
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Raw response:", data);
+            // const token = localStorage.getItem("access_token");
 
-                    document.getElementById("userAvatar").src = data.avatar;
-                    document.getElementById("username").textContent = data.username;
-                    document.getElementById("userEmail").textContent = data.email;
+            // if (!token) {
+            //     alert("could not get local storage token")
+            //     return;
+            // }
+            
+            // console.log("token: " + token)
+            // const body = {
+            //     "Authorization": `Bearer ${token}`,
+            //     "Content-Type": "Application/json"
+            // }
 
-                    profileModal.show();
+            fetch(`${dataUrl}api/userData/`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            })
+            .then(response => {
+                if (!response.ok)
+                    {
+                    throw new Error(`HTML error, status: ${response.status}`)
+                }
+                return response.json();
                 })
-                .catch(error => console.error("Error fetching user data:", error));
+            .then(data => {
+                console.log("Raw response:", data);
+
+                document.getElementById("userAvatar").src = data.avatar;
+                document.getElementById("username").textContent = data.username;
+                document.getElementById("userEmail").textContent = data.email;
+
+                profileModal.show();
+            })
+                // .then(response => response.json())
+            .catch(error => console.error("Error fetching user data:", error));
 
             fetch("/data/api/userMatches/")
                 .then(response => response.json())
