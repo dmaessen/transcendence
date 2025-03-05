@@ -1,0 +1,19 @@
+server.port: 9400
+server.host: "0.0.0.0"
+
+# server.ssl.enabled: true
+# server.ssl.certificate: /etc/kibana/ssl/localhost_cert.crt
+# server.ssl.key: /etc/kibana/ssl/localhost_key.pem
+
+server.ssl.enabled: true
+server.ssl.certificate: "/usr/share/kibana/config/cert/kibana-cert.crt"
+server.ssl.key: "/usr/share/kibana/config/cert/kibana_key.pem"
+
+
+elasticsearch.hosts: ["https://elasticsearch:9200"]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "$ELASTIC_PASSWORD"
+elasticsearch.ssl.certificateAuthorities: "/usr/share/kibana/config/cert/ca_private_key.pem"
+
+
+xpack.security.encryptionKey: "/usr/share/kibana/config/cert/kibana_key.pem"

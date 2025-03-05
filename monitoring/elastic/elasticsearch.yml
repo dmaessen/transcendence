@@ -1,0 +1,31 @@
+cluster.name: transcendence
+node.name: node1
+cluster.initial_master_nodes: ["node1"]
+
+# Enable security features
+xpack.security.enabled: true
+
+xpack.security.enrollment.enabled: false
+
+# Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
+xpack.security.http.ssl:
+  enabled: true
+  key: /usr/share/elasticsearch/config/cert/elastic_key.pem
+  certificate: /usr/share/elasticsearch/config/cert/elastic_cert_signed.crt
+  certificate_authorities: /usr/share/elasticsearch/config/cert/ca_cert.crt
+  
+# Enable encryption and mutual authentication between cluster nodes
+# For communication between Elasticsearch nodes in a cluster.
+#both transport&http use SSL/TLS
+xpack.security.transport.ssl:
+  enabled: true
+  key: /usr/share/elasticsearch/config/cert/elastic_key.pem
+  certificate: /usr/share/elasticsearch/config/cert/elastic_cert_signed.crt
+  certificate_authorities: /usr/share/elasticsearch/config/cert/ca_cert.crt
+# Create a new cluster with the current node only
+# Additional nodes can still join the cluster later
+#cluster.initial_master_nodes: ["buildkitsandbox"]
+
+# Allow HTTP API connections from anywhere
+# Connections are encrypted and require user authentication
+http.host: 0.0.0.0
