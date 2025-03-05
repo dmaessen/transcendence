@@ -45,7 +45,7 @@
         </div>
     </div>
 
-    <!-- User Registration Menu Modal -->
+    {% comment %} <!-- User Registration Menu Modal -->
     <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -60,15 +60,38 @@
                         Back
                     </button>
                 </div>
+                <!-- Login Form (Initially Hidden) -->
+                <div id="loginContainer" class="overlay-form">
+                    <h2>Login</h2>
+                    <form id="loginForm">
+                        <input type="email" id="loginEmail" placeholder="Email" required><br>
+                        <input type="password" id="loginPassword" placeholder="Password" required><br>
+                        <button type="submit">Login</button>
+                    </form>
+                    <button id="backToMain1" class="btn btn-secondary">Back</button>
+                </div>
+    
+                <!-- Register Form (Initially Hidden) -->
+                <div id="registerContainer" class="overlay-form">
+                    <h2>Register</h2>
+                    <form id="registerForm">
+                        <input type="text" id="registerUsername" placeholder="Username" required><br>
+                        <input type="text" id="registerName" placeholder="Name" required><br>
+                        <input type="email" id="registerEmail" placeholder="Email" required><br>
+                        <input type="password" id="registerPassword" placeholder="Password" required><br>
+                        <button type="submit">Register</button>
+                    </form>
+                    <button id="backToMain2" class="btn btn-secondary">Back</button>
+                </div>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
-<!-- Login Form -->
-<div id="loginContainer" style="display: none;">
+{% comment %} <!-- Login Form -->
+<div id="loginContainer" tabindex="-1" aria-labelledby="LoginMenu" data-backdrop="false">
     <h2>Login</h2>
     <form id="loginForm">
-        <input type="email" id="loginUsername" placeholder="Email" required><br>
+        <input type="email" id="loginEmail" placeholder="Email" required><br>
         <input type="password" id="loginPassword" placeholder="Password" required><br>
         <button type="submit">Login</button>
     </form>
@@ -76,16 +99,17 @@
 </div>
 
 <!-- Register Form -->
-<div id="registerContainer" style="display: none;">
+<div id="registerContainer" tabindex="-1" aria-labelledby="RegisterMenu" data-backdrop="false">
     <h2>Register</h2>
     <form id="registerForm">
         <input type="text" id="registerUsername" placeholder="Username" required><br>
+        <input type="text" id="registerName" placeholder="Name" required><br>
         <input type="email" id="registerEmail" placeholder="Email" required><br>
         <input type="password" id="registerPassword" placeholder="Password" required><br>
         <button type="submit">Register</button>
     </form>
     <button id="backToMain2" class="btn btn-secondary">Back</button>
-</div>
+</div> {% endcomment %}
 
     <!-- THIRD Game Menu Modal Tournament -->
     <div class="modal fade" id="gameMenuTournament" tabindex="-1" aria-labelledby="gameMenuLabelTournament">
@@ -159,6 +183,7 @@
 
 
     {% comment %} Modals {% endcomment %}
+    {% include 'modals/auth.html' %}
     {% include 'modals/profile_modal.html' %}
     {% include 'modals/game_menu_modal.html' %}
     {% include 'modals/friends_modal.html' %}

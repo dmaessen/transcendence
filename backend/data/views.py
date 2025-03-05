@@ -39,14 +39,18 @@ from data.services import *
 from data.serializers import *
 import logging
 import json
+from django.contrib.auth.decorators import login_required
+ 
 from rich import print
 
 logger = logging.getLogger(__name__)
 
+#@login_required
 def get_user_data(request):
-    logging.info(f"Request {request}")
+    logging.info(f"Request:\n {request.user.id}")
 
-    testUser = CustomUser.objects.filter(id=4).first()
+    testUser = request.user.id
+    
     if not testUser:
         return JsonResponse({"error": "User not found"}, status=404)
 
