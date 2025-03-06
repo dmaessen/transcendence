@@ -43,6 +43,7 @@ from rich import print
 
 logger = logging.getLogger(__name__)
 
+@login_required
 def get_user_data(request):
     logging.info(f"Request {request}")
 
@@ -60,6 +61,7 @@ def get_user_data(request):
         # "matches": list(MatchSummarySerializer(matches, many=True, context={"user": testUser}).data),
         # "tournaments": list(TournamentSummarySerializer(tournaments, many=True).data),
     }
+    +
 
     # Log as a properly formatted and colorful JSON string
     logging.info("Response JSON:\n" + json.dumps(user_data, indent=2, default=str))

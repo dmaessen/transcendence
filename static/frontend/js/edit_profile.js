@@ -9,3 +9,12 @@
 
 //     editProfileModal.show(); // Show the edit profile modal
 // });
+
+document.addEventListener("click", function() {
+    document.getElementById("saveChanges");
+    const newUsername = document.getElementById("newUsername");
+    const newMail = document.getElementById("newMail");
+    const newAvatar = document.getElementById("newAvatar");
+
+    
+})

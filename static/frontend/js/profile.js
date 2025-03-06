@@ -48,13 +48,10 @@ function populateTable(table, data, columns, flag) {
 
 document.addEventListener("DOMContentLoaded", function () {
     const profileBtn = document.getElementById("profileBtn");
-    const profileModal = new bootstrap.Modal(document.getElementById("profileModal"));
 
     if (profileBtn) {
         profileBtn.addEventListener("click", function () {
             console.log("hey");
-            // const matchesTable = document.getElementById("matchesTable").querySelector("tbody");
-            // const tournamentsTable = document.getElementById("tournamentTable").querySelector("tbody");
             
             fetch("/data/api/userData/") // Fetch user info
                 .then(response => response.json())
@@ -65,11 +62,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("username").textContent = data.username;
                     document.getElementById("userEmail").textContent = data.email;
 
-                    profileModal.show();
                 })
                 .catch(error => console.error("Error fetching user data:", error));
 
-            fetch("/data/api/userMatches/")
+            fetch("/data/api/userMatches/") // Fetch 3 latest matches from user 
                 .then(response => response.json())
                 .then(data => {
                     console.log("Raw response:", data);  // Log the whole response
@@ -84,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .catch(error => console.error("Error fetching matches data:", error));
 
-            fetch("/data/api/userTournaments/") // Fetch tournament data
+            fetch("/data/api/userTournaments/") // Fetch 3 latest tournament data from user
                 .then(response => response.json())
                 .then(data => {
                     console.log("Raw response:", data);  // Log the whole response
@@ -95,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         populateTable(tournamentsTable, data.tournaments, ["start_date", "winner"], 2);
                     } else {
                         console.error("Data.tournaments is not an array:", data.tournaments);
-                    }
+                    } 
                 })
                 .catch(error => console.error("Error fetching tournament data:", error));
         });
