@@ -1,3 +1,156 @@
+# services:
+#   psql:
+#       image: postgres:13-alpine
+#       container_name: postgres
+#       restart: always
+#       networks:
+#           - transcendence
+#       ports:
+#           - "5432:5432"
+#       env_file:
+#           - ./dot_env/.env
+#       volumes:
+#           #- pgdata:/var/lib/postgresql/data/
+#           - ${HOME}/.tranceanddance/pgdata:/var/lib/postgresql/data/
+
+#   backend:
+#     build: ./backend/docker
+#     container_name: backend
+#     volumes:
+#       - ./backend/:/app/
+#       - ./monitoring/logs:/var/log/django
+#     ports:
+#       - "8000:8000"
+#     env_file:
+#       - ./dot_env/.env     
+#     networks:
+#       - transcendence
+#     # command: python3 ./backend/game_server/game_server.py
+#     logging:
+#       driver: "json-file"
+#       options:
+#         max-size: "10m"
+#         max-file: "3"
+#     depends_on:
+#       - psql
+
+#   frontend:
+#       build: ./frontend
+#       container_name: frontend
+#       volumes:
+#           - ./frontend/statics/:/usr/share/nginx/html/static/
+#           - ./monitoring/logs/nginx:/var/log/nginx
+#       ports:
+#           - "8080:80"
+#       networks:
+#           - transcendence
+#       logging:
+#         driver: "json-file"
+#         options:
+#           max-size: "10m"
+#           max-file: "3"
+
+#       depends_on:
+#       - backend
+#       - psql
+
+#   elasticsearch:
+#     #image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+#     container_name: elasticsearch
+#     build: ./monitoring/elastic
+#     env_file: .env
+
+#     # environment:
+#     #   - discovery.type=single-node
+#     #   - ES_JAVA_OPTS=-Xms512m -Xmx512m 
+#     #   - xpack.security.enabled=false  # Disable security for dev ??
+#     ports:
+#       - "9200:9200"
+#     volumes:
+#       - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
+#       - certs:/usr/share/elasticsearch/config/cert
+#     networks:
+#       - transcendence
+
+#   logstash:
+#     #image: docker.elastic.co/logstash/logstash:8.17.0
+#     container_name: logstash
+#     build: ./monitoring/logstash
+#     ports:
+#       - "5044:5044"
+#     volumes:
+#       - ./monitoring/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#     depends_on:
+#       - elasticsearch
+#     networks:
+#       - transcendence
+
+#   kibana:
+#     #image: docker.elastic.co/kibana/kibana:8.17.0
+#     container_name: kibana
+#     build: ./monitoring/kibana
+#     env_file: .env
+#     ports:
+#       - "5601:5601"
+#     volumes:
+#       - certs:/usr/share/kibana/config/cert
+#       #- kibanadata:/usr/share/kibana/data
+#       #- ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
+#     environment:
+#       - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+#     depends_on:
+#       - elasticsearch
+#     networks:
+#       - transcendence
+
+#   filebeat:
+#     #image: docker.elastic.co/beats/filebeat:8.17.0
+#     container_name: filebeat
+#     build: ./monitoring/filebeat
+#     volumes:
+#       - ./monitoring/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+#       - ./monitoring/logs:/var/log/django:ro
+#       - ./monitoring/logs/nginx:/var/log/nginx:ro
+
+#     # user: root  # Might be needed for file permissions
+#     # command: ["filebeat", "run", "-e", "--strict.perms=false"]  # Fixed command syntax
+#     depends_on:
+#       - logstash
+#     networks:
+#       - transcendence
+
+# networks:
+#   transcendence:
+#     driver: bridge
+
+# volumes:
+#   certs:
+#   elasticsearch_data:
+#         driver: local
+#         driver_opts:
+#             type: none
+#             o: bind
+#             device: $HOME/.tranceanddance/elasticdata
+#   # kibanadata:
+#   #       driver: local
+#   #       driver_opts:
+#   #           type: none
+#   #           o: bind
+#   #           device: $HOME/.tranceanddance/kibanadata
+
+#   pgdata:
+#         driver: local
+#         driver_opts:
+#             type: none
+#             o: bind
+#             device: $HOME/.tranceanddance/pgdata
+#   backenddata:
+#         driver: local
+#         driver_opts:
+#             type: none
+#             o: bind
+#             device: $HOME/.tranceanddance/backenddata
+
 services:
   psql:
       image: postgres:13-alpine
@@ -58,17 +211,32 @@ services:
     #image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: elasticsearch
     build: ./monitoring/elastic
-    env_file: .env
-
     # environment:
     #   - discovery.type=single-node
     #   - ES_JAVA_OPTS=-Xms512m -Xmx512m 
     #   - xpack.security.enabled=false  # Disable security for dev ??
     ports:
       - "9200:9200"
+    # env_file:
+    #   - ./dot_env/.env
+    # volumes:
+    #   - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
     volumes:
       - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
-      - certs:/usr/share/elasticsearch/config/cert
+      - ${HOME}/.tranceanddance/elasticcerts:/certs
+      #- ${HOME}/.tranceanddance/elasticconfig:/usr/share/elasticsearch/config
+    environment:
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      xpack.security.enabled: true
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      KIBANA_PASSWORD: ${KIBANA_PASSWORD}
+      LOGSTASH_PASSWORD: ${LOGSTASH_PASSWORD}
+      ELASTIC_CA_PASSWORD: ${ELASTIC_CA_PASSWORD}
+      ELASTIC_CERT_PASSWORD: ${ELASTIC_CERT_PASSWORD}
+      KIBANA_KEYSTORE_PASSWORD: ${KIBANA_KEYSTORE_PASSWORD}
+      LOGSTASH_KEYSTORE_PASSWORD: ${LOGSTASH_KEYSTORE_PASSWORD}
+      FILEBEAT_KEYSTORE_PASSWORD: ${FILEBEAT_KEYSTORE_PASSWORD}
+    
     networks:
       - transcendence
 
@@ -89,15 +257,19 @@ services:
     #image: docker.elastic.co/kibana/kibana:8.17.0
     container_name: kibana
     build: ./monitoring/kibana
-    env_file: .env
     ports:
       - "5601:5601"
     volumes:
-      - certs:/usr/share/kibana/config/cert
-      #- kibanadata:/usr/share/kibana/data
+      - ${HOME}/.tranceanddance/elasticcerts:/usr/share/kibana/config/certs:ro
       #- ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
     environment:
+      - ELASTIC_CERT_PASSWORD=${ELASTIC_CERT_PASSWORD}
+      - KIBANA_KEYSTORE_PASSWORD=${KIBANA_KEYSTORE_PASSWORD}
+      - KIBANA_PASSWORD=${KIBANA_PASSWORD}
       - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+
     depends_on:
       - elasticsearch
     networks:
@@ -124,13 +296,25 @@ networks:
     driver: bridge
 
 volumes:
-  certs:
   elasticsearch_data:
         driver: local
         driver_opts:
             type: none
             o: bind
             device: $HOME/.tranceanddance/elasticdata
+  certs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $HOME/.tranceanddance/elasticcerts
+    
+  elastic_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $HOME/.tranceanddance/elasticconfig
   # kibanadata:
   #       driver: local
   #       driver_opts:
@@ -150,80 +334,4 @@ volumes:
             type: none
             o: bind
             device: $HOME/.tranceanddance/backenddata
-# services:
-#   backend:
-#     build: ./backend/docker
-#     container_name: backend
-#     volumes:
-#       - ./backend/:/app/
-#     ports:
-#       - "8000:8000"
-#     networks:
-#       - transcendence
-#     command: python3 ./backend/game_server/game_server.py
-#     restart: on-failure
-#     depends_on:
-#       - elasticsearch
-#       - logstash
 
-#   frontend:
-#     build: ./frontend
-#     container_name: frontend
-#     volumes:
-#       - ./frontend/statics/:/usr/share/nginx/html/static/
-#     ports:
-#       - "8080:80"
-#     networks:
-#       - transcendence
-#     depends_on:
-#       - backend
-
-#   elasticsearch:
-#     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
-#     container_name: elasticsearch
-#     environment:
-#       - discovery.type=single-node
-#       - xpack.security.enabled=false
-#     # volumes:
-#     #   - es_data:/usr/share/elasticsearch/data
-#     ports:
-#       - "9200:9200"
-#       - "9300:9300"
-#     networks:
-#       - transcendence
-
-#   kibana:
-#     image: docker.elastic.co/kibana/kibana:8.10.2
-#     container_name: kibana
-#     ports:
-#       - "5601:5601"
-#     environment:
-#       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-#     networks:
-#       - transcendence
-#     depends_on:
-#       - elasticsearch
-
-#   logstash:
-#     image: docker.elastic.co/logstash/logstash:8.10.2
-#     container_name: logstash
-#     ports:
-#       - "5044:5044"  # For Beats input
-#       - "9600:9600"  # For monitoring
-#     volumes:
-#       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-#     networks:
-#       - transcendence
-#     environment:
-#       - xpack.monitoring.elasticsearch.hosts=http://elasticsearch:9200
-#     depends_on:
-#       - elasticsearch
-
-
-# networks:
-#   transcendence:
-#     driver: bridge
-
-# volumes:
-#   es_data:
-#     driver: local
