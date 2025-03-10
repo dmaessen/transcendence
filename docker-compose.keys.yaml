@@ -1,0 +1,13 @@
+services:
+  keys:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: keys
+    build:
+       context: ./monitoring/elastic/
+    command: bash /scripts/keystore.sh
+    user: root
+    volumes:
+        - ./monitoring/secrets:/secrets
+        - ./monitoring/elastic:/scripts
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
