@@ -1,14 +1,32 @@
-// document.getElementById("editProfileBtn").addEventListener("click", function () {
-//     let profileModal = document.getElementById("profileModal");
-//     let editProfileModal = new bootstrap.Modal(document.getElementById("editProfileModal"));
+const editProfileBtn = document.getElementById("editProfileBtn");
 
-//     let modalInstance = bootstrap.Modal.getInstance(profileModal);
-//     if (modalInstance) {
-//         modalInstance.hide(); // Hide the profile modal
-//     }
+if (editProfileBtn) {
+    editProfileBtn.addEventListener("click", function () {
+        fetch(`/data/api/userData/`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                "Content-Type": "application/json",
+            },
+        })
+        .then(response => {
+            if (!response.ok)
+                {
+                throw new Error(`HTML error, status: ${response.status}`)
+            }
+            return response.json();
+            })
+        .then(data => {
+            console.log("edit response:", data);
 
-//     editProfileModal.show(); // Show the edit profile modal
-// });
+            document.getElementById("newUsername").value = data.username;
+            document.getElementById("newMail").value = data.email;
+
+        })
+            // .then(response => response.json())
+        .catch(error => console.error("Error fetching user data:", error));
+    });
+}
 
 document.addEventListener("click", function() {
     document.getElementById("saveChanges");

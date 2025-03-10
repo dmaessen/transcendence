@@ -1,7 +1,9 @@
+const dataUrl = "http://localhost:8000/data/";
+
 function populateTable(table, data, columns, flag) {
-    console.log("table:", table);
-    console.log("data:", data);
-    console.log("columns:", columns);
+    // console.log("table:", table);
+    // console.log("data:", data);
+    // console.log("columns:", columns);
     
     if (!table) {
         console.error("Table not found!");
@@ -46,54 +48,75 @@ function populateTable(table, data, columns, flag) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    const profileBtn = document.getElementById("profileBtn");
+const profileBtn = document.getElementById("profileBtn");
 
-    if (profileBtn) {
-        profileBtn.addEventListener("click", function () {
-            console.log("hey");
-            
-            fetch("/data/api/userData/") // Fetch user info
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Raw response:", data);
+if (profileBtn) {
+    profileBtn.addEventListener("click", function () {
+        fetch(`/data/api/userData/`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                "Content-Type": "application/json",
+            },
+        })
+        .then(response => {
+            if (!response.ok)
+                {
+                throw new Error(`HTML error, status: ${response.status}`)
+            }
+            return response.json();
+            })
+        .then(data => {
+            // console.log("Raw response:", data);
 
-                    document.getElementById("userAvatar").src = data.avatar;
-                    document.getElementById("username").textContent = data.username;
-                    document.getElementById("userEmail").textContent = data.email;
+            document.getElementById("userAvatar").src = data.avatar;
+            document.getElementById("username").textContent = data.username;
+            document.getElementById("userEmail").textContent = data.email;
 
-                })
-                .catch(error => console.error("Error fetching user data:", error));
+        })
+            // .then(response => response.json())
+        .catch(error => console.error("Error fetching user data:", error));
 
-            fetch("/data/api/userMatches/") // Fetch 3 latest matches from user 
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Raw response:", data);  // Log the whole response
-                    console.log("Matches:", data.matches);  // Check the 'matches' array specifically
-            
-                    // Ensure that we're checking 'data.matches' correctly
-                    if (Array.isArray(data.matches)) {
-                        populateTable(matchesTable, data.matches, ["match_start", "winner_name", "opponent"], 1);
-                    } else {
-                        console.error("Data.matches is not an array:", data.matches);
-                    }
-                })
-                .catch(error => console.error("Error fetching matches data:", error));
+        fetch("/data/api/userMatches/", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                "Content-Type": "application/json",
+            },
+        }) // Fetch 3 latest matches from user 
+            .then(response => response.json())
+            .then(data => {
+                // console.log("Raw response:", data);  // Log the whole response
+                // console.log("Matches:", data.matches);  // Check the 'matches' array specifically
+        
+                // Ensure that we're checking 'data.matches' correctly
+                if (Array.isArray(data.matches)) {
+                    populateTable(matchesTable, data.matches, ["match_start", "winner_name", "opponent"], 1);
+                } else {
+                    console.error("Data.matches is not an array:", data.matches);
+                }
+            })
+            .catch(error => console.error("Error fetching matches data:", error));
 
-            fetch("/data/api/userTournaments/") // Fetch 3 latest tournament data from user
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Raw response:", data);  // Log the whole response
-                    console.log("Tournaments:", data.tournaments);  // Check the 'tournaments' array specifically
+        fetch("/data/api/userTournaments/", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                "Content-Type": "application/json",
+            },
+        }) // Fetch 3 latest tournament data from user
+            .then(response => response.json())
+            .then(data => {
+                // console.log("Raw response:", data);  // Log the whole response
+                // console.log("Tournaments:", data.tournaments);  // Check the 'tournaments' array specifically
 
-                    // Ensure that we're checking 'data.matches' correctly
-                    if (Array.isArray(data.tournaments)) {
-                        populateTable(tournamentsTable, data.tournaments, ["start_date", "winner"], 2);
-                    } else {
-                        console.error("Data.tournaments is not an array:", data.tournaments);
-                    } 
-                })
-                .catch(error => console.error("Error fetching tournament data:", error));
-        });
-    }
-});
+                // Ensure that we're checking 'data.matches' correctly
+                if (Array.isArray(data.tournaments)) {
+                    populateTable(tournamentsTable, data.tournaments, ["start_date", "winner"], 2);
+                } else {
+                    console.error("Data.tournaments is not an array:", data.tournaments);
+                } 
+            })
+            .catch(error => console.error("Error fetching tournament data:", error));
+    });
+}
