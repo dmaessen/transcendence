@@ -87,8 +87,8 @@ services:
     #   - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
     volumes:
       - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
-      - ${HOME}/.tranceanddance/elasticcerts:/secrets
-      - ./monitoring/secrets:/secrets
+      #- ${HOME}/.tranceanddance/elasticcerts:/secrets
+      #- ./monitoring/secrets:/secrets
       #- .env.kibana/:/usr/share/elasticsearch/config/.env.kibana.token
       - ./monitoring/elastic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./monitoring/elastic/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
@@ -96,6 +96,7 @@ services:
     environment:
       ES_JAVA_OPTS: -Xms512m -Xmx512m
       xpack.security.enabled: true
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       KIBANA_PASSWORD: ${KIBANA_PASSWORD}
       LOGSTASH_PASSWORD: ${LOGSTASH_PASSWORD}
@@ -136,12 +137,13 @@ services:
     container_name: kibana
     build: ./monitoring/kibana
     env_file:
-      - ${HOME}/.tranceanddance/elasticcerts/.env.kibana.token
+      - ./monitoring/secrets/.env.kibana.token
     ports:
       - "5601:5601"
     volumes:
-      - ${HOME}/.tranceanddance/elasticcerts:/usr/share/kibana/config/certs:ro
+      #- ${HOME}/.tranceanddance/elasticcerts:/usr/share/kibana/config/certs:ro
       #- ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
+      - ./monitoring/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
     environment:
       - ELASTIC_CERT_PASSWORD=${ELASTIC_CERT_PASSWORD}
       - KIBANA_KEYSTORE_PASSWORD=${KIBANA_KEYSTORE_PASSWORD}
@@ -149,7 +151,6 @@ services:
       - ELASTIC_HOSTS=https://elasticsearch:9200
       - ELASTIC_USERNAME=${ELASTIC_USERNAME}
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - ELASTICSEARCH_HOST_PORT=9200
     secrets:
       - source: elastic.ca
         target: /certs/ca.crt

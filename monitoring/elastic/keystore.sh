@@ -24,10 +24,14 @@ OUTPUT_KIBANA_TOKEN=/secrets/.env.kibana.token
 # #OUTPUT_KIBANA_TOKEN=/usr/share/elasticsearch/credentials/.env.kibana.token
 # OUTPUT_KIBANA_TOKEN=/usr/share/elasticsearch/config/.env.kibana.token
 
+
 # Password Generate
-PW=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16 ;)
-ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-$PW}"
+# PW=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16 ;)
+# ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-$PW}"
+PW="$ELASTIC_PASSWORD" # "banana"
 export ELASTIC_PASSWORD
+printf "Your 'elastic' user password is: $ELASTIC_PASSWORD\n"
+
 
 # Create Keystore, it will be stored in elasticsearch.keystore file
 printf "========== Creating Elasticsearch Keystore ==========\n"
@@ -35,7 +39,11 @@ printf "=====================================================\n"
 elasticsearch-keystore create >> /dev/null
 
 # Setting Secrets and Bootstrap Password
-sh bootstrap.sh
+#sh /scripts/bootstrap.sh
+
+# Setting Bootstrap Password
+echo "Setting bootstrap.password..."
+(echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password')
 echo "Elastic Bootstrap Password is: $ELASTIC_PASSWORD"
 
 # Generating Kibana Token
@@ -80,3 +88,5 @@ printf "=====================================================\n"
 printf "Your 'elastic' user password is: $ELASTIC_PASSWORD\n"
 printf "Your Kibana Service Token is: $TOKEN\n"
 printf "=====================================================\n"
+
+sh /scripts/gen-cert.sh

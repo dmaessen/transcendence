@@ -28,7 +28,7 @@ PASSWORD=`openssl rand -base64 32`
 /usr/share/elasticsearch/bin/elasticsearch-certutil ca --pass "$PASSWORD" --pem --out $ZIP_CA_FILE &> /dev/null
 printf "Generating Certificates... \n"
 unzip -qq $ZIP_CA_FILE -d $OUTPUT_DIR;
-/usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem  --ca-cert $OUTPUT_DIR/ca/ca.crt --ca-key $OUTPUT_DIR/ca/ca.key --ca-pass "$PASSWORD" --in /usr/share/elasticsearch/instances.yml -out $ZIP_FILE  &> /dev/null
+/usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem  --ca-cert $OUTPUT_DIR/ca/ca.crt --ca-key $OUTPUT_DIR/ca/ca.key --ca-pass "$PASSWORD" --in /scripts/instances.yml -out $ZIP_FILE  &> /dev/null
 
 printf "Unzipping Certifications... \n"
 unzip -qq $ZIP_FILE -d $OUTPUT_DIR;
@@ -43,3 +43,4 @@ find $OUTPUT_DIR -type f -exec chmod 655 -- {} +
 printf "=====================================================\n"
 printf "SSL Certifications generation completed successfully.\n"
 printf "=====================================================\n"
+
