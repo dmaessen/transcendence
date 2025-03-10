@@ -1,16 +1,42 @@
 from data.models import CustomUser, CustomUserManager
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, get_user_model
+from django_otp.decorators import otp_required
 from .forms import LoginForm, RegisterForm
 from django.http import HttpResponse, JsonResponse
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 # from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer
+from django.contrib.auth.decorators import login_required
+from django_otp.plugins.otp_totp.models import TOTPDevice
+import qrcode
+import io
 
+@otp_required
+def login_2fa_required(request):
+    return redirect("game_server")
+
+@login_required
+def enable_2fa(request):
+	user = request.user
+	device, created = TOTPDevice.objects.get_or_create(user=user, confirmed=False)
+
+	if request.method == "POST":
+		device.confirmed = True
+		device.save()
+		return redirect("account_profile")
+	
+	otp_uri = device.config_url
+	qr = qrcode.make(otp_uri)
+	stream = io.BytesIO()
+	qr.save(stream, "PNG")
+	qr_data = stream.getvalue()
+
+	return render(request, "authentication/templates/enable_2fa.html", {"qr_code": qr_data})
 class RegisterView(APIView):
 	def post(self, request):
 		serializer = UserSerializer(data=request.data)
@@ -54,6 +80,17 @@ class LoginView(APIView):
 			'access': str(refresh.access_token),
 		}, status=status.HTTP_200_OK)
 
+User = get_user_model()
+
+class DeleteAccountView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	# @login_required
+	def delete(self, request):
+		user = request.user
+		user.delete()
+		return Response({"message": "Account deleted sucessfully"}, status=status.HTTP_204_NO_CONTENT)
+
 def sign_in(request):
 	if request.method == 'GET':
 		# user = authenticate(email = 'email', password = 'password')
@@ -70,10 +107,10 @@ def sign_in(request):
 		if form.is_valid():
 			messages.success(request,f'loaded successfully')
 			# email = form.cleaned_data['email']
-			username = form.cleaned_data.get('username')
+			name = form.cleaned_data.get('name')
 			password = form.cleaned_data.get('password')
-			user = authenticate(request, username=username, password=password)
-			if not username or not password: 
+			user = authenticate(request, name=name, password=password)
+			if not name or not password: 
 				return HttpResponse("username or password is missing")
 			if user is not None:
 				login(request, user)
@@ -85,6 +122,7 @@ def sign_in(request):
 	# messages.error(request,f'Invalid username or password')
 	# return render(request, 'users/login.html',{'form': form})
 
+@login_required
 def sign_out(request):
 	logout(request)
 	messages.success(request,f'You have been logged out')
@@ -101,6 +139,7 @@ def register(request):
 
 		if form.is_valid():
 			user = form.save(commit=False)
+			user.username = form.cleaned_data['username']
 			user.name = form.cleaned_data['name']
 			user.email = form.cleaned_data['email']
 			user.password = form.cleaned_data['password']

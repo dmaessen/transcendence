@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong Game</title>
@@ -43,23 +44,8 @@
         </div>
     </div>
 
-    <!-- User Registration Menu Modal -->
-    <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="SignInMenuLabel">Select Game Mode</h5>
-                </div>
-                <div class="modal-body">
-                    <button id="Register" class="btn btn-outline-dark w-100 mb-2">Register</button>
-                    <button id="LogIn" class="btn btn-outline-dark w-100 mb-2">Log in</button>
-                    <button id="Logout" class="btn btn-outline-dark w-100 mb-2">Log Out</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {% comment %} Modals {% endcomment %}
+    {% include 'modals/auth.html' %}
     {% include 'modals/profile_modal.html' %}
     {% include 'modals/game_menu_modal.html' %}
     {% include 'modals/friends_modal.html' %}
@@ -73,7 +59,11 @@
     <script src="{% static 'js/async.js' %}"></script>
     <script src="{% static 'js/tournament.js' %}"></script>
     <script src="{% static 'js/game.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <!-- <script src="/static/script.js"></script> -->
+    <!-- profile page -->
     <script src="{% static 'js/profile.js' %}"></script>
+    <script src="{% static 'js/edit_profile.js' %}"></script>
     <script src="{% static 'js/button.js' %}"></script>
 
 </body>
