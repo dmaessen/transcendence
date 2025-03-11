@@ -40,10 +40,11 @@ async function updateBracketWithData(mode) {
             if (data.matches && data.matches.length > 0) {
                 document.getElementById("tournamentBracket").style.display = "none";
                 document.getElementById("tournamentBracket4").style.display = "none";
-                await sleep(4000);
-                startGameMenu(); // it glitches here as being called every 5sec and then the start prompt gets triggered again
+                // await sleep(4000);
+                // startGameMenu(); // it glitches here as being called every 5sec and then the start prompt gets triggered again
                 // gameMenuStarted = true;
             }
+            
 
             // Stop updates if tournament is over or a player quits
             // if (!data.tournament_active || data.players_in < mode) {
