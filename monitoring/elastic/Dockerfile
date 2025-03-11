@@ -40,6 +40,7 @@ FROM docker.elastic.co/elasticsearch/elasticsearch:8.17.0
 # RUN /usr/share/elasticsearch/keystore.sh
 
 # RUN /usr/share/elasticsearch/gen-cert.sh
+#RUN echo "${ELASTIC_PASSWORD}" | elasticsearch-reset-password -u elastic -i
 
 #USER elasticsearch
 

@@ -14,7 +14,7 @@ xpack.security.encryptionKey: bananatimebananatimebananametime
 #xpack.encryptedSavedObjects.encryptionKey: 
 
 
-elasticsearch.hosts: ["https://elasticsearch:9200"]
+elasticsearch.hosts: [ https://elasticsearch:9200 ]
 # elasticsearch.username: elastic
 # elasticsearch.password: ${ELASTIC_PASSWORD}
 
