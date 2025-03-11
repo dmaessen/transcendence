@@ -458,17 +458,17 @@ class GameConsumer(AsyncWebsocketConsumer):
 
                         await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
                         # if game.mode == "4" or game.mode == "8":
-                        if self.tournament_id:
-                            await self.channel_layer.group_send(
-                                # f'tournament_{self.tournament_id}', 
-                                "game_lobby",  # tournament group name
-                                {
-                                    # "action": "game.result",
-                                    "type": "game.result",
-                                    "game_id": game_id,
-                                    "winner": winner
-                                }
-                            )
+                        # if self.tournament_id:
+                        #     await self.channel_layer.group_send(
+                        #         # f'tournament_{self.tournament_id}', 
+                        #         "game_lobby",  # tournament group name
+                        #         {
+                        #             # "action": "game.result",
+                        #             "type": "game.result",
+                        #             "game_id": game_id,
+                        #             "winner": winner
+                        #         }
+                        #     )
                         await self.channel_layer.group_send(
                             self.match_name,
                             {

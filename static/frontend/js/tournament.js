@@ -1,3 +1,5 @@
+// let gameMenuStarted = false;
+
 async function drawBracket(mode) {
     console.log("drawBracket called with mode:", mode);
     if (mode == "4") {
@@ -29,10 +31,19 @@ async function updateBracketWithData(mode) {
             updatePlayerFields(mode, data.players, data.results);
             updateBracket(mode, data.bracket, data.players, data.winners, data.current_round);
 
-            // Debugging logs
-            console.log("Tournament active:", data.tournament_active);
-            console.log("Players in:", data.players_in);
-            console.log("Mode:", mode);
+            // console.log("Tournament active:", data.tournament_active);
+            // console.log("Players in:", data.players_in);
+            // console.log("Mode:", mode);
+            // if (data.matches.length == 0)
+            //     gameMenuStarted = false; // to reset between end of matches
+
+            if (data.matches && data.matches.length > 0) {
+                document.getElementById("tournamentBracket").style.display = "none";
+                document.getElementById("tournamentBracket4").style.display = "none";
+                await sleep(4000);
+                startGameMenu(); // it glitches here as being called every 5sec and then the start prompt gets triggered again
+                // gameMenuStarted = true;
+            }
 
             // Stop updates if tournament is over or a player quits
             // if (!data.tournament_active || data.players_in < mode) {

@@ -17,6 +17,7 @@ class Game:
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
+        self.partOfTournament = False
         self.status = None #default can be "waiting", "started"
 
     def add_player(self, player_id, username):
@@ -62,6 +63,7 @@ class Game:
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
+        self.partOfTournament = False
 
     def update_state(self):
         # Update ball position
@@ -89,7 +91,8 @@ class Game:
             self.score["player"] += 1
             self._reset_ball(direction=-1)
 
-        if self.mode == "4" or self.mode == "8":
+        # if self.mode == "4" or self.mode == "8":
+        if self.partOfTournament == True:
             if self.score["player"] >= 3 or self.score["opponent"] >= 3:
                 winner_id = next(
                     (pid for pid, pdata in self.players.items() if self.score[pdata["role"]] >= 3),
@@ -113,7 +116,7 @@ class Game:
     def move_player(self, player_id, direction):
         if self.mode == "Two Players (hot seat)" and player_id in self.players:
             print(f"Moving player {player_id} with direction {direction}", flush=True)
-            print("111111")
+            # print("111111")
             #paddle = self.players[player_id]
             player = self.players[player_id]
             opponent = self.players["opponent"]
@@ -128,7 +131,7 @@ class Game:
 
         elif player_id in self.players:
             print(f"Moving player {player_id} with direction {direction}", flush=True)
-            print("22222")
+            # print("22222")
             paddle = self.players[player_id]
             if direction == "up" and paddle["y"] > 0:
                 paddle["y"] -= 10
@@ -148,7 +151,8 @@ class Game:
             "mode": self.mode,
             "width": self.width,
             "height": self.height,
-            "status": self.status
+            "status": self.status,
+            "partOfTournament": self.partOfTournament
         }
 
     def _check_collision(self, paddle):
@@ -208,3 +212,6 @@ class Game:
     def clear_game(self):
         self.players = {}  # Clear players
         self.score = {"player": 0, "opponent": 0}
+    
+    def is_partOfTournament(self):
+        self.partOfTournament = True

@@ -87,7 +87,7 @@ function startGame(mode) {
         connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
         gameMenuTournament.hide();
-        alert(`${mode} mode is not yet implemented.`);
+        //alert(`${mode} mode is not yet implemented.`);
         // gameTitle.textContent = `${mode}`;
         // instructions1.style.display = "block";
         if (mode === "Tournament - 4 Players")
@@ -97,9 +97,6 @@ function startGame(mode) {
     }
 }
 
-// document.getElementById("profileBtn").addEventListener("click", () => ); // TODO connect with Laura
-// document.getElementById("friendsBtn").addEventListener("click", () => ); // TODO connect with Laura
-// document.getElementById("tournamentInfoBtn").addEventListener("click", () => ); // TODO connect with Laura
 
 document.getElementById("playBtn").addEventListener("click", async() => {
     gameMenuFirst.hide();
@@ -120,28 +117,22 @@ document.getElementById("playBtn").addEventListener("click", async() => {
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
-
 document.getElementById("tournamentBtn").addEventListener("click", () => {
         gameMenuTournament.show();
-        gameMenu.hide();
-});
+        gameMenu.hide();});
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    disableTournamentButtons();
-});
+    disableTournamentButtons();});
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    disableTournamentButtons();
-});
+    disableTournamentButtons();});
 
 document.getElementById("previous1Btn").addEventListener("click", () => {
     gameMenu.hide();
-    gameMenuFirst.show();
-});
+    gameMenuFirst.show();});
 document.getElementById("previous2Btn").addEventListener("click", () => {
     gameMenuTournament.hide();
-    gameMenu.show();
-});
+    gameMenu.show();});
 
 document.getElementById("exitButton").addEventListener("click", () =>  {
     keyboardEnabled = false;
@@ -169,7 +160,17 @@ tournamentBanner.addEventListener("click", async(event) => {
             gameMenuFirst.hide();
             gameMenu.hide();
             gameMenuTournament.hide();
+
             gameState.mode = data.players_in + data.remaining_spots; 
+            keyboardEnabled = true;
+            gameState.running = false;
+            gameTitle.style.display = "block";
+            gameCanvas.style.display = "block";
+            gameCanvas.width = 1400;
+            gameCanvas.height = 1000;
+            gameCanvas.style.width = gameCanvas.width / 2 + "px";
+            gameCanvas.style.height = gameCanvas.height / 2 + "px";
+
             connectWebSocket(data.players_in + data.remaining_spots);
         }
     } catch (error) {
@@ -281,11 +282,13 @@ function displayStartPrompt() {
     gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
     gameContext.fillStyle = "#ffffff";
     gameContext.textAlign = "center";
-    gameContext.fillText("Press any key to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
+    gameContext.fillText("Press any key twice to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
     keyboardEnabled = true;
 }
 
 function startGameMenu() {
+    if (gameState.running == true)
+        return;
     gameState.running = false;
     displayStartPrompt();
 }
