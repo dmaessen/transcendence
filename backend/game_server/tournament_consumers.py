@@ -237,7 +237,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print(f"Tournament match {game_id} added: {player1} vs {player2}.", flush=True)
         print(f"Current matches: {self.tournament.matches}", flush=True)
+        await self.send_json({
+            "type": "match_start",
+            # "data": game.get_state()
+        })
         await self.broadcast_tournament_state()
+
 
     async def game_result(self, event):
         game_id = event["game_id"]

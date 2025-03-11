@@ -138,8 +138,8 @@ function handleServerMessage(message) {
             console.log("(FRONTEND) Match found:", message.game_id);
             break;
         case 'match_start':
-            gameState.gameId = message.game_id;
-            console.log(`Game initialized with ID: ${gameState.gameId}`);
+            // gameState.gameId = message.game_id;
+            // console.log(`Game initialized with ID: ${gameState.gameId}`);
             startGameMenu();
             //gameState.running = true;
             break;
