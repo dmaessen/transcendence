@@ -55,6 +55,10 @@ removelogs:
 	@rm -rf $(HOME)/.tranceanddance/elasticcerts
 	@rm -rf $(HOME)/.tranceanddance/elasticdata
 
+rmsecrets:
+	@rm -rf ./monitoring/secrets/*
+	@rm ./monitoring/secrets/.env.kibana.token
+
 resetall: pruneall fclean
 	@rm -rf $(HOME)/.tranceanddance/
 	

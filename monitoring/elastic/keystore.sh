@@ -30,7 +30,6 @@ OUTPUT_KIBANA_TOKEN=/secrets/.env.kibana.token
 # ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-$PW}"
 PW="$ELASTIC_PASSWORD" # "banana"
 export ELASTIC_PASSWORD
-printf "Your 'elastic' user password is: $ELASTIC_PASSWORD\n"
 
 
 # Create Keystore, it will be stored in elasticsearch.keystore file
@@ -38,13 +37,15 @@ printf "========== Creating Elasticsearch Keystore ==========\n"
 printf "=====================================================\n"
 elasticsearch-keystore create >> /dev/null
 
-# Setting Secrets and Bootstrap Password
-#sh /scripts/bootstrap.sh
 
 # Setting Bootstrap Password
 echo "Setting bootstrap.password..."
-(echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password')
+echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password'
 echo "Elastic Bootstrap Password is: $ELASTIC_PASSWORD"
+
+#not sure why setup above didnt set psswrd, so reset will be called
+#echo "$ELASTIC_PASSWORD" | elasticsearch-reset-password -u elastic -i
+
 
 # Generating Kibana Token
 echo "Generating Kibana Service Token..."

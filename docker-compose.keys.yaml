@@ -5,7 +5,7 @@ services:
     build:
        context: ./monitoring/elastic/
     command: bash /scripts/keystore.sh
-    user: root
+    user: "0"
     volumes:
         - ./monitoring/secrets:/secrets
         - ./monitoring/elastic:/scripts
