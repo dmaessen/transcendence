@@ -11,7 +11,7 @@ class Tournament:
         self.num_players = int(mode)
         self.players = []  # player IDs and usernames
         self.matches = []  # ongoing matches
-        self.bracket = {}  # matchups for each round
+        self.bracket = {}  # matchups for each round -- THIS SEND TO LAURA
         self.current_round = 1
         self.running = False
         self.winners = []  # players who won their matches
@@ -36,9 +36,16 @@ class Tournament:
 
     def _create_bracket(self):
         # random.shuffle(self.players)
+        # self.bracket[self.current_round] = [
+        #     (self.players[i], self.players[i + 1]) for i in range(0, len(self.players), 2)
+        # ]
+
         self.bracket[self.current_round] = [
-            (self.players[i], self.players[i + 1]) for i in range(0, len(self.players), 2)
+            ({"player": self.players[i], "winner": False}, 
+            {"player": self.players[i + 1], "winner": False}) 
+            for i in range(0, len(self.players), 2)
         ]
+
         print(f"tournament bracket created: {self.bracket}", flush=True)
 
     async def _start_next_round(self):
@@ -57,17 +64,17 @@ class Tournament:
             # match.add_player(player2["id"], player2["username"])
             # match.start_game()
             # self.matches.append((player1, player2, match))
-            match_exists = any(match["player1"] == player1["id"] and match["player2"] == player2["id"] for match in self.matches)
+            match_exists = any(match["player1"] == player1["player"]["id"] and match["player2"] == player2["player"]["id"] for match in self.matches)
             if not match_exists:
                 await channel_layer.group_send(
                     "tournament_lobby",
                     {
                         "type": "create.game.tournament",
-                        "player1": player1["id"],
-                        "player2": player2["id"],
+                        "player1": player1["player"]["id"],
+                        "player2": player2["player"]["id"],
                     }
                 )
-                print(f"Sent create.game.tournament message for {player1['username']} vs {player2['username']}", flush=True)
+                print(f"Sent create.game.tournament message for {player1['player']['username']} vs {player2['player']['username']}", flush=True)
                 # self.matches.append({"player1": player1["id"], "player2": player2["id"]})
 
         # print(f"Round {self.current_round} started with {len(self.matches)} matches.", flush=True)
@@ -75,8 +82,16 @@ class Tournament:
 
     def register_match_result(self, game_id, winner_username):
         winner = next(player for player in self.players if player["username"] == winner_username)
-        winner_id = winner["id"] # needed??
+        # winner_id = winner["id"] # needed??
         self.winners.append(winner)
+
+        for match in self.bracket[self.current_round]: # bool True for the winner
+            if match[0]["player"]["username"] == winner_username:
+                match[0]["winner"] = True
+                match[1]["winner"] = False
+            elif match[1]["player"]["username"] == winner_username:
+                match[0]["winner"] = False
+                match[1]["winner"] = True
 
         # rm the finished match based on game_id
         self.matches = [(p1, p2, g_id) for p1, p2, g_id in self.matches if g_id != game_id]
@@ -91,10 +106,19 @@ class Tournament:
             print(f"Tournament ended. Winner: {self.final_winner['username']}", flush=True)
             return
 
+        if self.current_round + 1 not in self.bracket: # store until we have two winners to be paired
+            self.bracket[self.current_round + 1] = []
+        while len(self.winners) >= 2:
+            player1 = self.winners.pop(0)
+            player2 = self.winners.pop(0)
+            self.bracket[self.current_round +1].append((player1, player2)) # creates matches
+        if len(self.winners) == 1: #then wait still
+            return
+
         self.current_round += 1
-        self.bracket[self.current_round] = [
-            (self.winners[i], self.winners[i + 1]) for i in range(0, len(self.winners), 2)
-        ]
+        # self.bracket[self.current_round] = [
+        #     (self.winners[i], self.winners[i + 1]) for i in range(0, len(self.winners) - 1, 2)
+        # ]
 
         self._start_next_round()
 

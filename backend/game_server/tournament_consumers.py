@@ -148,7 +148,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             if hasattr(self, 'match_name'):
                 await self.channel_layer.group_discard(self.match_name, self.channel_name)
 
-        elif action == "disconnect_1v1game": # SEE WHAT WE USE THIS ONE FOR, HAVE ONE FOR THE WHOLE TOURNAMENT WS
+        elif action == "disconnect": # SEE WHAT WE USE THIS ONE FOR, HAVE ONE FOR THE WHOLE TOURNAMENT WS
             for game_id in list(games.keys()):
                 game = games[game_id]
                 if self.player_id in game.players:

@@ -140,8 +140,9 @@ function handleServerMessage(message) {
         case 'match_start':
             // gameState.gameId = message.game_id;
             // console.log(`Game initialized with ID: ${gameState.gameId}`);
+            document.getElementById("tournamentBracket").style.display = "none";
+            document.getElementById("tournamentBracket4").style.display = "none";
             startGameMenu();
-            //gameState.running = true;
             break;
         // case "tournament_status": // needed
         //     if (message.active) {
