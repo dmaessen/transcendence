@@ -127,6 +127,14 @@ services:
       - "5044:5044"
     volumes:
       - ./monitoring/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./monitoring/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    environment:
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      ELASTICSEARCH_HOST_PORT: ${ELASTICSEARCH_HOST_PORT}
+    secrets:
+      - source: elastic.ca
+        target: /certs/ca.crt
     depends_on:
       - elasticsearch
     networks:
