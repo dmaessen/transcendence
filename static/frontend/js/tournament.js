@@ -29,7 +29,7 @@ async function updateBracketWithData(mode) {
 
         if (data) {
             updatePlayerFields(mode, data.players, data.results);
-            updateBracket(mode, data.bracket, data.players, data.winners, data.current_round);
+            updateBracket(mode, data.bracket, data.winners, data.current_round, data.final_winner);
 
             // console.log("Tournament active:", data.tournament_active);
             // console.log("Players in:", data.players_in);
@@ -37,13 +37,13 @@ async function updateBracketWithData(mode) {
             // if (data.matches.length == 0)
             //     gameMenuStarted = false; // to reset between end of matches
 
-            if (data.matches && data.matches.length > 0) {
-                document.getElementById("tournamentBracket").style.display = "none";
-                document.getElementById("tournamentBracket4").style.display = "none";
-                // await sleep(4000);
-                // startGameMenu(); // it glitches here as being called every 5sec and then the start prompt gets triggered again
-                // gameMenuStarted = true;
-            }
+            // if (data.matches && data.matches.length > 0) {
+            //     document.getElementById("tournamentBracket").style.display = "none";
+            //     document.getElementById("tournamentBracket4").style.display = "none";
+            //     // await sleep(4000);
+            //     // startGameMenu(); // it glitches here as being called every 5sec and then the start prompt gets triggered again
+            //     // gameMenuStarted = true;
+            // }
             
 
             // Stop updates if tournament is over or a player quits
@@ -83,39 +83,125 @@ function updatePlayerFields(mode, players, results = []) {
         if (playerElem) {
             playerElem.innerText = players[i] ? players[i].username : `Waiting... `;
         }
-        if (resultElem) {
-            resultElem.innerText = results[i] !== undefined ? results[i] : " 0 ";
-        }
+        // if (resultElem) {
+        //     resultElem.innerText = results[i] !== undefined ? results[i] : " 0 ";
+        // }
     }
 }
 
-// review this for 4 players
-function updateBracket(mode, bracket, players, winners, currentRound) {
+function updateBracket(mode, bracket, winners, currentRound, final_winner) {
     console.log("Updating bracket with mode:", mode);
     console.log("Bracket Winners:", winners);
 
-    winners.forEach((winner, index) => {
-        const winnerElem = document.getElementById(`Player${index + 9}`); // Winner fields start at Player9
-        if (winnerElem) {
-            winnerElem.textContent = winner ? winner.username : `Winner ${index + 1}`;
-        }
-    });
+    let playerElem;
+    let resultElem;
 
-    if (winners.length === 1 && winners[0]) {
-        displayChampion(winners[0].username);
+    if (mode == "4" && final_winner != null) {
+        playerElem = document.getElementById(`Player${13}_`);
+        if (playerElem && playerElem.textContent.trim() === final_winner[0].username) {
+            resultElem = document.getElementById(`Result${13}_`);
+            if (resultElem) {
+                resultElem.innerText = " 👑 ";
+            }
+        } else {
+            resultElem = document.getElementById(`Result${14}_`);
+            if (resultElem) {
+                resultElem.innerText = " 👑 ";
+            }
+        }
+    }
+    else if (mode == "8" && final_winner != null) {
+        playerElem = document.getElementById(`Player${13}`);
+        if (playerElem && playerElem.textContent.trim() === final_winner[0].username) {
+            resultElem = document.getElementById(`Result${13}`);
+            if (resultElem) {
+                resultElem.innerText = " 👑 ";
+            }
+        } else {
+            resultElem = document.getElementById(`Result${14}`);
+            if (resultElem) {
+                resultElem.innerText = " 👑 ";
+            }
+        }
+    }
+    else if (mode == "4" && currentRound == 1) { // rework this based on winner bool if not working
+        for (let i = 0; i < mode; i++) {
+            playerElem = document.getElementById(`Player${i + 1}_`);
+            resultElem = document.getElementById(`Result${i + 1}_`);
+            for (let j = 0; j < winners.length; j++) {
+                if (playerElem && playerElem.textContent.trim() === winners[j].username) {
+                    if (resultElem) {
+                        resultElem.innerText = " 👑 ";
+                    }
+                }
+            }
+        }
+    }
+    else if (mode == "8" && currentRound == 1) { // rework this based on winner bool if not working
+        for (let i = 0; i < mode; i++) {
+            playerElem = document.getElementById(`Player${i + 1}`);
+            resultElem = document.getElementById(`Result${i + 1}`);
+            for (let j = 0; j < winners.length; j++) {
+                if (playerElem && playerElem.textContent.trim() === winners[j].username) {
+                    if (resultElem) {
+                        resultElem.innerText = " 👑 ";
+                    }
+                }
+            }
+        }
+    }
+    else if (mode == "4" && currentRound == 2) {
+        playerElem = document.getElementById(`Player${13}_`);
+        if (playerElem) {
+            playerElem.innerText = bracket[currentRound][0][0].username;
+        }
+        playerElem = document.getElementById(`Player${14}_`);
+        if (playerElem) {
+            playerElem.innerText = bracket[currentRound][0][1].username;
+        }
+    }
+    else if (mode == "8" && currentRound == 2) {
+        playerElem = document.getElementById(`Player${9}`);
+        if (playerElem) {
+            playerElem.innerText = bracket[currentRound][0][0].username;
+        }
+        playerElem = document.getElementById(`Player${10}`);
+        if (playerElem) {
+            playerElem.innerText = bracket[currentRound][0][1].username;
+        }
+        playerElem = document.getElementById(`Player${11}`);
+        if (playerElem) {
+            playerElem.innerText = bracket[currentRound][1][0].username;
+        }
+        playerElem = document.getElementById(`Player${12}`);
+        if (playerElem) {
+            playerElem.innerText = bracket[currentRound][1][1].username;
+        }
+    }
+    else if (mode == "8" && currentRound == 3) {
+        playerElem = document.getElementById(`Player${13}`);
+        if (playerElem) {
+            playerElem.innerText = bracket[currentRound][0][0].username;
+        }
+        playerElem = document.getElementById(`Player${14}`);
+        if (playerElem) {
+            playerElem.innerText = bracket[currentRound][0][1].username;
+        }
+
+        for (let i = 0; i < 4; i++) { // rework this based on winner bool if not working
+            playerElem = document.getElementById(`Player${i + 9}`);
+            resultElem = document.getElementById(`Result${i + 9}`);
+            for (let j = 0; j < winners.length; j++) {
+                if (playerElem && playerElem.textContent.trim() === winners[j].username) {
+                    if (resultElem) {
+                        resultElem.innerText = " 👑 ";
+                    }
+                }
+            }
+        }
     }
 }
 
-function displayChampion(championName) {
-    const championElem = document.createElement("div");
-    championElem.classList.add("champion-display");
-    championElem.style.color = "gold";
-    championElem.style.fontSize = "24px";
-    championElem.style.textAlign = "center";
-    championElem.textContent = `Champion: ${championName}`;
-
-    document.body.appendChild(championElem);
-}
 
 
 
