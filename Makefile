@@ -1,15 +1,19 @@
 DOCK_COMPOSE_CMD := docker compose
 DOCK_COMPOSE_FILE :=    docker-compose.yaml
+DOCK_COMPOSE_KEYS := docker-compose.keys.yaml
+
 
 all: build_folder build updetach
 
 build_folder:
 	mkdir -p $(HOME)/.tranceanddance/pgdata
 	mkdir -p $(HOME)/.tranceanddance/elasticdata
-	mkdir -p $(HOME)/.tranceanddance/elasticcerts
 
 build up:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
+
+keys:
+	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_KEYS) up
 
 down kill:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
@@ -52,7 +56,6 @@ removedb:
 	@rm -rf $(HOME)/.tranceanddance/pgdata
 
 removelogs:
-	@rm -rf $(HOME)/.tranceanddance/elasticcerts
 	@rm -rf $(HOME)/.tranceanddance/elasticdata
 
 rmsecrets:
