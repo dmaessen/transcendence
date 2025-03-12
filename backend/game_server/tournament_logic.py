@@ -39,6 +39,8 @@ class Tournament:
         # self.bracket[self.current_round] = [
         #     (self.players[i], self.players[i + 1]) for i in range(0, len(self.players), 2)
         # ]
+        if self.current_round not in self.bracket:
+            self.bracket[self.current_round] = []
 
         self.bracket[self.current_round] = [
             ({"player": self.players[i], "winner": False}, 
@@ -56,6 +58,9 @@ class Tournament:
         self.matches = []
         self.winners = []
         channel_layer = get_channel_layer()
+
+        # if self.current_round not in self.bracket:
+        #     return
 
         for player1, player2 in self.bracket[self.current_round]:
             ##match = Game("Two Players (remote)") # works
@@ -84,6 +89,9 @@ class Tournament:
         winner = next(player for player in self.players if player["username"] == winner_username)
         # winner_id = winner["id"] # needed??
         self.winners.append(winner)
+
+        # if self.current_round not in self.bracket:
+        #     return
 
         for match in self.bracket[self.current_round]: # bool True for the winner
             if match[0]["player"]["username"] == winner_username:
