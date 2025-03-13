@@ -124,8 +124,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         
         elif action == "end":
             if self.game_id in games:
-                game = games[self.game_id]
-                game.clear_game()
+                game = games.pop(self.game_id, None)
+                if game:
+                    game.clear_game()
+            else:
+                print(f"game has already been cleared {self.game_id}", flush=True)
 
         elif action == "stop":
             if self.game_id in games:
@@ -246,7 +249,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def game_result(self, event):
         game_id = event["game_id"]
-        winner_username = event["winner"]
+        winner = event["winner"]
+        
+        if isinstance(winner, str):
+            winner_username = winner
+        elif isinstance(winner, dict) and "player" in winner:
+            winner_username = winner["player"]["username"]
+        else:
+            print(f"inccorect winner format: {winner}", flush=True)
+            return
 
         # updates the tournament bracket
         self.tournament.register_match_result(game_id, winner_username)
@@ -401,19 +412,19 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
                         await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
                         await self.channel_layer.group_send(
+                            self.match_name,
+                            {
+                                "type": "end",
+                                "reason": f"Game Over: {winner} wins"
+                            }
+                        )
+                        await self.channel_layer.group_send(
                             "tournament_lobby",  # tournament group name
                             {
                                 # "action": "game.result",
                                 "type": "game.result",
                                 "game_id": game_id,
                                 "winner": winner
-                            }
-                        )
-                        await self.channel_layer.group_send(
-                            self.match_name,
-                            {
-                                "type": "end",
-                                "reason": f"Game Over: {winner} wins"
                             }
                         )
                     else:
