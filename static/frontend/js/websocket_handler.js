@@ -98,10 +98,11 @@ const returnToTournamentWaitingRoom = async () => {
     await sleep(6000);
     instructions1.style.display = "none";
     instructions2.style.display = "none";
+    instructions3.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    if (socket && socket.readyState === WebSocket.OPEN)
-        socket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
+    // if (socket && socket.readyState === WebSocket.OPEN)
+    //     socket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
     gameCanvas.style.display = "none";
     showWaitingRoomTournament(gameState.mode);
 }
@@ -142,6 +143,7 @@ function handleServerMessage(message) {
             // console.log(`Game initialized with ID: ${gameState.gameId}`);
             document.getElementById("tournamentBracket").style.display = "none";
             document.getElementById("tournamentBracket4").style.display = "none";
+            instructions3.style.display = "block";
             startGameMenu();
             break;
         // case "tournament_status": // needed

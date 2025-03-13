@@ -7,6 +7,7 @@ const gameTitle = document.getElementById("gameTitle");
 const exitButton = document.getElementById("exitButton");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
+const instructions3 = document.getElementById("game-instruction3");
 
 const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
@@ -19,6 +20,7 @@ let keyboardEnabled = true;
 
 instructions1.style.display = "none";
 instructions2.style.display = "none";
+instructions3.style.display = "none";
 
 const gameMenuFirst = new bootstrap.Modal(gameMenuElementFirst, {
     backdrop: "static",
@@ -354,17 +356,57 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-document.addEventListener("keydown", (event) => {
-    let direction = null;
-    if (gameState.mode != "Two Players (hot seat)" && gameState.running)
-        direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
-    else (gameState.mode === "Two Players (hot seat)" && gameState.running)
-        direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : event.key === "w" ? "w_up" : event.key === "s" ? "s_down" : null;
-    if (direction) {
-        console.log("ARROWS PRESSED");
-        socket.send(JSON.stringify({ action: "move", direction: direction, game_id: gameState.gameId }));
+const pressedKeys = new Set();
+document.addEventListener("keydown", (event) => { 
+    if (gameState.running) {
+        pressedKeys.add(event.key);
+        sendMovements();
     }
 });
+document.addEventListener("keyup", (event) => { 
+    if (gameState.running) {
+        pressedKeys.delete(event.key);
+    }
+});
+function sendMovements() {
+    if (!gameState.running)
+        return;
+
+    let directions = [];
+
+    if (gameState.mode != "Two Players (hot seat)") {
+        if (pressedKeys.has("ArrowUp"))
+            directions.push("up");
+        if (pressedKeys.has("ArrowDown"))
+            directions.push("down");
+    } else {
+        if (pressedKeys.has("ArrowUp"))
+            directions.push("up");
+        if (pressedKeys.has("ArrowDown"))
+            directions.push("down");
+        if (pressedKeys.has("w"))
+            directions.push("w_up");
+        if (pressedKeys.has("s"))
+            directions.push("s_down");
+    }
+
+    if (directions.length > 0) {
+        console.log("keys pressed: ", [...pressedKeys]); // to rm
+        socket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
+    }
+}
+
+// document.addEventListener("keydown", (event) => {
+//     let direction = null;
+//     if (gameState.mode != "Two Players (hot seat)" && gameState.running)
+//         direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
+//     else if (gameState.mode === "Two Players (hot seat)" && gameState.running)
+//         direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : event.key === "w" ? "w_up" : event.key === "s" ? "s_down" : null;
+//     if (direction) {
+//         console.log("ARROWS PRESSED");
+//         socket.send(JSON.stringify({ action: "move", direction: direction, game_id: gameState.gameId }));
+//     }
+// });
 
 window.addEventListener("beforeunload", () => {
     if (socket && socket.readyState === WebSocket.OPEN) {

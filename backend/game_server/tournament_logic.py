@@ -86,20 +86,21 @@ class Tournament:
         print(f"Round {self.current_round} started.", flush=True)
 
     def register_match_result(self, game_id, winner_username):
-        winner = next(player for player in self.players if player["username"] == winner_username)
+        winner = next((player for player in self.players if player["username"] == winner_username), None)
         # winner_id = winner["id"] # needed??
         self.winners.append(winner)
 
         # if self.current_round not in self.bracket:
         #     return
 
-        for match in self.bracket[self.current_round]: # bool True for the winner
-            if match[0]["player"]["username"] == winner_username:
-                match[0]["winner"] = True
-                match[1]["winner"] = False
-            elif match[1]["player"]["username"] == winner_username:
-                match[0]["winner"] = False
-                match[1]["winner"] = True
+        if str(self.current_round) in self.bracket:
+            for match in self.bracket[str(self.current_round)]:
+                if match[0]["player"]["username"] == winner_username:
+                    match[0]["winner"] = True
+                    match[1]["winner"] = False
+                elif match[1]["player"]["username"] == winner_username:
+                    match[0]["winner"] = False
+                    match[1]["winner"] = True
 
         # rm the finished match based on game_id
         self.matches = [(p1, p2, g_id) for p1, p2, g_id in self.matches if g_id != game_id]

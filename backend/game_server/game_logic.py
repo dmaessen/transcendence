@@ -113,32 +113,36 @@ class Game:
         if self.mode == "One Player" and len(self.players) > 1: # or should it be =
             self._move_ai()
 
-    def move_player(self, player_id, direction):
+    def move_player(self, player_id, directions):
+        if isinstance(directions, str):
+            directions = [directions]
         if self.mode == "Two Players (hot seat)" and player_id in self.players:
-            print(f"Moving player {player_id} with direction {direction}", flush=True)
+            # print(f"Moving player {player_id} with direction {direction[0]}", flush=True)
             # print("111111")
             #paddle = self.players[player_id]
             player = self.players[player_id]
             opponent = self.players["opponent"]
-            if direction == "up" and opponent["y"] > 0:
-                opponent["y"] -= 10
-            elif direction == "down" and opponent["y"] + opponent["height"] < self.height:
-                opponent["y"] += 10
-            elif direction == "s_down" and player["y"] + player["height"] < self.height:
-                player["y"] += 10
-            elif direction == "w_up" and player["y"] > 0:
-                player["y"] -= 10
+            for direction in directions:
+                if direction == "up" and opponent["y"] > 0:
+                    opponent["y"] -= 10
+                if direction == "down" and opponent["y"] + opponent["height"] < self.height:
+                    opponent["y"] += 10
+                if direction == "s_down" and player["y"] + player["height"] < self.height:
+                    player["y"] += 10
+                if direction == "w_up" and player["y"] > 0:
+                    player["y"] -= 10
 
         elif player_id in self.players:
-            print(f"Moving player {player_id} with direction {direction}", flush=True)
+            # print(f"Moving player {player_id} with direction {direction[0]}", flush=True)
             # print("22222")
             paddle = self.players[player_id]
-            if direction == "up" and paddle["y"] > 0:
-                paddle["y"] -= 10
-                print(f"Player {player_id} moved up to {paddle['y']}", flush=True)
-            elif direction == "down" and paddle["y"] + paddle["height"] < self.height:
-                paddle["y"] += 10
-                print(f"Player {player_id} moved down to {paddle['y']}", flush=True)
+            for direction in directions:
+                if direction == "up" and paddle["y"] > 0:
+                    paddle["y"] -= 10
+                    print(f"Player {player_id} moved up to {paddle['y']}", flush=True)
+                if direction == "down" and paddle["y"] + paddle["height"] < self.height:
+                    paddle["y"] += 10
+                    print(f"Player {player_id} moved down to {paddle['y']}", flush=True)
 
     def get_state(self):
         return {
