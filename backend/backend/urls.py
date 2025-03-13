@@ -28,8 +28,5 @@ urlpatterns = [
 	path('api/authentication/', include('authentication.urls')),
     path('data/', include('data.urls')),
     #path('api/', include('game_server.urls')),
-    # path("get_user_data/", get_user_data, name="get_user_data"),
-    # path("get_user_matches/", get_user_matches, name="get_user_matches"),
-    # path("get_user_tournaments/", get_user_tournaments, name="get_user_tournaments"),
     path('tournament-status/', get_tournament_status, name='tournament-status'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

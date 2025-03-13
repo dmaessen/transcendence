@@ -1,38 +1,3 @@
-# from django.http import JsonResponse
-# from data.services import *
-# from data.serializers import *
-# import logging
-
-# logger = logging.getLogger(__name__)
-
-# def my_view(request):
-#     logger.debug("This is a debug message from views.py")
-#     logger.info("This is an info message from views.py")
-#     logger.warning("This is a warning message from views.py")
-
-# # @login_required
-# def get_user_data(request):
-#     logging.info(f"Request {request}")
-    
-#     testUser = CustomUser.objects.filter(id=4).first()
-#     if not testUser:
-#         return JsonResponse({"error": "User not found"}, status=404)
-
-#     matches = get_user_3_matches(testUser.id)
-#     tournaments = get_user_3_tournaments(testUser.id)
-#     user_data = {
-#         "username": testUser.username,
-#         "email": testUser.email,
-#         "avatar": testUser.avatar.url,
-#         # "matches": MatchSummarySerializer(matches, many=True, context={"user": testUser}).data,
-#         # "tournaments": TournamentSummarySerializer(tournaments, many=True).data,
-#         "matches": list(MatchSummarySerializer(matches, many=True, context={"user": testUser}).data),
-#         "tournaments": list(TournamentSummarySerializer(tournaments, many=True).data),
-
-#     }
-#     logging.info(f"Response JSON: {user_data}")
-#     return JsonResponse(user_data)
-
 from data.models import *
 from django.http import JsonResponse
 from data.services import *
@@ -47,7 +12,6 @@ from rich import print
 
 logger = logging.getLogger(__name__)
 
-# @login_required
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_data(request):
@@ -56,28 +20,16 @@ def get_user_data(request):
     if not request.user.is_authenticated:
         return JsonResponse({"error": "User not authenticated"}, status=401)
 
-    testUser = request.user
+    user = request.user
     
-    if not testUser:
+    if not user:
         return JsonResponse({"error": "User not found"}, status=404)
 
-    # matches = get_user_3_matches(testUser.id)
-    # tournaments = get_user_3_tournaments(testUser.id)
-
     user_data = {
-        "username": testUser.username,
-        "email": testUser.email,
-        "avatar": testUser.avatar.url if testUser.avatar else None,
-        # "matches": list(MatchSummarySerializer(matches, many=True, context={"user": testUser}).data),
-        # "tournaments": list(TournamentSummarySerializer(tournaments, many=True).data),
+        "username": user.username,
+        "email": user.email,
+        "avatar": user.avatar.url if user.avatar else None,
     }
-
-    # Log as a properly formatted and colorful JSON string
-    logging.info("Response JSON:\n" + json.dumps(user_data, indent=2, default=str))
-
-    # Print it in the terminal with colors - that was the idea at least 
-    print("[bold cyan]Response JSON:[/bold cyan]")
-    print(json.dumps(user_data, indent=2, default=str))
 
     return JsonResponse(user_data, safe=False)
 
@@ -86,22 +38,15 @@ def get_user_data(request):
 def get_user_matches(request):
     logging.info(f"Request {request}")
     
-    testUser = request.user
-    if not testUser:
+    user = request.user
+    if not user:
         return JsonResponse({"error": "User not found"}, status=404)
 
-    matches = get_user_3_matches(testUser.id)
+    matches = get_user_3_matches(user.id)
     match_data = {
-        "matches": list(MatchSummarySerializer(matches, many=True, context={"user": testUser}).data),
+        "matches": list(MatchSummarySerializer(matches, many=True, context={"user": user}).data),
     }
-    
-    # Log as a properly formatted and colorful JSON string
-    logging.info("Response JSON:\n" + json.dumps(match_data, indent=2, default=str))
 
-    # Print it in the terminal with colors - that was the idea at least 
-    print("[bold cyan]Response JSON:[/bold cyan]")
-    print(json.dumps(match_data, indent=2, default=str))
-    
     return JsonResponse(match_data, safe=False)
 
 @api_view(["GET"])
@@ -109,22 +54,60 @@ def get_user_matches(request):
 def get_user_tournaments(request):
     logging.info(f"Request {request}")
     
-    testUser = request.user
-    if not testUser:
+    user = request.user
+    if not user:
         return JsonResponse({"error": "User not found"}, status=404)
     
-    tournaments = get_user_3_tournaments(testUser.id)
+    tournaments = get_user_3_tournaments(user.id)
     tournaments_data = {
         "tournaments": list(TournamentSummarySerializer(tournaments, many=True).data),
     }
-    # Log as a properly formatted and colorful JSON string
-    logging.info("Response JSON:\n" + json.dumps(tournaments_data, indent=2, default=str))
 
-    # Print it in the terminal with colors - that was the idea at least 
-    print("[bold cyan]Response JSON:[/bold cyan]")
-    print(json.dumps(tournaments_data, indent=2, default=str))
-    
     return JsonResponse(tournaments_data, safe=False)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def edit_user_data(request):
+    logging.info("Changing user data \n")
+    
+    newUsername = request.POST.get('newUsername')
+    newMail = request.POST.get('newMail')
+    newAvatar = request.FILES.get('newAvatar')
+    
+    logging.info(f"newUsername: {newUsername}")
+    logging.info(f"newMail: {newMail}")
+    
+    user = request.user
+    
+    try:
+        # Check if username or email already exists
+        if newUsername and CustomUser.objects.exclude(id=user.id).filter(username=newUsername).exists():
+            return JsonResponse({"error": "Username already taken"}, status=400)
+
+        if newMail and CustomUser.objects.exclude(id=user.id).filter(email=newMail).exists():
+            return JsonResponse({"error": "Email already in use"}, status=400)
+
+        # Update only if values are provided
+        if newUsername:
+            user.username = newUsername
+        if newMail:
+            user.email = newMail
+        if newAvatar:
+            user.avatar = newAvatar
+
+        user.save()
+        
+        updated_user_data = {
+            "username": user.username,
+            "email": user.email,
+            "avatar": user.avatar.url if user.avatar else None,
+        }
+                
+        return JsonResponse({"message": "Successfully edited", "user_data": updated_user_data}, status=200)
+    
+    except Exception as e:
+        logging.error(f"Error edting user data: {e}")
+        return JsonResponse({"error": "Oopsie, something went wrong"}, status=500)
 
 
 
