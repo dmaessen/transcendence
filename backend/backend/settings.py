@@ -178,47 +178,42 @@ STATICFILES_DIRS = []
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# LOGGING_DIR = BASE_DIR / 'logs'
+
 LOGGING = {
     'version': 1,
-    #'disable_existing_loggers': False,
+    'disable_existing_loggers': False,
     'formatters': {
-        'json': {
-            'class': 'pythonjsonlogger.jsonlogger.JsonFormatter',
-            'format': '{"name": "%(name)s", "@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "message": "%(message)s", "module": "%(module)s"}' 
-            #'format': '{"name": "%(name)s", "@timestamp": "%(asctime)s", "levelname": "%(levelname)s", "message": "%(message)s", "module": "%(module)s", "pathname": "%(pathname)s", "funcName": "%(funcName)s"}' 
-        }
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
-        'json_file': {
+        'file': {
+            'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': '/var/log/django/django.json',
-            'formatter': 'json'
-        }
+            'filename': '/var/log/django/django.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['json_file'],
+            'handlers': ['file', 'console'],
             'level': 'INFO',
-            'propagate': False,
-        }
-    }
+            'propagate': True,
+        },
+    },
 }
 
-
-#     'handlers': {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'json'
-#         }
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['console'],
-#             'level': 'INFO',
-#             'propagate': True,
-#         }
-#     }
-# }
 # Custom user model
 AUTH_USER_MODEL = 'data.User'
 

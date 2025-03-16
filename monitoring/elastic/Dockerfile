@@ -44,5 +44,8 @@ FROM docker.elastic.co/elasticsearch/elasticsearch:8.17.0
 
 #USER elasticsearch
 
+#COPY data_lifetime.sh /usr/share/elasticsearch/
+
 # to start Elasticsearch
 CMD ["elasticsearch"]
+#ENTRYPOINT [ "data_lifetime.sh" ]

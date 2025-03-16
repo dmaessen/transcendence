@@ -1,21 +1,21 @@
 filebeat.inputs:
-- type: filestream
+- type: log
   enabled: true
   paths:
-    - /var/log/django/*.json
-  json.keys_under_root: true
-  json.add_error_key: true
-  tags: ["app-logs"]
+    - /var/log/django/*.log
+  # json.keys_under_root: true
+  # json.add_error_key: true
+  # tags: ["app-logs"]
 
-- type: filestream
+- type: log
   enabled: true
   paths:
     - /var/log/nginx/*.log
-  tags: ["nginx-logs"]
-  multiline:
-    pattern: '^\d{4}/\d{2}/\d{2}'
-    negate: true
-    match: after
+  # tags: ["nginx-logs"]
+  # multiline:
+  #   pattern: '^\d{4}/\d{2}/\d{2}'
+  #   negate: true
+  #   match: after
 
 output.logstash:
   hosts: ["logstash:5044"]
@@ -23,3 +23,31 @@ output.logstash:
 logging.level: debug
 
 setup.ilm.enabled: false
+
+
+
+# filebeat.inputs:
+# - type: filestream
+#   enabled: true
+#   paths:
+#     - /var/log/django/*.json
+#   json.keys_under_root: true
+#   json.add_error_key: true
+#   tags: ["app-logs"]
+
+# - type: filestream
+#   enabled: true
+#   paths:
+#     - /var/log/nginx/*.log
+#   tags: ["nginx-logs"]
+#   multiline:
+#     pattern: '^\d{4}/\d{2}/\d{2}'
+#     negate: true
+#     match: after
+
+# output.logstash:
+#   hosts: ["logstash:5044"]
+
+# logging.level: debug
+
+# setup.ilm.enabled: false

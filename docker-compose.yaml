@@ -35,7 +35,7 @@ services:
     container_name: backend
     volumes:
       - ./backend/:/app/
-      - ./monitoring/logs:/var/log/django
+      - ./monitoring/logs/django_logs:/var/log/django
     ports:
       - "8000:8000"
     env_file:
@@ -43,11 +43,11 @@ services:
     networks:
       - transcendence
     # command: python3 ./backend/game_server/game_server.py
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    # logging:
+    #   driver: "json-file"
+    #   options:
+    #     max-size: "10m"
+    #     max-file: "3"
     depends_on:
       - psql
 
@@ -92,7 +92,10 @@ services:
       #- .env.kibana/:/usr/share/elasticsearch/config/.env.kibana.token
       - ./monitoring/elastic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./monitoring/elastic/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
+      - ./monitoring/elastic/data_lifetime.sh:/usr/share/elasticsearch/data_lifetime.sh
       #- ${HOME}/.tranceanddance/elasticconfig:/usr/share/elasticsearch/config
+    #entrypoint: bash /usr/share/elasticsearch/data_lifetime.sh
+    #command:  bash /usr/share/elasticsearch/data_lifetime.sh
     environment:
       ES_JAVA_OPTS: -Xms512m -Xmx512m
       xpack.security.enabled: true
@@ -152,6 +155,8 @@ services:
       #- ${HOME}/.tranceanddance/elasticcerts:/usr/share/kibana/config/certs:ro
       #- ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
       - ./monitoring/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      #- ./monitoring/setup:/setup
+
     environment:
       - ELASTIC_CERT_PASSWORD=${ELASTIC_CERT_PASSWORD}
       - KIBANA_KEYSTORE_PASSWORD=${KIBANA_KEYSTORE_PASSWORD}
@@ -177,7 +182,7 @@ services:
     build: ./monitoring/filebeat
     volumes:
       - ./monitoring/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./monitoring/logs:/var/log/django:ro
+      - ./monitoring/logs/django_logs:/var/log/django:ro
       - ./monitoring/logs/nginx:/var/log/nginx:ro
 
     # user: root  # Might be needed for file permissions
@@ -186,6 +191,22 @@ services:
       - logstash
     networks:
       - transcendence
+
+  # ilm:
+  #   image: debian:bullseye
+  #   container_name: ilm
+  #   command: bash /setup/ilm_setup.sh
+  #   volumes:
+  #       - ./monitoring/setup:/setup
+  #   environment:
+  #     - ELASTIC_HOSTS=https://elasticsearch:9200
+  #     - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+  #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+  #   depends_on:
+  #     - elasticsearch
+  #     - kibana
+  #   networks:
+  #     - transcendence
 
 networks:
   transcendence:

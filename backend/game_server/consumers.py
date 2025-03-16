@@ -27,7 +27,7 @@ from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 
 
-class GameConsumer(AsyncWebsocketConsumer):
+class GameConsumer(AsyncWebsocketConsumer)
     async def connect(self):
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
