@@ -90,4 +90,5 @@ printf "Your 'elastic' user password is: $ELASTIC_PASSWORD\n"
 printf "Your Kibana Service Token is: $TOKEN\n"
 printf "=====================================================\n"
 
+
 sh /scripts/gen-cert.sh
