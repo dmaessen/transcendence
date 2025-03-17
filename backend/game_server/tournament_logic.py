@@ -88,7 +88,9 @@ class Tournament:
     def register_match_result(self, game_id, winner_username):
         winner = next((player for player in self.players if player["username"] == winner_username), None)
         # winner_id = winner["id"] # needed??
-        self.winners.append(winner)
+        if winner:
+            self.winners.append(winner)
+            print(f"SUCCESS WINNER APPENDED")
 
         # if self.current_round not in self.bracket:
         #     return
@@ -101,9 +103,10 @@ class Tournament:
                 elif match[1]["player"]["username"] == winner_username:
                     match[0]["winner"] = False
                     match[1]["winner"] = True
+                print(f"DONE ADDING TRUE:FALSE TO THE MATCH WINNER", flush=True)
 
         # rm the finished match based on game_id
-        self.matches = [(p1, p2, g_id) for p1, p2, g_id in self.matches if g_id != game_id]
+        self.matches = [(g_id, p1, p2) for g_id, p1, p2 in self.matches if g_id != game_id]
 
         if len(self.matches) == 0:
             self._advance_to_next_round()
@@ -115,21 +118,38 @@ class Tournament:
             print(f"Tournament ended. Winner: {self.final_winner['username']}", flush=True)
             return
 
-        if self.current_round + 1 not in self.bracket: # store until we have two winners to be paired
-            self.bracket[self.current_round + 1] = []
-        while len(self.winners) >= 2:
-            player1 = self.winners.pop(0)
-            player2 = self.winners.pop(0)
-            self.bracket[self.current_round +1].append((player1, player2)) # creates matches
-        if len(self.winners) == 1: #then wait still
-            return
+        # if self.current_round + 1 not in self.bracket: # store until we have two winners to be paired
+        #     self.bracket[self.current_round + 1] = []
+        # while len(self.winners) >= 2:
+        #     player1 = self.winners.pop(0)
+        #     player2 = self.winners.pop(0)
+        #     self.bracket[self.current_round +1].append((player1, player2)) # creates matches
+        # if len(self.winners) == 1: #then wait still
+        #     return
 
-        self.current_round += 1
-        # self.bracket[self.current_round] = [
-        #     (self.winners[i], self.winners[i + 1]) for i in range(0, len(self.winners) - 1, 2)
-        # ]
+        # self.current_round += 1
+        # # self.bracket[self.current_round] = [
+        # #     (self.winners[i], self.winners[i + 1]) for i in range(0, len(self.winners) - 1, 2)
+        # # ]
 
-        self._start_next_round()
+        # self._start_next_round()
+
+        if len(self.matches) == 0 and len(self.winners) >= 2:
+        # Ensure we only move forward when matches are over and winners exist
+            self.current_round += 1
+            self.bracket[self.current_round] = []
+
+            # Prepare for the next round by pairing winners for matches
+            while len(self.winners) >= 2:
+                player1 = self.winners.pop(0)
+                player2 = self.winners.pop(0)
+                self.bracket[self.current_round].append((player1, player2))
+            
+            print(f"Round {self.current_round} created with {len(self.bracket[self.current_round])} matches.", flush=True)
+            self._start_next_round()
+
+        else:
+            print("Waiting for more matches to complete before advancing.", flush=True)
 
     def get_tournament_state(self):
         return {

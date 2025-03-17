@@ -135,6 +135,13 @@ function handleServerMessage(message) {
             else
                 returnToTournamentWaitingRoom();
             break;
+        case "game_end":
+            showEndMenu(`${message.reason}`);
+            if (gameState.mode != "8" && gameState.mode != "4" && gameState.mode != "Tournament - 4 Players" && gameState.mode != "Tournament - 8 Players")
+                returnToStartMenu();
+            else
+                returnToTournamentWaitingRoom();
+            break;
         case "match_found":
             console.log("(FRONTEND) Match found:", message.game_id);
             break;
