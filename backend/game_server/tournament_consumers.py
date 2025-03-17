@@ -69,14 +69,16 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.handle_leave_tournament(data)
         # elif action == "match_ready":
         #     await self.handle_match_ready(data)
-        elif action == "report_match":
-            await self.handle_report_match(data)
+        # elif action == "report_match":
+        #     await self.handle_report_match(data)
         # elif action == "disconnect":
         #     await self.handle_disconnect(data)
         elif action == "game.created":
             await self.game_created(data)
         elif action == "game.result":
             await self.game_result(data)
+        elif action == "game.end":
+            await self.game_end(data)
         elif action == "create.game.tournament":
             await self.create_game_tournament(data)
 
@@ -122,7 +124,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await self.send_game_state(game)
                 asyncio.create_task(self.broadcast_game_state(self.game_id))
         
-        elif action == "end":
+        elif action == "end": #this one aint needed i guess??
             if self.game_id in games:
                 game = games.pop(self.game_id, None)
                 if game:
@@ -217,11 +219,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     #     """Acknowledge that the player is ready for their match."""
     #     print(f"Player {self.player_id} is ready for their match.")
 
-    async def handle_report_match(self, data):
-        """Report the match result."""
-        game_id = data.get("game_id")
-        winner = data.get("winner")
-        print(f"Game {game_id} finished. Winner: {winner}")
+    # async def handle_report_match(self, data):
+    #     """Report the match result."""
+    #     game_id = data.get("game_id")
+    #     winner = data.get("winner")
+    #     print(f"Game {game_id} finished. Winner: {winner}")
 
     # async def handle_disconnect(self, data):
     #     """Handle player disconnection."""
@@ -236,7 +238,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         game_id = event["game_id"]
         player1 = event["player1"]
         player2 = event["player2"]
-        self.tournament.matches.append((player1, player2, game_id))
+        # self.tournament.matches.append((player1, player2, game_id))
+        self.tournament.matches.append((game_id, player1, player2))
 
         print(f"Tournament match {game_id} added: {player1} vs {player2}.", flush=True)
         print(f"Current matches: {self.tournament.matches}", flush=True)
@@ -246,29 +249,50 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         })
         await self.broadcast_tournament_state()
 
-
     async def game_result(self, event):
+        print(f"HERE IN GAME-RESULT FINALLY", flush=True)
         game_id = event["game_id"]
         winner = event["winner"]
+        winner_username = winner
         
-        if isinstance(winner, str):
-            winner_username = winner
-        elif isinstance(winner, dict) and "player" in winner:
-            winner_username = winner["player"]["username"]
-        else:
-            print(f"inccorect winner format: {winner}", flush=True)
-            return
+        # if isinstance(winner, str):
+        #     winner_username = winner
+        # elif isinstance(winner, dict) and "player" in winner:
+        #     winner_username = winner["player"]["username"]
+        # else:
+        #     print(f"inccorect winner format: {winner}", flush=True)
+        #     return
 
+        print(f"WINNER HERE IN GAME-RESULT IS: {winner_username}", flush=True)
         # updates the tournament bracket
         self.tournament.register_match_result(game_id, winner_username)
         await self.broadcast_tournament_state()
+    
+    async def game_end(self, event):
+        # await asyncio.sleep(0.2) # checking if this works
+        if self.game_id in games:
+            game = games.pop(self.game_id, None)
+            if game:
+                game.clear_game()
+        else:
+            print(f"Game already cleared: {self.game_id}", flush=True)
+
+        await self.channel_layer.group_send(
+            self.match_name,
+            {
+                "type": "game.end",
+                "reason": reason
+            }
+        )
+
+    async def game_end(self, event):
+        reason = event.get("reason")
+        await self.send_json({"type": "end", "reason": reason})
 
     async def tournament_update(self, event):
         """Receives the tournament state update and sends it to the frontend"""
         await self.send_json(event["data"])
 
-
-# NEW FUNCTIONS HERE
     async def send_game_state(self, game):
         game_state = game.get_state()
         game_state_serializable = msgspec.json.encode(game_state).decode("utf-8")
@@ -352,18 +376,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             else:
                 print("Failed to retrieve match after several attempts.", flush=True)
 
-            # match = await sync_to_async(Match.objects.filter)(player_2__isnull=True, tournament__isnull=True)
-            # match = await sync_to_async(match.first)()
-            # await sync_to_async(match.save)()
-            # game = games[match.id]
-            # self.game_id = match.id
-            # self.match_name = str(f"match_{match.id}")
-            # await self.channel_layer.group_add(self.match_name, self.channel_name)
-
         else:
             print(f"Player {self.player_id} is part of this match but will not create the game.", flush=True)
-
-# END NEW FUNCTIONS HERE
 
     async def broadcast_tournament_state(self):
         if self.tournament:
@@ -414,14 +428,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         await self.channel_layer.group_send(
                             self.match_name,
                             {
-                                "type": "end",
+                                "type": "game.end",
                                 "reason": f"Game Over: {winner} wins"
                             }
                         )
                         await self.channel_layer.group_send(
-                            "tournament_lobby",  # tournament group name
+                            "tournament_lobby",
                             {
-                                # "action": "game.result",
                                 "type": "game.result",
                                 "game_id": game_id,
                                 "winner": winner
