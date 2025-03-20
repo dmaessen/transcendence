@@ -67,12 +67,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.handle_join_tournament(data)
         elif action == "leave_tournament":
             await self.handle_leave_tournament(data)
-        # elif action == "match_ready":
-        #     await self.handle_match_ready(data)
-        # elif action == "report_match":
-        #     await self.handle_report_match(data)
-        # elif action == "disconnect":
-        #     await self.handle_disconnect(data)
         elif action == "game.created":
             await self.game_created(data)
         elif action == "game.result":
@@ -215,20 +209,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.broadcast_tournament_state()
         print(f"Player {self.player_id} left the tournament.")
 
-    # async def handle_match_ready(self, data):
-    #     """Acknowledge that the player is ready for their match."""
-    #     print(f"Player {self.player_id} is ready for their match.")
-
-    # async def handle_report_match(self, data):
-    #     """Report the match result."""
-    #     game_id = data.get("game_id")
-    #     winner = data.get("winner")
-    #     print(f"Game {game_id} finished. Winner: {winner}")
-
-    # async def handle_disconnect(self, data):
-    #     """Handle player disconnection."""
-    #     print(f"Player {self.player_id} disconnected from tournament.")
-
     async def tournament_full(self):
         await self.send_json({
             "type": "tournament_full"
@@ -239,6 +219,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         player1 = event["player1"]
         player2 = event["player2"]
         # self.tournament.matches.append((player1, player2, game_id))
+        print(f"Before adding match, matches: {self.tournament.matches}", flush=True)
         self.tournament.matches.append((game_id, player1, player2))
 
         print(f"Tournament match {game_id} added: {player1} vs {player2}.", flush=True)
@@ -265,7 +246,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print(f"WINNER HERE IN GAME-RESULT IS: {winner_username}", flush=True)
         # updates the tournament bracket
-        self.tournament.register_match_result(game_id, winner_username)
+        await self.tournament.register_match_result(game_id, winner_username)
         await self.broadcast_tournament_state()
     
     async def game_end(self, event):
