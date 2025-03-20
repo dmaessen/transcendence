@@ -124,15 +124,38 @@ function updateBracket(mode, bracket, winners, currentRound, final_winner) {
             }
         }
     }
-    else if (mode == "4" && currentRound == 1) { // rework this based on winner bool if not working
-        for (let i = 0; i < mode; i++) {
-            playerElem = document.getElementById(`Player${i + 1}_`);
-            resultElem = document.getElementById(`Result${i + 1}_`);
-            for (let j = 0; j < winners.length; j++) {
-                if (playerElem && playerElem.textContent.trim() === winners[j].username) {
-                    if (resultElem) {
-                        resultElem.innerText = " 👑 ";
-                    }
+
+    else if (mode == "4" && (currentRound == 1 || currentRound == 2)) { // rework this based on winner bool if not working
+        // for (let i = 0; i < mode; i++) {
+        //     playerElem = document.getElementById(`Player${i + 1}_`);
+        //     resultElem = document.getElementById(`Result${i + 1}_`);
+        //     for (let j = 0; j < winners.length; j++) {
+        //         if (playerElem && playerElem.textContent.trim() === winners[j].username) {
+        //             if (resultElem) {
+        //                 resultElem.innerText = " 👑 ";
+        //             }
+        //         }
+        //     }
+        // }
+        if (bracket && bracket["1"]) { 
+            for (let i = 0; i < mode; i++) {
+                playerElem = document.getElementById(`Player${i + 1}_`);
+                resultElem = document.getElementById(`Result${i + 1}_`);
+    
+                if (playerElem && resultElem) {
+                    let playerName = playerElem.textContent.trim();
+                    // let foundWinner = false;
+                    bracket["1"].forEach(match => {
+                        match.forEach(player => {
+                            if (player.player.username === playerName && player.winner) {
+                                resultElem.innerText = " 👑 ";
+                                // foundWinner = true;
+                            }
+                        });
+                    });
+                    // if (!foundWinner) {
+                    //     resultElem.innerText = "";
+                    // }
                 }
             }
         }
