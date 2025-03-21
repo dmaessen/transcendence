@@ -76,144 +76,144 @@ services:
             - backend
             - psql
 
-  elasticsearch:
-    #image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
-    container_name: elasticsearch
-    build: ./monitoring/elastic
-    # environment:
-    #   - discovery.type=single-node
-    #   - ES_JAVA_OPTS=-Xms512m -Xmx512m 
-    #   - xpack.security.enabled=false  # Disable security for dev ??
-    ports:
-      - "9200:9200"
-    # env_file:
-    #   - ./dot_env/.env
-    # volumes:
-    #   - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
-    volumes:
-      - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
-      #- ${HOME}/.tranceanddance/elasticcerts:/secrets
-      #- ./monitoring/secrets:/secrets
-      #- .env.kibana/:/usr/share/elasticsearch/config/.env.kibana.token
-      - ./monitoring/elastic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - ./monitoring/elastic/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
-      #- ./monitoring/elastic/data_lifetime.sh:/usr/share/elasticsearch/data_lifetime.sh
-      #- ./monitoring/elastic/setup:/usr/share/elasticsearch/setup
-      #- ${HOME}/.tranceanddance/elasticconfig:/usr/share/elasticsearch/config
-    #entrypoint: bash /usr/share/elasticsearch/data_lifetime.sh
-    #entrypoint: bash /usr/share/elasticsearch/setup/ilm_setup.sh
-    environment:
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-      xpack.security.enabled: true
-      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-      KIBANA_PASSWORD: ${KIBANA_PASSWORD}
-      LOGSTASH_PASSWORD: ${LOGSTASH_PASSWORD}
-      ELASTIC_CA_PASSWORD: ${ELASTIC_CA_PASSWORD}
-      ELASTIC_CERT_PASSWORD: ${ELASTIC_CERT_PASSWORD}
-      KIBANA_KEYSTORE_PASSWORD: ${KIBANA_KEYSTORE_PASSWORD}
-      LOGSTASH_KEYSTORE_PASSWORD: ${LOGSTASH_KEYSTORE_PASSWORD}
-      FILEBEAT_KEYSTORE_PASSWORD: ${FILEBEAT_KEYSTORE_PASSWORD}
-    secrets:
-      - source: elasticsearch.keystore
-        target: /usr/share/elasticsearch/config/elasticsearch.keystore
-      - source: elasticsearch.service_tokens
-        target: /usr/share/elasticsearch/config/service_tokens
-      - source: elastic.ca
-        target: /usr/share/elasticsearch/config/certs/ca.crt
-      - source: elasticsearch.certificate
-        target: /usr/share/elasticsearch/config/certs/elasticsearch.crt
-      - source: elasticsearch.key
-        target: /usr/share/elasticsearch/config/certs/elasticsearch.key
-    networks:
-      - transcendence
+    elasticsearch:
+      #image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+      container_name: elasticsearch
+      build: ./monitoring/elastic
+      # environment:
+      #   - discovery.type=single-node
+      #   - ES_JAVA_OPTS=-Xms512m -Xmx512m 
+      #   - xpack.security.enabled=false  # Disable security for dev ??
+      ports:
+        - "9200:9200"
+      # env_file:
+      #   - ./dot_env/.env
+      # volumes:
+      #   - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
+      volumes:
+        - ${HOME}/.tranceanddance/elasticdata:/usr/share/elasticsearch/data
+        #- ${HOME}/.tranceanddance/elasticcerts:/secrets
+        #- ./monitoring/secrets:/secrets
+        #- .env.kibana/:/usr/share/elasticsearch/config/.env.kibana.token
+        - ./monitoring/elastic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+        - ./monitoring/elastic/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
+        #- ./monitoring/elastic/data_lifetime.sh:/usr/share/elasticsearch/data_lifetime.sh
+        #- ./monitoring/elastic/setup:/usr/share/elasticsearch/setup
+        #- ${HOME}/.tranceanddance/elasticconfig:/usr/share/elasticsearch/config
+      #entrypoint: bash /usr/share/elasticsearch/data_lifetime.sh
+      #entrypoint: bash /usr/share/elasticsearch/setup/ilm_setup.sh
+      environment:
+        ES_JAVA_OPTS: -Xms512m -Xmx512m
+        xpack.security.enabled: true
+        ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+        ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+        KIBANA_PASSWORD: ${KIBANA_PASSWORD}
+        LOGSTASH_PASSWORD: ${LOGSTASH_PASSWORD}
+        ELASTIC_CA_PASSWORD: ${ELASTIC_CA_PASSWORD}
+        ELASTIC_CERT_PASSWORD: ${ELASTIC_CERT_PASSWORD}
+        KIBANA_KEYSTORE_PASSWORD: ${KIBANA_KEYSTORE_PASSWORD}
+        LOGSTASH_KEYSTORE_PASSWORD: ${LOGSTASH_KEYSTORE_PASSWORD}
+        FILEBEAT_KEYSTORE_PASSWORD: ${FILEBEAT_KEYSTORE_PASSWORD}
+      secrets:
+        - source: elasticsearch.keystore
+          target: /usr/share/elasticsearch/config/elasticsearch.keystore
+        - source: elasticsearch.service_tokens
+          target: /usr/share/elasticsearch/config/service_tokens
+        - source: elastic.ca
+          target: /usr/share/elasticsearch/config/certs/ca.crt
+        - source: elasticsearch.certificate
+          target: /usr/share/elasticsearch/config/certs/elasticsearch.crt
+        - source: elasticsearch.key
+          target: /usr/share/elasticsearch/config/certs/elasticsearch.key
+      networks:
+        - transcendence
 
-  logstash:
-    #image: docker.elastic.co/logstash/logstash:8.17.0
-    container_name: logstash
-    build: ./monitoring/logstash
-    ports:
-      - "5044:5044"
-    volumes:
-      - ./monitoring/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./monitoring/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
-    environment:
-      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-      ELASTICSEARCH_HOST_PORT: ${ELASTICSEARCH_HOST_PORT}
-    secrets:
-      - source: elastic.ca
-        target: /certs/ca.crt
-    depends_on:
-      - elasticsearch
-    networks:
-      - transcendence
+    logstash:
+      #image: docker.elastic.co/logstash/logstash:8.17.0
+      container_name: logstash
+      build: ./monitoring/logstash
+      ports:
+        - "5044:5044"
+      volumes:
+        - ./monitoring/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+        - ./monitoring/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      environment:
+        ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+        ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+        ELASTICSEARCH_HOST_PORT: ${ELASTICSEARCH_HOST_PORT}
+      secrets:
+        - source: elastic.ca
+          target: /certs/ca.crt
+      depends_on:
+        - elasticsearch
+      networks:
+        - transcendence
 
-  kibana:
-    #image: docker.elastic.co/kibana/kibana:8.17.0
-    container_name: kibana
-    build: ./monitoring/kibana
-    env_file:
-      - ./monitoring/secrets/.env.kibana.token
-      - .env
-    ports:
-      - "5601:5601"
-    volumes:
-      #- ${HOME}/.tranceanddance/elasticcerts:/usr/share/kibana/config/certs:ro
-      #- ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
-      - ./monitoring/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
-      - ./monitoring/kibana/ilm_setup.sh:/usr/share/kibana/setup/ilm_setup.sh
-    entrypoint: bash /usr/share/kibana/setup/ilm_setup.sh
-    environment:
-      - ELASTIC_CERT_PASSWORD=${ELASTIC_CERT_PASSWORD}
-      - KIBANA_KEYSTORE_PASSWORD=${KIBANA_KEYSTORE_PASSWORD}
-      - KIBANA_PASSWORD=${KIBANA_PASSWORD}
-      - ELASTIC_HOSTS=https://elasticsearch:9200
-      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-    secrets:
-      - source: elastic.ca
-        target: /certs/ca.crt
-      - source: kibana.certificate
-        target: /certs/kibana.crt
-      - source: kibana.key
-        target: /certs/kibana.key
-    depends_on:
-      - elasticsearch
-    networks:
-      - transcendence
+    kibana:
+      #image: docker.elastic.co/kibana/kibana:8.17.0
+      container_name: kibana
+      build: ./monitoring/kibana
+      env_file:
+        - ./monitoring/secrets/.env.kibana.token
+        - .env
+      ports:
+        - "5601:5601"
+      volumes:
+        #- ${HOME}/.tranceanddance/elasticcerts:/usr/share/kibana/config/certs:ro
+        #- ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
+        - ./monitoring/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+        - ./monitoring/kibana/ilm_setup.sh:/usr/share/kibana/setup/ilm_setup.sh
+      entrypoint: bash /usr/share/kibana/setup/ilm_setup.sh
+      environment:
+        - ELASTIC_CERT_PASSWORD=${ELASTIC_CERT_PASSWORD}
+        - KIBANA_KEYSTORE_PASSWORD=${KIBANA_KEYSTORE_PASSWORD}
+        - KIBANA_PASSWORD=${KIBANA_PASSWORD}
+        - ELASTIC_HOSTS=https://elasticsearch:9200
+        - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+        - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      secrets:
+        - source: elastic.ca
+          target: /certs/ca.crt
+        - source: kibana.certificate
+          target: /certs/kibana.crt
+        - source: kibana.key
+          target: /certs/kibana.key
+      depends_on:
+        - elasticsearch
+      networks:
+        - transcendence
 
-  filebeat:
-    #image: docker.elastic.co/beats/filebeat:8.17.0
-    container_name: filebeat
-    build: ./monitoring/filebeat
-    volumes:
-      - ./monitoring/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./monitoring/logs/django_logs:/var/log/django:ro
-      - ./monitoring/logs/nginx:/var/log/nginx:ro
+    filebeat:
+      #image: docker.elastic.co/beats/filebeat:8.17.0
+      container_name: filebeat
+      build: ./monitoring/filebeat
+      volumes:
+        - ./monitoring/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+        - ./monitoring/logs/django_logs:/var/log/django:ro
+        - ./monitoring/logs/nginx:/var/log/nginx:ro
 
-    # user: root  # Might be needed for file permissions
-    # command: ["filebeat", "run", "-e", "--strict.perms=false"]  # Fixed command syntax
-    depends_on:
-      - logstash
-    networks:
-      - transcendence
+      # user: root  # Might be needed for file permissions
+      # command: ["filebeat", "run", "-e", "--strict.perms=false"]  # Fixed command syntax
+      depends_on:
+        - logstash
+      networks:
+        - transcendence
 
-  # ilm:
-  #   image: debian:bullseye
-  #   container_name: ilm
-  #   command: bash /setup/ilm_setup.sh
-  #   volumes:
-  #       - ./monitoring/setup:/setup
-  #   environment:
-  #     - ELASTIC_HOSTS=https://elasticsearch:9200
-  #     - ELASTIC_USERNAME=${ELASTIC_USERNAME}
-  #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-  #   depends_on:
-  #     - elasticsearch
-  #     - kibana
-  #   networks:
-  #     - transcendence
+    # ilm:
+    #   image: debian:bullseye
+    #   container_name: ilm
+    #   command: bash /setup/ilm_setup.sh
+    #   volumes:
+    #       - ./monitoring/setup:/setup
+    #   environment:
+    #     - ELASTIC_HOSTS=https://elasticsearch:9200
+    #     - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+    #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    #   depends_on:
+    #     - elasticsearch
+    #     - kibana
+    #   networks:
+    #     - transcendence
 
 networks:
   transcendence:
@@ -240,19 +240,11 @@ volumes:
             type: none
             o: bind
             device: ${HOME}/.tranceanddance/backenddata
-volumes:
-  elasticsearch_data:
-        driver: local
-        driver_opts:
-            type: none
-            o: bind
-            device: $HOME/.tranceanddance/elasticdata
-  certs:
-        driver: local
-        driver_opts:
-            type: none
-            o: bind
-            device: $HOME/.tranceanddance/elasticcerts
-    
- 
+
+    elasticsearch_data:
+          driver: local
+          driver_opts:
+              type: none
+              o: bind
+              device: $HOME/.tranceanddance/elasticdata
 

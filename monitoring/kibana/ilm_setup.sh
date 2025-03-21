@@ -11,13 +11,13 @@ curl -k -u "${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}" -X PUT "https://elasticsear
         "min_age": "0ms",
         "actions": {
           "rollover": {
-            "max_age": "2m",
+            "max_age": "3m",
             "max_docs": 100
           }
         }
       },
       "delete": {
-        "min_age": "4m",
+        "min_age": "5m",
         "actions": {
           "delete": {}
         }
@@ -38,19 +38,19 @@ curl -k -u "${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}" -X PUT "https://elasticsear
   }
 }'
 
-
-# Şu anki tarihi ISO formatında al
-# CURRENT_DATE=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
-
-# # Test log eklerken gerçek tarih kullan
-# curl -k -u "${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}" -X POST "https://elasticsearch:9200/logs-default/_doc" -H 'Content-Type: application/json' -d'
-# {
-#   "@timestamp": "'$CURRENT_DATE'",
-#   "message": "Data stream initialized"
-# }'
-
+curl -k -u "${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}" -X PUT "https://elasticsearch:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
+{
+  "persistent": {
+    "indices.lifecycle.poll_interval": "2m" 
+  }
+}'
 
 curl -k -u "${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}" -X POST "https://elasticsearch:9200/logs-generic-default/_rollover"
+
+sleep 2
+
+curl -k -u "${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}" -X POST "https://elasticsearch:9200/logs-generic-default/_rollover"
+
 
 
 exec /usr/local/bin/kibana-docker
