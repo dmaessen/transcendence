@@ -28,10 +28,10 @@ class CustomUserManager(BaseUserManager):
 #TODO encrypt name, email, location, avatar
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)  # Unique email for login
-    name = models.CharField(max_length=30)  # Non-unique name field
+    name = models.CharField(max_length=30)  # Non-unique name field TODO can we remove this one ?
     username = models.CharField(unique=True, max_length=30) # Unique as well
     avatar = models.ImageField(upload_to='avatars/', default='default.png')
-    location = models.CharField(max_length=30, blank=True, null=True)
+    location = models.CharField(max_length=30, blank=True, null=True) # Made for funzies, should we get rid of it ?
     oauth_tokens = models.JSONField(null=True, blank=True)
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)
     friends = models.ManyToManyField('self', through='Friendship', symmetrical=False)

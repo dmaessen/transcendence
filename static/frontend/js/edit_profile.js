@@ -51,10 +51,10 @@ if (saveChangesBnt){
 
         fetch(`/data/api/editProfile/`, {
             method: "POST",
-            body: formData,
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
-            }
+            },
+            body: formData
         })
         .then(response => {
             if (!response.ok) {

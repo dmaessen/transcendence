@@ -16,19 +16,33 @@ logger = logging.getLogger(__name__)
 @permission_classes([IsAuthenticated])
 def get_user_data(request):
     logging.info(f"Request: {request.user.id}")
-
+    
     if not request.user.is_authenticated:
         return JsonResponse({"error": "User not authenticated"}, status=401)
 
-    user = request.user
+    profileID = request.GET.get("userID")
     
+    if profileID == "self":
+        user = request.user
+        btnType = "Edit profile"
+    else: #make a get_friendship status instead, to add pending to the button
+        user = CustomUser.objects.filter(id = profileID).first()
+        fStatus = frienship_status(profileID, request.user.id)
+        if fStatus == "approved":
+            btnType = "Delete friend"
+        elif fStatus == "pending":
+            btnType = "Friend request sent"
+        else:
+            btnType = "Add friend"
+        
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
-
+    
     user_data = {
         "username": user.username,
         "email": user.email,
         "avatar": user.avatar.url if user.avatar else None,
+        "btnType": btnType
     }
 
     return JsonResponse(user_data, safe=False)
@@ -38,7 +52,12 @@ def get_user_data(request):
 def get_user_matches(request):
     logging.info(f"Request {request}")
     
-    user = request.user
+    profileID = request.GET.get("userID")
+    
+    if profileID == "self":
+        user = request.user
+    else:
+        user = CustomUser.objects.filter(id = profileID).first()
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
 
@@ -54,7 +73,12 @@ def get_user_matches(request):
 def get_user_tournaments(request):
     logging.info(f"Request {request}")
     
-    user = request.user
+    profileID = request.GET.get("userID")
+    
+    if profileID == "self":
+        user = request.user
+    else:
+        user = CustomUser.objects.filter(id=profileID).first()
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
     
@@ -109,6 +133,37 @@ def edit_user_data(request):
         logging.error(f"Error edting user data: {e}")
         return JsonResponse({"error": "Oopsie, something went wrong"}, status=500)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_user_friends(request):
+    user = request.user
+    if not user:
+        return JsonResponse({"error": "User not found"}, status=404)
+    friends = get_friends(user)
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_friend(request):
+    user = request.user
+    friendID = request.data.get('userID')
+    if friendID is None:
+        return JsonResponse({"message": "Missing data"}, status=400)
+    logging.info(f"user id {user.id} and friendID: {friendID}")
+    add_new_friend(user.id, friendID)
+    return JsonResponse({"message": "Friend request sent"}, status=200)
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def delete_friend(request):
+    user = request.user
+    friendID = request.data.get("userID")
+    if friendID is None:
+        return JsonResponse({"message": "Missing data"}, status=400)
+    logging.info(f"user id {user.id} and friendID: {friendID}")
+    remove_friend(user.id, friendID)
+    return JsonResponse({"message": "Friend removed"}, status=200)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search_user(request):
+    return None
