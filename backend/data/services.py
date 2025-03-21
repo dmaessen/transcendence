@@ -20,7 +20,7 @@ def get_tournaments():
     return Tournament.objects.all()
 
 def get_tournament_data(tournament_id):
-    tournament = Tournament.objects.get(tournament_id)
+    tournament = Tournament.objects.get(id=tournament_id)
     return tournament
 
 def get_win_cout(user_id):
@@ -43,7 +43,7 @@ def get_score(user_id):
     return score
     
 def get_match_time(match_id):
-    matchid = Match.objects.get(match_id)
+    matchid = Match.objects.get(id=match_id)
     total_seconds = int(matchid.match_time.total_seconds())
     minutes = total_seconds // 60
     seconds = total_seconds % 60
@@ -51,9 +51,9 @@ def get_match_time(match_id):
     return match_time_str
 
 # Manage friendships 
-def add_friend(user_id, friend_id):
-    user = CustomUser.objects.get(user_id)
-    friend = CustomUser.objects.get(friend_id)
+def add_new_friend(user_id, friend_id):
+    user = CustomUser.objects.filter(id=user_id).first()
+    friend = CustomUser.objects.filter(id=friend_id).first()
     if Friendship.objects.filter(user=user, friend=friend).exists():
         return f"Friendship request or connection already exists between {user.username} and {friend.username}."
     
@@ -61,8 +61,8 @@ def add_friend(user_id, friend_id):
     return f"Friend request sent from {user.username} to {friend.username}."
 
 def accept_friend(user_id, friend_id):
-    user = CustomUser.objects.get(user_id)
-    friend = CustomUser.objects.get(friend_id)
+    user = CustomUser.objects.get(id=user_id)
+    friend = CustomUser.objects.get(id=friend_id)
     try:
         friendship = Friendship.objects.get(user, friend, status='pending')
         friendship.status = 'approved'
@@ -72,28 +72,28 @@ def accept_friend(user_id, friend_id):
     except Friendship.DoesNotExist:
         return f"No pending friend request from {friend.username} to {user.username}."
 
-def remove_friendship(user_id, friend_id):
-    user = CustomUser.objects.get(user_id)
-    friend = CustomUser.objects.get(friend_id)
+def remove_friend(user_id, friend_id):
     deleted_count = Friendship.objects.filter(
-        Q(user, friend) | Q(user, friend)
+        models.Q(user_id=user_id, friend_id=friend_id) | 
+        models.Q(user_id=friend_id, friend_id=user_id)
     ).delete()
     if deleted_count[0] > 0:
-        return f"Friendship or request between {user.username} and {friend.username} has been removed."
-    return f"No friendship or request exists between {user.username} and {friend.username}."
+        return f"No longer friends."
 
-def are_friends(user_id, friend_id):
-    user = CustomUser.objects.get(user_id)
-    friend = CustomUser.objects.get(friend_id)
-    return Friendship.objects.filter(user, friend, status='approved').exists()
+def frienship_status(user_id, friend_id):
+    friendship = Friendship.objects.filter(
+        models.Q(user_id=user_id, friend_id=friend_id) | 
+        models.Q(user_id=friend_id, friend_id=user_id),
+    ).first()
+    return friendship.status if friendship else None 
 
 def get_friends(user_id):
-    user = CustomUser.objects.get(user_id)
+    user = CustomUser.objects.get(id=user_id)
     friends = Friendship.objects.filter(user, status='approved').values_list('friend__username', flat=True)
     return list(friends)
 
 def get_received_friend_requests(user_id):
-    user = CustomUser.objects.get(user_id)
+    user = CustomUser.objects.get(id=user_id)
     requests = Friendship.objects.filter(user, status='pending')
     output = []
     for req in requests:
