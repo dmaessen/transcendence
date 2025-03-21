@@ -92,10 +92,11 @@ services:
       #- .env.kibana/:/usr/share/elasticsearch/config/.env.kibana.token
       - ./monitoring/elastic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./monitoring/elastic/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
-      - ./monitoring/elastic/data_lifetime.sh:/usr/share/elasticsearch/data_lifetime.sh
+      #- ./monitoring/elastic/data_lifetime.sh:/usr/share/elasticsearch/data_lifetime.sh
+      #- ./monitoring/elastic/setup:/usr/share/elasticsearch/setup
       #- ${HOME}/.tranceanddance/elasticconfig:/usr/share/elasticsearch/config
     #entrypoint: bash /usr/share/elasticsearch/data_lifetime.sh
-    #command:  bash /usr/share/elasticsearch/data_lifetime.sh
+    #entrypoint: bash /usr/share/elasticsearch/setup/ilm_setup.sh
     environment:
       ES_JAVA_OPTS: -Xms512m -Xmx512m
       xpack.security.enabled: true
@@ -149,14 +150,15 @@ services:
     build: ./monitoring/kibana
     env_file:
       - ./monitoring/secrets/.env.kibana.token
+      - .env
     ports:
       - "5601:5601"
     volumes:
       #- ${HOME}/.tranceanddance/elasticcerts:/usr/share/kibana/config/certs:ro
       #- ${HOME}/.tranceanddance/kibanadata:/usr/share/kibana/data
       - ./monitoring/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
-      #- ./monitoring/setup:/setup
-
+      - ./monitoring/kibana/ilm_setup.sh:/usr/share/kibana/setup/ilm_setup.sh
+    entrypoint: bash /usr/share/kibana/setup/ilm_setup.sh
     environment:
       - ELASTIC_CERT_PASSWORD=${ELASTIC_CERT_PASSWORD}
       - KIBANA_KEYSTORE_PASSWORD=${KIBANA_KEYSTORE_PASSWORD}
