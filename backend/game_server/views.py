@@ -1,12 +1,42 @@
+import json
 from django.shortcuts import render
 from django.http import JsonResponse
-from .game_logic import Game  # Replace 'GameLogic' with the class/function name.
-#from .game_server import GameServer  # Replace 'GameServer' with the class/function name.
+from django.core.cache import cache
 
 def index(request):
-    return render(request, 'game_server/index.html')
+    return render(request, 'index.html')
 
-# def start_game(request):
-    # if request.method == "POST":
-    #     game = Game(mode="singleplayer")  # ex
-    #     return JsonResponse({"status": "Game started", "game_id": id(game)})
+# def get_tournament_status(request):
+#     state = cache.get("tournament_state", {
+#         "tournament_active": False,
+#         "players_in": 0,
+#         "remaining_spots": 4,
+#         "players": [],
+#         "bracket": {},
+#         "current_round": 1,
+#         "running": False,
+#         "final_winner": None,
+#         "matches": [],
+#         "winners": []
+#     })  # Default state
+#     return JsonResponse(state)
+
+def get_tournament_status(request):
+    state = cache.get("tournament_state")
+    if state:
+        state = json.loads(state)
+    else:
+        state = {
+            "tournament_active": False,
+            "players_in": 0,
+            "remaining_spots": 4,
+            "players": [],
+            "bracket": {},
+            "current_round": 1,
+            "running": False,
+            "final_winner": None,
+            "matches": [],
+            "winners": []
+        }  # Default state
+    return JsonResponse(state)
+

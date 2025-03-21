@@ -1,16 +1,22 @@
 FROM python:3.11-bookworm
 
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY ./requirements.txt /app/
 COPY ./entrypoint.sh /usr/local/bin/
+COPY ../ /app/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8000
 
 RUN pip install -r requirements.txt
 RUN pip install python-decouple
+RUN pip install rich
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 

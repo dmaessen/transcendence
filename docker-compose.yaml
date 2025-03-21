@@ -16,60 +16,65 @@ secrets:
     file: ./monitoring/secrets/certs/kibana/kibana.key
 
 services:
-  psql:
-      image: postgres:13-alpine
-      container_name: postgres
-      restart: always
-      networks:
-          - transcendence
-      ports:
-          - "5432:5432"
-      env_file:
-          - ./dot_env/.env
-      volumes:
-          #- pgdata:/var/lib/postgresql/data/
-          - ${HOME}/.tranceanddance/pgdata:/var/lib/postgresql/data/
+    psql:
+        image: postgres:13-alpine
+        container_name: postgres
+        restart: always
+        networks:
+            - transcendence
+        ports:
+            - "5432:5432"
+        env_file:
+            - ./dot_env/.env
+        volumes:
+            # - pgdata:/var/lib/postgresql/data/
+            - ${HOME}/.tranceanddance/pgdata:/var/lib/postgresql/data/
+            - ./media/:/media/
 
-  backend:
-    build: ./backend/docker
-    container_name: backend
-    volumes:
-      - ./backend/:/app/
-      - ./monitoring/logs/django_logs:/var/log/django
-    ports:
-      - "8000:8000"
-    env_file:
-      - ./dot_env/.env     
-    networks:
-      - transcendence
-    # command: python3 ./backend/game_server/game_server.py
-    # logging:
-    #   driver: "json-file"
-    #   options:
-    #     max-size: "10m"
-    #     max-file: "3"
-    depends_on:
-      - psql
+    backend:
+        build: ./backend/docker
+        container_name: backend
+        volumes:
+            - ./backend/:/app/
+            - ./static/:/static/
+            - ./media/:/media/
+            - ./monitoring/logs/django_logs:/var/log/django
+        ports:
+            - "8000:8000"
+        env_file:
+            - ./dot_env/.env
+        networks:
+            - transcendence
+        restart: on-failure
+        depends_on:
+            - psql
 
-  frontend:
-      build: ./frontend
-      container_name: frontend
-      volumes:
-          - ./frontend/statics/:/usr/share/nginx/html/static/
-          - ./monitoring/logs/nginx:/var/log/nginx
-      ports:
-          - "8080:80"
-      networks:
-          - transcendence
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "10m"
-          max-file: "3"
-
-      depends_on:
-      - backend
-      - psql
+    frontend:
+        build: ./frontend
+        container_name: frontend
+        volumes:
+            - ./frontend/statics/:/usr/share/nginx/html/static/
+            - ./static/:/static/
+            - ./media/:/media/
+        ports:
+            - "8080:80"
+        networks:
+            - transcendence
+        depends_on:
+            - backend
+            - psql
+    
+    redis:
+        build: ./backend/redis
+        image: redis:latest
+        container_name: redis
+        networks:
+            - transcendence
+        ports:
+            - "6380:6379" # 6380:6379
+        depends_on:
+            - backend
+            - psql
 
   elasticsearch:
     #image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
@@ -215,6 +220,27 @@ networks:
     driver: bridge
 
 volumes:
+    pgdata:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ${HOME}/.tranceanddance/pgdata
+    
+    # frontenddata:
+    #     driver: local
+    #     driver_opts:
+    #         type: none
+    #         o: bind
+    #         device: ${DB_DATA_DIR}/frontenddata
+
+    backenddata:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ${HOME}/.tranceanddance/backenddata
+volumes:
   elasticsearch_data:
         driver: local
         driver_opts:
@@ -228,16 +254,5 @@ volumes:
             o: bind
             device: $HOME/.tranceanddance/elasticcerts
     
-  pgdata:
-        driver: local
-        driver_opts:
-            type: none
-            o: bind
-            device: $HOME/.tranceanddance/pgdata
-  backenddata:
-        driver: local
-        driver_opts:
-            type: none
-            o: bind
-            device: $HOME/.tranceanddance/backenddata
+ 
 
