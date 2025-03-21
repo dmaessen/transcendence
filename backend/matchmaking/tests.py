@@ -5,7 +5,7 @@ from datetime import timedelta
 from datetime import datetime
 
 from .game_state import player_queue
-from data.models import User, Match
+from data.models import CustomUser, Match
 
 class MatchViewTest(TestCase):
     def setUp(self):
@@ -14,8 +14,8 @@ class MatchViewTest(TestCase):
         self.client = APIClient()
 
         # create two test users
-        self.user1 = User.objects.create_user(email="user1@example.com", password="password123", name="User1")
-        self.user2 = User.objects.create_user(email="user2@example.com", password="password123", name="User2")
+        self.user1 = CustomUser.objects.create_user(email="user1@example.com", password="password123", name="User1")
+        self.user2 = CustomUser.objects.create_user(email="user2@example.com", password="password123", name="User2")
 
         # Match.objects.create(
         #     player_1=self.user1,
@@ -53,13 +53,13 @@ class MatchViewTest(TestCase):
         self.assertEqual(match.player_2.email, "user2@example.com")
 
     def test_create_match_fails(self):
-        User.objects.all().delete()
-        self.assertEqual(User.objects.count(), 0)
+        CustomUser.objects.all().delete()
+        self.assertEqual(CustomUser.objects.count(), 0)
 
-        user3 = User.objects.create_user(email="user3@example.com", password="password123", name="User3")
+        user3 = CustomUser.objects.create_user(email="user3@example.com", password="password123", name="User3")
         self.client.force_authenticate(user=user3)
 
-        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(CustomUser.objects.count(), 1)
         response = self.client.post(reverse("create_matches"), {}, format="json")
 
         self.assertEqual(response.status_code, 404)
@@ -80,15 +80,15 @@ class MatchViewTest(TestCase):
         response = self.client.get(reverse('list_players'), format='json')
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(User.objects.count(), 2)
-        self.assertEqual(User.objects.filter(name="User1").exists(), True)
-        self.assertEqual(User.objects.filter(name="User2").exists(), True)
+        self.assertEqual(CustomUser.objects.count(), 2)
+        self.assertEqual(CustomUser.objects.filter(name="User1").exists(), True)
+        self.assertEqual(CustomUser.objects.filter(name="User2").exists(), True)
 
-        user3 = User.objects.create_user(email="user3@example.com", password="password123", name="User3")
+        user3 = CustomUser.objects.create_user(email="user3@example.com", password="password123", name="User3")
         response = self.client.get(reverse('list_players'), format='json')
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(User.objects.count(), 3)
+        self.assertEqual(CustomUser.objects.count(), 3)
 
     # def test_list_matches(self):
     #     #add 2 more player to test db

@@ -12,12 +12,12 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from datetime import timedelta
 
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -32,41 +32,49 @@ DEBUG = True
 # ensures only recognized hosts can serve your app
 ALLOWED_HOSTS = ['*', 'localhost']
 
-
 # Application definition
 
 INSTALLED_APPS = [
+    'data.apps.DataConfig',
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'channels',
     'corsheaders',
-    # 'game_server',
-
+    # 'dj_rest_auth',
+    # 'dj_rest_auth.registration',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'qrcode',
+    #'game_server',
 
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
-    'data.apps.DataConfig',
     'authentication.apps.AuthenticationConfig'
-
-
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 # governs whether your server accepts requests from different origins (domains, subdomains, or ports)
@@ -75,31 +83,53 @@ CORS_ALLOWED_ORIGINS = [
     "http://frontend:8080",
     "http://localhost:8080",  # for local development, later change it
     "http://localhost:8000", 
+    "http://localhost:80",
 ]
 
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+]
+
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+]
+
+#CORS_ALLOW_ALL_ORIGINS = True
+
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE': 10
 }
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",  # For development
+        # "BACKEND": "channels.layers.InMemoryChannelLayer",  # For development
         # Uncomment below for production (requires Redis)
-        # "BACKEND": "channels_redis.core.RedisChannelLayer",
-        # "CONFIG": {
-        #     "hosts": [("127.0.0.1", 6379)],
-        # },
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+            # "connection_timeout": 10,
+        },
     },
 }
 
-
 ROOT_URLCONF = 'backend.urls'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(STATIC_ROOT, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -112,6 +142,10 @@ TEMPLATES = [
     },
 ]
 
+
+AUTHENTICATION_BACKEND = [
+    "allauth.accaunt.auth_backend.AuthenticationBackend",
+]
 WSGI_APPLICATION = 'backend.wsgi.application'
 ASGI_APPLICATION = "backend.asgi.application"
 
@@ -149,29 +183,29 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
+# STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')  # Where collectstatic will store files
 
-# No need to set STATICFILES_DIRS if frontend is handling static files
-STATICFILES_DIRS = []
+# # No need to set STATICFILES_DIRS if frontend is handling static files
+STATICFILES_DIRS = [
+    os.path.join(STATIC_ROOT, 'frontend'),  # Ensure Django knows where to find them
+]
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -215,7 +249,97 @@ LOGGING = {
 }
 
 # Custom user model
-AUTH_USER_MODEL = 'data.User'
+AUTH_USER_MODEL = 'data.CustomUser'
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False, 
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    "SIGNING_KEY": "complexsigningkey", # generate a key and replace me
+    "ALGORITHM": "HS512",
+}
+
+SITE_ID = 1  # make sure SITE_ID is set
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": False,
+}
+
+CACHES = {
+    'default': {
+        #'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',  # In-memory cache
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379/1',  # Redis server address and database number
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'views': {  # Explicitly enable logs for views.py
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'serializers': {  # Explicitly enable logs for serializers.py
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'ERROR',  # Only log errors and critical issues
+#             'class': 'logging.FileHandler',
+#             'filename': os.path.join(BASE_DIR, 'logs/django_errors.log'),  # Log file path
+#             'formatter': 'verbose',
+#         },
+#         'console': {
+#             'level': 'ERROR',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'verbose',
+#         },
+#     },
+#     'formatters': {
+#         'verbose': {
+#             'format': '[{levelname}] {asctime} - {name} - {message}',
+#             'style': '{',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file', 'console'],
+#             'level': 'ERROR',
+#             'propagate': True,
+#         },
+#     },
+# }
 
 
-
+#TODO for ngnix change path for all media and statics

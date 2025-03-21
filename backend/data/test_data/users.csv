@@ -1,28 +1,28 @@
-name,location
-Bruce Wayne,Gotham City
-Clark Kent,Metropolis
-Diana Prince,Themyscira
-Barry Allen,Central City
-Hal Jordan,Coast City
-Arthur Curry,Atlantis
-Victor Stone,Detroit
-Oliver Queen,Star City
-Dinah Lance,Star City
-J'onn J'onzz,Middleton
-Dick Grayson,Blüdhaven
-Billy Batson,Fawcett City
-Zatanna Zatara,Shadowcrest
-Carter Hall,Midway City
-Jaime Reyes,El Paso
-Michael Carter,Metropolis
-Patrick O'Brian,New York City
-Selina Kyle,Gotham City
-Barbara Gordon,Gotham City
-Damian Wayne,Gotham City
-Harleen Quinzel,Gotham City
-Dr. Harleen Quinzel,Gotham City
-Edward Nygma,Gotham City
-Harvey Dent,Gotham City
-Kara Zor-El,National City
-Raymond Palmer,Ivy Town
-Ronnie Raymond,Pittsburgh
+name,location,email,username,is_active,is_staff,oauth_tokens
+Bruce Wayne,Gotham City,bruce.wayne@gotham.com,batman,True,False,"{}"
+Clark Kent,Metropolis,clark.kent@metropolis.com,superman,True,False,"{}"
+Diana Prince,Themyscira,diana.prince@themyscira.com,wonderwoman,True,False,"{}"
+Barry Allen,Central City,barry.allen@centralcity.com,flash,True,False,"{}"
+Hal Jordan,Coast City,hal.jordan@coastcity.com,greenlantern,True,False,"{}"
+Arthur Curry,Atlantis,arthur.curry@atlantis.com,aquaman,True,False,"{}"
+Victor Stone,Detroit,victor.stone@detroit.com,cyborg,True,False,"{}"
+Oliver Queen,Star City,oliver.queen@starcity.com,greenarrow,True,False,"{}"
+Dinah Lance,Star City,dinah.lance@starcity.com,blackcanary,True,False,"{}"
+J'onn J'onzz,Middleton,jonn.jonzz@middleton.com,martianmanhunter,True,False,"{}"
+Dick Grayson,Blüdhaven,dick.grayson@bludhaven.com,nightwing,True,False,"{}"
+Billy Batson,Fawcett City,billy.batson@fawcettcity.com,shazam,True,False,"{}"
+Zatanna Zatara,Shadowcrest,zatanna.zatara@shadowcrest.com,zatanna,True,False,"{}"
+Carter Hall,Midway City,carter.hall@midwaycity.com,hawkman,True,False,"{}"
+Jaime Reyes,El Paso,jaime.reyes@elpaso.com,bluebeetle,True,False,"{}"
+Michael Carter,Metropolis,michael.carter@metropolis.com,boostergold,True,False,"{}"
+Patrick O'Brian,New York City,patrick.obrian@newyorkcity.com,plasticman,True,False,"{}"
+Selina Kyle,Gotham City,selina.kyle@gotham.com,catwoman,True,False,"{}"
+Barbara Gordon,Gotham City,barbara.gordon@gotham.com,batgirl,True,False,"{}"
+Damian Wayne,Gotham City,damian.wayne@gotham.com,robin,True,False,"{}"
+Harleen Quinzel,Gotham City,harleen.quinzel@gotham.com,harleyquinn,True,False,"{}"
+Dr. Harleen Quinzel,Gotham City,dr.harleen.quinzel@gotham.com,harleyquinn_alt,True,False,"{}"
+Edward Nygma,Gotham City,edward.nygma@gotham.com,riddler,True,False,"{}"
+Harvey Dent,Gotham City,harvey.dent@gotham.com,twotwoface,True,False,"{}"
+Kara Zor-El,National City,kara.zorel@nationalcity.com,supergirl,True,False,"{}"
+Raymond Palmer,Ivy Town,raymond.palmer@ivytown.com,theatom,True,False,"{}"
+Ronnie Raymond,Pittsburgh,ronnie.raymond@pittsburgh.com,firestorm,True,False,"{}"
