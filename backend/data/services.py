@@ -54,8 +54,8 @@ def get_match_time(match_id):
 def add_new_friend(user_id, friend_id):
     user = CustomUser.objects.filter(id=user_id).first()
     friend = CustomUser.objects.filter(id=friend_id).first()
-    if Friendship.objects.filter(user=user, friend=friend).exists():
-        return f"Friendship request or connection already exists between {user.username} and {friend.username}."
+    # if Friendship.objects.filter(user=user, friend=friend).exists():
+    #     return f"Friendship request or connection already exists between {user.username} and {friend.username}."
     
     Friendship.objects.create(user=user, friend=friend, status='pending')
     return f"Friend request sent from {user.username} to {friend.username}."
@@ -73,12 +73,11 @@ def accept_friend(user_id, friend_id):
         return f"No pending friend request from {friend.username} to {user.username}."
 
 def remove_friend(user_id, friend_id):
-    deleted_count = Friendship.objects.filter(
+    Friendship.objects.filter(
         models.Q(user_id=user_id, friend_id=friend_id) | 
         models.Q(user_id=friend_id, friend_id=user_id)
     ).delete()
-    if deleted_count[0] > 0:
-        return f"No longer friends."
+    return f"No longer friends."
 
 def frienship_status(user_id, friend_id):
     friendship = Friendship.objects.filter(
