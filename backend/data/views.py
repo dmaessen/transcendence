@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_data(request):
-    logging.info(f"Request: {request.user.id}")
+    logger.info(f"Request: {request.user.id}")
     
     if not request.user.is_authenticated:
         return JsonResponse({"error": "User not authenticated"}, status=401)
 
     profileID = request.GET.get("userID")
     
-    if profileID == "self":
+    if profileID == "self" or request.user.id == int(profileID):
         user = request.user
         btnType = "Edit profile"
     else: #make a get_friendship status instead, to add pending to the button
@@ -38,6 +38,7 @@ def get_user_data(request):
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
     
+    logger.info(f"btn: {btnType}")
     user_data = {
         "username": user.username,
         "email": user.email,
@@ -50,7 +51,7 @@ def get_user_data(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_matches(request):
-    logging.info(f"Request {request}")
+    logger.info(f"Request {request}")
     
     profileID = request.GET.get("userID")
     
@@ -75,7 +76,7 @@ def get_user_tournaments(request):
     
     profileID = request.GET.get("userID")
     
-    if profileID == "self":
+    if profileID == "self" or request.user.id == int(profileID):
         user = request.user
     else:
         user = CustomUser.objects.filter(id=profileID).first()
@@ -150,7 +151,7 @@ def add_friend(request):
         return JsonResponse({"message": "Missing data"}, status=400)
     logging.info(f"user id {user.id} and friendID: {friendID}")
     add_new_friend(user.id, friendID)
-    return JsonResponse({"message": "Friend request sent"}, status=200)
+    return JsonResponse({"success": True, "message": "Friend request sent"}, status=200)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -161,7 +162,7 @@ def delete_friend(request):
         return JsonResponse({"message": "Missing data"}, status=400)
     logging.info(f"user id {user.id} and friendID: {friendID}")
     remove_friend(user.id, friendID)
-    return JsonResponse({"message": "Friend removed"}, status=200)
+    return JsonResponse({"success": True, "message": "Friend removed"}, status=200)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

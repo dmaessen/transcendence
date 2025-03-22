@@ -1,56 +1,57 @@
 // const dataUrl = "http://localhost:8000/data/";
 
-function addFriend(userID) {
+async function addFriend(userID) {
     console.log("addFriend userID: ", userID);
-    fetch(`/data/api/addFriend/`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({userID: userID})
-    })
-    .then(response => {
-        if (!response.ok)
-            {
-            throw new Error(`HTML error, status: ${response.status}`)
+    try {
+        const response = await fetch(`/data/api/addFriend/`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({userID: userID})
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error, status: ${response.status}`);
         }
-        return response.json();
-    })
-    .then(data => {
+
+        const data = await response.json();
         if (data.success) {
+            loadUserData(userID);
             console.log("Friend added successfully");
         } else {
             console.error("Failed to add friend:", data.error);
         }
-    })
-    .catch(error => console.log("Error adding a friend: ", error));
+    } catch (error) {
+        console.error("Error adding a friend:", error);
+    }
 }
 
-function deleteFriend(userID) {
-    fetch(`data/api/deleteFriend`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({userID: userID})
-    })
-    .then(response => {
-        if (!response.ok)
-            {
-            throw new Error(`HTML error, status: ${response.status}`)
+async function deleteFriend(userID) {
+    try {
+        const response = await fetch(`/data/api/deleteFriend/`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({userID: userID})
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error, status: ${response.status}`);
         }
-        return response.json();
-    })
-    .then(data => {
+
+        const data = await response.json();
         if (data.success) {
+            loadUserData(userID);
             console.log("Friend deleted successfully");
         } else {
             console.error("Failed to delete friend:", data.error);
         }
-    })
-    .catch(error => console.log("Error deleting a friend: ", error));
+    } catch (error) {
+        console.error("Error deleting a friend:", error);
+    }
 }
 
 function populateTournament(data) {
@@ -165,22 +166,21 @@ function populateMatches(data) {
     });
 }
 
-function loadUserData(userID) {
-    fetch(`/data/api/userData/?userID=${userID}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-        },
-    })
-    .then(response => {
-        if (!response.ok)
-            {
-            throw new Error(`HTML error, status: ${response.status}`)
+async function loadUserData(userID) {
+    console.log("loadProfile userID: ", userID);
+    try {
+        const response = await fetch(`/data/api/userData/?userID=${userID}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                "Content-Type": "application/json",
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error, status: ${response.status}`);
         }
-        return response.json();
-    })
-    .then(data => {
+
+        const data = await response.json();
         console.log("loadProfile user data:", data);
 
         document.getElementById("userAvatar").src = data.avatar;
@@ -188,93 +188,85 @@ function loadUserData(userID) {
         document.getElementById("userEmail").textContent = data.email;
         document.getElementById("btnType").textContent = data.btnType;
 
-        let btnType = document.getElementById("btnType")
+        let btnType = document.getElementById("btnType");
         btnType.disabled = false;
-        btnType.removeEventListener("click")
-        btnType.addEventListener("click", function() {
-            if(data.btnType == "Add friend") {
+        btnType.onclick = () => {
+            if (data.btnType === "Add friend") {
                 addFriend(userID);
-            }
-            else if(data.btnType == "Edit profile"){
+            } else if (data.btnType === "Edit profile") {
                 let modal = new bootstrap.Modal(document.getElementById("editProfileModal"));
                 modal.show();
-            }
-            else if(data.btnType == "Delete friend") {
+            } else if (data.btnType === "Delete friend") {
                 deleteFriend(userID);
-            }
-            else if (data.btnType === "Friend request sent") {
+            } else if (data.btnType === "Friend request sent") {
                 btnType.disabled = true;
             }
-        })
-    })
-    .catch(error => console.error("Error fetching user data:", error));
+        };
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+    }
 }
 
-function loadMatchesData(userID) {
-    fetch(`/data/api/userMatches/?userID=${userID}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-        },
-    }) // Fetch 3 latest matches from user 
-    .then(response => {
-        if (!response.ok)
-            {
-            throw new Error(`HTML error, status: ${response.status}`)
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log("Raw response:", data);  // Log the whole response
-        console.log("Matches:", data.matches);  // Check the 'matches' array specifically
+async function loadMatchesData(userID) {
+    try {
+        const response = await fetch(`/data/api/userMatches/?userID=${userID}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                "Content-Type": "application/json",
+            },
+        });
 
-        // Ensure that we're checking 'data.matches' correctly
+        if (!response.ok) {
+            throw new Error(`HTTP error, status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Raw response:", data);
+        console.log("Matches:", data.matches);
+
         if (Array.isArray(data.matches)) {
             populateMatches(data.matches);
-            // populateTable(matchesTable, data.matches, ["match_start", "winner_name", "opponent", "opponentID"], 1);
         } else {
             console.error("Data.matches is not an array:", data.matches);
         }
-    })
-    .catch(error => console.error("Error fetching matches data:", error));
+    } catch (error) {
+        console.error("Error fetching matches data:", error);
+    }
 }
 
-function loadTournametsData(userID) {
-    fetch(`/data/api/userTournaments/?userID=${userID}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-        },
-    }) // Fetch 3 latest tournament data from user
-    .then(response => {
-        if (!response.ok)
-            {
-            throw new Error(`HTML error, status: ${response.status}`)
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log("Raw response:", data);  // Log the whole response
-        console.log("Tournaments:", data.tournaments);  // Check the 'tournaments' array specifically
+async function loadTournametsData(userID) {
+    try {
+        const response = await fetch(`/data/api/userTournaments/?userID=${userID}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                "Content-Type": "application/json",
+            },
+        });
 
-        // Ensure that we're checking 'data.matches' correctly
+        if (!response.ok) {
+            throw new Error(`HTTP error, status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Raw response:", data);
+        console.log("Tournaments:", data.tournaments);
+
         if (Array.isArray(data.tournaments)) {
             populateTournament(data.tournaments);
-            // populateTable(tournamentsTable, data.tournaments, ["start_date", "winner", ], 2);
         } else {
             console.error("Data.tournaments is not an array:", data.tournaments);
-        } 
-    })
-    .catch(error => console.error("Error fetching tournament data:", error));
-}
+        }
+    } catch (error) {
+        console.error("Error fetching tournament data:", error);
+    }}
 
-function loadProfile(userID) {
+async function loadProfile(userID) {
     console.log("UserID: ", userID);
-    loadUserData(userID);
-    loadMatchesData(userID);
-    loadTournametsData(userID);
+    await loadUserData(userID);
+    await loadMatchesData(userID);
+    await loadTournametsData(userID);
 }
 
 const profileBtn = document.getElementById("profileBtn");
