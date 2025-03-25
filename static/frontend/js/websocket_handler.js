@@ -151,6 +151,7 @@ function handleServerMessage(message) {
             document.getElementById("tournamentBracket").style.display = "none";
             document.getElementById("tournamentBracket4").style.display = "none";
             instructions3.style.display = "block";
+            gameState.running = false; // right??
             startGameMenu();
             break;
         // case "tournament_status": // needed

@@ -126,61 +126,60 @@ function updateBracket(mode, bracket, winners, currentRound, final_winner) {
     }
 
     else if (mode == "4" && (currentRound == 1 || currentRound == 2)) { // rework this based on winner bool if not working
-        // for (let i = 0; i < mode; i++) {
-        //     playerElem = document.getElementById(`Player${i + 1}_`);
-        //     resultElem = document.getElementById(`Result${i + 1}_`);
-        //     for (let j = 0; j < winners.length; j++) {
-        //         if (playerElem && playerElem.textContent.trim() === winners[j].username) {
-        //             if (resultElem) {
-        //                 resultElem.innerText = " 👑 ";
-        //             }
-        //         }
-        //     }
-        // }
-        if (bracket && bracket["1"]) { 
+        if (bracket && bracket[1]) {
             for (let i = 0; i < mode; i++) {
                 playerElem = document.getElementById(`Player${i + 1}_`);
                 resultElem = document.getElementById(`Result${i + 1}_`);
     
-                if (playerElem && resultElem) {
-                    let playerName = playerElem.textContent.trim();
-                    // let foundWinner = false;
-                    bracket["1"].forEach(match => {
-                        match.forEach(player => {
-                            if (player.player.username === playerName && player.winner) {
+                bracket[1].forEach(match => {
+                    match.forEach(playerObj => {  
+                        let playerName = playerObj.player.username;  
+                        if (playerElem && playerElem.textContent.trim() === playerName) {
+                            if (playerObj.winner) {
                                 resultElem.innerText = " 👑 ";
-                                // foundWinner = true;
                             }
-                        });
+                        }
                     });
-                    // if (!foundWinner) {
-                    //     resultElem.innerText = "";
-                    // }
-                }
-            }
-        }
+                });}}
     }
-    else if (mode == "8" && currentRound == 1) { // rework this based on winner bool if not working
-        for (let i = 0; i < mode; i++) {
-            playerElem = document.getElementById(`Player${i + 1}`);
-            resultElem = document.getElementById(`Result${i + 1}`);
-            for (let j = 0; j < winners.length; j++) {
-                if (playerElem && playerElem.textContent.trim() === winners[j].username) {
-                    if (resultElem) {
-                        resultElem.innerText = " 👑 ";
-                    }
-                }
-            }
-        }
+    else if (mode == "8" && (currentRound == 1 || currentRound == 2)) { // rework this based on winner bool if not working
+        if (bracket && bracket[1]) {
+            for (let i = 0; i < mode; i++) {
+                playerElem = document.getElementById(`Player${i + 1}`);
+                resultElem = document.getElementById(`Result${i + 1}`);
+                bracket[1].forEach(match => {
+                    match.forEach(playerObj => {  
+                        let playerName = playerObj.player.username;  
+                        if (playerElem && playerElem.textContent.trim() === playerName) {
+                            if (playerObj.winner) {
+                                resultElem.innerText = " 👑 ";
+                            }
+                        }
+                    });
+        });}}
     }
     else if (mode == "4" && currentRound == 2) {
+        if (!bracket[currentRound]) {
+            console.error(`No bracket found for round ${currentRound}`);
+            return;
+        }
+    
+        let match = bracket[currentRound][0]; // First match in round 2
+        if (!match || match.length < 2) {
+            console.error("Match data is incomplete");
+            return;
+        }
+    
+        let player1 = match[0].player.username;
+        let player2 = match[1].player.username;
+    
         playerElem = document.getElementById(`Player${13}_`);
         if (playerElem) {
-            playerElem.innerText = bracket[currentRound][0][0].username;
+            playerElem.innerText = player1;
         }
         playerElem = document.getElementById(`Player${14}_`);
         if (playerElem) {
-            playerElem.innerText = bracket[currentRound][0][1].username;
+            playerElem.innerText = player2;
         }
     }
     else if (mode == "8" && currentRound == 2) {
