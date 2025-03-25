@@ -19,6 +19,7 @@ if (saveChangesBtn) {
             if (newAvatar) 
                 formData.append("newAvatar", newAvatar);
 
+            console.log("form data: ", formData);
             const response = await fetch(`/data/api/editProfile/`, {
                 method: "POST",
                 headers: {

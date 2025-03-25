@@ -13,7 +13,7 @@ async function addFriend(userID) {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error, status: ${response.status}`);
+            throw new Error(`Error, status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -39,7 +39,7 @@ async function deleteFriend(userID) {
             body: JSON.stringify({userID: userID})
         });
         if (!response.ok) {
-            throw new Error(`HTTP error, status: ${response.status}`);
+            throw new Error(`Error, status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -177,7 +177,7 @@ async function loadUserData(userID) {
             },
         });
         if (!response.ok) {
-            throw new Error(`HTTP error, status: ${response.status}`);
+            throw new Error(`Error, status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -218,7 +218,7 @@ async function loadMatchesData(userID) {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error, status: ${response.status}`);
+            throw new Error(`Error, status: ${response.status}`);
         }
 
         const data = await response.json();
