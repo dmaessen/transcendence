@@ -220,15 +220,16 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         player2 = event["player2"]
         # self.tournament.matches.append((player1, player2, game_id))
         print(f"Before adding match, matches: {self.tournament.matches}", flush=True)
-        self.tournament.matches.append((game_id, player1, player2))
+        if not any(game_id == match[0] for match in self.tournament.matches):
+            self.tournament.matches.append((game_id, player1, player2))
 
-        print(f"Tournament match {game_id} added: {player1} vs {player2}.", flush=True)
-        print(f"Current matches: {self.tournament.matches}", flush=True)
-        await self.send_json({
-            "type": "match_start",
-            # "data": game.get_state()
-        })
-        await self.broadcast_tournament_state()
+            print(f"Tournament match {game_id} added: {player1} vs {player2}.", flush=True)
+            print(f"Current matches: {self.tournament.matches}", flush=True)
+            await self.send_json({
+                "type": "match_start",
+                # "data": game.get_state()
+            })
+            await self.broadcast_tournament_state()
 
     async def game_result(self, event):
         print(f"HERE IN GAME-RESULT FINALLY", flush=True)
@@ -312,6 +313,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add(self.match_name, self.channel_name)
 
             game = Game("Two Players (remote)")
+            game.reset_game("Two Players (remote)") # does this do the trick??
             game.add_player(user1.id, user1.username)
             game.add_player(user2.id, user2.username)
             game.status = "started"
