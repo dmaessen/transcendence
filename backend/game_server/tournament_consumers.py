@@ -113,7 +113,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
             if len(game.ready_players) == 2:
                 print("Both players are ready. Starting game!", flush=True)
-                game.start_game() # this makes them start without having to press on a key
+                game.start_game()
                 await self.send_json({"type": "started", "game_id": self.game_id})
                 await self.send_game_state(game)
                 asyncio.create_task(self.broadcast_game_state(self.game_id))
@@ -138,6 +138,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         elif action == "disconnect_1v1game":
             for game_id in list(games.keys()):
                 game = games[game_id]
+                print(f"Game {game_id} ended, in disconnect_1v1game", flush=True)
                 if self.player_id in game.players:
                     game.remove_player(self.player_id)
                     if not game.players:
@@ -219,17 +220,18 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         player1 = event["player1"]
         player2 = event["player2"]
         # self.tournament.matches.append((player1, player2, game_id))
-        print(f"Before adding match, matches: {self.tournament.matches}", flush=True)
+        print(f" {self.tournament.matches}", flush=True)
         if not any(game_id == match[0] for match in self.tournament.matches):
             self.tournament.matches.append((game_id, player1, player2))
 
-            print(f"Tournament match {game_id} added: {player1} vs {player2}.", flush=True)
-            print(f"Current matches: {self.tournament.matches}", flush=True)
+        print(f"Tournament match {game_id} added: {player1} vs {player2}.", flush=True)
+        print(f"Current matches: {self.tournament.matches}", flush=True)
+        if self.username in [player1, player2]: 
             await self.send_json({
                 "type": "match_start",
                 # "data": game.get_state()
             })
-            await self.broadcast_tournament_state()
+        await self.broadcast_tournament_state()
 
     async def game_result(self, event):
         print(f"HERE IN GAME-RESULT FINALLY", flush=True)
