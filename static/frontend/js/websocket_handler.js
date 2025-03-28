@@ -95,14 +95,14 @@ const returnToStartMenu = async () => {
 }
 
 const returnToTournamentWaitingRoom = async () => {
-    await sleep(6000);
+    //await sleep(1500);
     instructions1.style.display = "none";
     instructions2.style.display = "none";
     instructions3.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    // if (socket && socket.readyState === WebSocket.OPEN)
-    //     socket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
+    if (socket && socket.readyState === WebSocket.OPEN)
+        socket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
     gameCanvas.style.display = "none";
     showWaitingRoomTournament(gameState.mode);
 }
@@ -130,14 +130,14 @@ function handleServerMessage(message) {
             break;
         case "end":
             showEndMenu(`${message.reason}`);
-            if (gameState.mode != "8" && gameState.mode != "4" && gameState.mode != "Tournament - 4 Players" && gameState.mode != "Tournament - 8 Players")
+            if (gameState.mode != "8" && gameState.mode != "4")
                 returnToStartMenu();
             else
                 returnToTournamentWaitingRoom();
             break;
         case "game_end":
             showEndMenu(`${message.reason}`);
-            if (gameState.mode != "8" && gameState.mode != "4" && gameState.mode != "Tournament - 4 Players" && gameState.mode != "Tournament - 8 Players")
+            if (gameState.mode != "8" && gameState.mode != "4")
                 returnToStartMenu();
             else
                 returnToTournamentWaitingRoom();

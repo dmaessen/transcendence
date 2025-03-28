@@ -91,10 +91,11 @@ function updatePlayerFields(mode, players, results = []) {
 
 function updateBracket(mode, bracket, winners, currentRound, final_winner) {
     console.log("Updating bracket with mode:", mode);
-    console.log("Bracket Winners:", winners);
+    // console.log("Bracket Winners:", winners);
 
     let playerElem;
     let resultElem;
+    let winners4 = [];
 
     if (mode == "4" && final_winner != null) {
         playerElem = document.getElementById(`Player${13}_`);
@@ -137,6 +138,7 @@ function updateBracket(mode, bracket, winners, currentRound, final_winner) {
                         if (playerElem && playerElem.textContent.trim() === playerName) {
                             if (playerObj.winner) {
                                 resultElem.innerText = " 👑 ";
+                                winners4.push(playerName);
                             }
                         }
                     });
@@ -158,30 +160,41 @@ function updateBracket(mode, bracket, winners, currentRound, final_winner) {
                     });
         });}}
     }
-    else if (mode == "4" && currentRound == 2) {
-        if (!bracket[currentRound]) {
-            console.error(`No bracket found for round ${currentRound}`);
-            return;
-        }
-    
-        let match = bracket[currentRound][0]; // First match in round 2
-        if (!match || match.length < 2) {
-            console.error("Match data is incomplete");
-            return;
-        }
-    
-        let player1 = match[0].player.username;
-        let player2 = match[1].player.username;
-    
+    else if (mode == "4" && winners4.length == 2){
+        console.log("WE HAVE 2 WINNERS NOW:", winners4); // to rm
         playerElem = document.getElementById(`Player${13}_`);
-        if (playerElem) {
-            playerElem.innerText = player1;
+        if (playerElem){
+            playerElem.innerText = winners4[0];
         }
         playerElem = document.getElementById(`Player${14}_`);
-        if (playerElem) {
-            playerElem.innerText = player2;
+        if (playerElem){
+            playerElem.innerText = winners4[1];
         }
     }
+    // else if (mode == "4" && currentRound == 2) {
+    //     if (!bracket[currentRound]) {
+    //         console.error(`No bracket found for round ${currentRound}`);
+    //         return;
+    //     }
+    
+    //     let match = bracket[currentRound][0]; // First match in round 2
+    //     if (!match || match.length < 2) {
+    //         console.error("Match data is incomplete");
+    //         return;
+    //     }
+    
+    //     let player1 = match[0].player.username;
+    //     let player2 = match[1].player.username;
+    
+    //     playerElem = document.getElementById(`Player${13}_`);
+    //     if (playerElem) {
+    //         playerElem.innerText = player1;
+    //     }
+    //     playerElem = document.getElementById(`Player${14}_`);
+    //     if (playerElem) {
+    //         playerElem.innerText = player2;
+    //     }
+    // }
     else if (mode == "8" && currentRound == 2) {
         playerElem = document.getElementById(`Player${9}`);
         if (playerElem) {

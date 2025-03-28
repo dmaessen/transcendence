@@ -279,6 +279,7 @@ function updateGameState(data) {
 
 function displayStartPrompt() {
     gameCanvas.style.display = "block";
+    gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     gameContext.font = "50px Courier New";
     gameContext.fillStyle = "#000000";
     gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
