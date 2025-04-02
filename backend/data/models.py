@@ -50,13 +50,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.name
 
 class Friendship(models.Model):
-    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_creator_set')
-    friend = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_receiver_set')
+    sender = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_creator_set')
+    receiver = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_receiver_set')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=(('pending', 'Pending'), ('approved', 'Approved')))
 
     class Meta:
-        unique_together = ('user', 'friend')
+        unique_together = ('sender', 'receiver')
 
 class Match(models.Model):
     player_1 = models.ForeignKey(CustomUser, related_name="player_1_matches", on_delete=models.SET_NULL, null=True)

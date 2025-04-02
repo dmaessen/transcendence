@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from data.models import CustomUser, Match, Tournament
+from data.models import *
 import logging
 
 logger = logging.getLogger(__name__)
@@ -101,6 +101,13 @@ class TournamentSummarySerializer(serializers.ModelSerializer):
         if (user == obj.first_place):
             return True
         return False
+    
+class FriendRequestsSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Friendship
+        fields = ["user_id","receiver", "receiver_id", "sender", "sender_id", "friendship_id"]
+    
 
 # class FriendsSerializer(serializers.ModelSerializer):
     

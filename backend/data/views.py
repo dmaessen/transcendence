@@ -7,6 +7,9 @@ import json
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+import sys
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
  
 from rich import print
 
@@ -17,9 +20,6 @@ logger = logging.getLogger(__name__)
 def get_user_data(request):
     logger.info(f"Request: {request.user.id}")
     
-    if not request.user.is_authenticated:
-        return JsonResponse({"error": "User not authenticated"}, status=401)
-
     profileID = request.GET.get("userID")
     
     if profileID == "self" or request.user.id == int(profileID):
@@ -38,13 +38,14 @@ def get_user_data(request):
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
     
-    logger.info(f"btn: {btnType}")
+    logging.info(f"btn: {btnType}")
     user_data = {
         "username": user.username,
         "email": user.email,
         "avatar": user.avatar.url if user.avatar else None,
         "btnType": btnType
     }
+    logging.info(f"userdata: {user_data}")
 
     return JsonResponse(user_data, safe=False)
 
@@ -94,6 +95,8 @@ def get_user_tournaments(request):
 @permission_classes([IsAuthenticated])
 def edit_user_data(request):
     logging.info("Changing user data \n")
+    logger.info("Changing user data \n")
+    
     
     newUsername = request.POST.get('newUsername')
     newMail = request.POST.get('newMail')
@@ -101,6 +104,8 @@ def edit_user_data(request):
     
     logging.info(f"newUsername: {newUsername}")
     logging.info(f"newMail: {newMail}")
+    logger.info(f"newUsername: {newUsername}")
+    logger.info(f"newMail: {newMail}")
     
     user = request.user
     
@@ -166,5 +171,27 @@ def delete_friend(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+def friends_requests(request):
+    user = request.user
+    fRequests = get_friendship_requests(user.id)
+
+    return JsonResponse(fRequests, safe=False)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def accept_friendship(request):
+    friendship_id = request.data.get("friendshipID")
+    accept_friend(friendship_id)
+    return JsonResponse({"success": True, "message": "friendship created"}, status=200)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def cancel_friendship(request):
+    friendship_id = request.data.get("friendshipID")
+    cancel_friend(friendship_id)
+    return JsonResponse({"success": True, "message": "friendship canceled"}, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def search_user(request):
-    return None
+    pass

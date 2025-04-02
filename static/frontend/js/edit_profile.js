@@ -3,6 +3,7 @@ const saveChangesBtn = document.getElementById("saveChanges");
 if (saveChangesBtn) {
     saveChangesBtn.addEventListener("click", async function(event) {
         try {
+            event.preventDefault();
             const newUsername = document.getElementById("newUsername").value;
             const newMail = document.getElementById("newMail").value;
             const newAvatar = document.getElementById("newAvatar").files[0];
@@ -29,21 +30,31 @@ if (saveChangesBtn) {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error, status: ${response.status}`);
+                throw new Error(`error, status: ${response.status}`);
             }
 
             const data = await response.json();
             console.log("Edit Data:", data);
 
-            if (newUsername) 
+            if (newUsername) {
                 document.getElementById("username").textContent = data.username;
-            if(newMail)
+        }
+            if(newMail){
                 document.getElementById("userEmail").textContent = data.email;
-
+            }
             if (data.avatar_url) {
                 document.getElementById("userAvatar").src = data.avatar_url; // Assuming API returns the new image URL
             }
+
+            // Close edit modal
+            let editProfileModalElement = document.getElementById("editProfileModal");
+            let editProfileModal = bootstrap.Modal.getInstance(editProfileModalElement);
+            editProfileModal.hide();
+
+            let modal = new bootstrap.Modal(document.getElementById("profileModal"));
+            modal.show();
             loadProfile("self");
+
         } catch (error) {
             console.error("Error updating profile:", error);
         }

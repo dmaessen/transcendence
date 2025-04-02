@@ -173,7 +173,6 @@ async function loadUserData(userID) {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-                "Content-Type": "application/json",
             },
         });
         if (!response.ok) {
@@ -194,6 +193,9 @@ async function loadUserData(userID) {
             if (data.btnType === "Add friend") {
                 addFriend(userID);
             } else if (data.btnType === "Edit profile") {
+                let profileModalElement = document.getElementById("profileModal");
+                let profileModal = bootstrap.Modal.getInstance(profileModalElement);
+                profileModal.hide();
                 let modal = new bootstrap.Modal(document.getElementById("editProfileModal"));
                 modal.show();
             } else if (data.btnType === "Delete friend") {

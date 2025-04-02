@@ -6,8 +6,10 @@
                 <button id="previous1Btn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search user">
-                <ul id="searchResults" class="list-group mt-2"></ul>
+                <form id="searchForm" autocomplete="off">
+                    <input type="search" id="searchInput" class="form-control" placeholder="Search username">
+                </form>
+                <div id="searchResults" class="list-group mt-2"></div>
                 <table id="frienshipRequestTable" class="table">
                     <tbody>
                         <!-- Filled dynamically -->
