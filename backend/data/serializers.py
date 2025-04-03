@@ -76,7 +76,7 @@ class MatchSummarySerializer(serializers.ModelSerializer):
         user = self.context.get("user")
         if user:
             opponent = obj.player_1.name if obj.player_2 == user else obj.player_2.name
-            logging.info(f"Opponent: {opponent}")  # Log the opponent here
+            logger.info(f"Opponent: {opponent}")  # Log the opponent here
             return opponent
         return "Unknown"
     
@@ -92,4 +92,4 @@ class TournamentSummarySerializer(serializers.ModelSerializer):
 
     # def __init__(self, *args, **kwargs):
     #     super().__init__(*args, **kwargs)
-    #     logging.info(f"Tournament winner: {self.validated_data.get('winner', 'Unknown')}")
+    #     logger.info(f"Tournament winner: {self.validated_data.get('winner', 'Unknown')}")

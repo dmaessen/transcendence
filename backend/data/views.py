@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_data(request):
-    logging.info(f"Request: {request.user.id}")
+    logger.info(f"Request: {request.user.id}")
 
     if not request.user.is_authenticated:
         return JsonResponse({"error": "User not authenticated"}, status=401)
@@ -36,7 +36,7 @@ def get_user_data(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_matches(request):
-    logging.info(f"Request {request}")
+    logger.info(f"Request {request}")
     
     user = request.user
     if not user:
@@ -52,7 +52,7 @@ def get_user_matches(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_tournaments(request):
-    logging.info(f"Request {request}")
+    logger.info(f"Request {request}")
     
     user = request.user
     if not user:
@@ -68,14 +68,14 @@ def get_user_tournaments(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def edit_user_data(request):
-    logging.info("Changing user data \n")
+    logger.info("Changing user data \n")
     
     newUsername = request.POST.get('newUsername')
     newMail = request.POST.get('newMail')
     newAvatar = request.FILES.get('newAvatar')
     
-    logging.info(f"newUsername: {newUsername}")
-    logging.info(f"newMail: {newMail}")
+    logger.info(f"newUsername: {newUsername}")
+    logger.info(f"newMail: {newMail}")
     
     user = request.user
     
@@ -106,7 +106,7 @@ def edit_user_data(request):
         return JsonResponse({"message": "Successfully edited", "user_data": updated_user_data}, status=200)
     
     except Exception as e:
-        logging.error(f"Error edting user data: {e}")
+        logger.error(f"Error edting user data: {e}")
         return JsonResponse({"error": "Oopsie, something went wrong"}, status=500)
 
 

@@ -246,12 +246,12 @@ LOGGING = {
             'propagate': True,
         },
         'views': {  # Explicitly enable logs for views.py
-            'handlers': ['console'],
+            'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'serializers': {  # Explicitly enable logs for serializers.py
-            'handlers': ['console'],
+            'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
