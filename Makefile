@@ -22,7 +22,7 @@ buildclean:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) build --no-cache
 
 updetach:
-	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) up
+	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) up -d
 
 show:
 	@echo "\n Images:"
