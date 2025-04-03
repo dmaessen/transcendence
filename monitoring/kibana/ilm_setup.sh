@@ -11,13 +11,13 @@ curl -k -u "${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}" -X PUT "https://elasticsear
         "min_age": "0ms",
         "actions": {
           "rollover": {
-            "max_age": "3m",
-            "max_docs": 100
+            "max_age": "10m",
+            "max_docs": 10000
           }
         }
       },
       "delete": {
-        "min_age": "5m",
+        "min_age": "20m",
         "actions": {
           "delete": {}
         }

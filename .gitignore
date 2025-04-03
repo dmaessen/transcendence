@@ -140,3 +140,8 @@ GitHub.sublime-settings
 # Project especifc folders 
 pgdata/
 myvenv/
+
+*.token
+*.crt
+*.key
+*.keystore
