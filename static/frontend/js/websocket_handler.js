@@ -95,7 +95,6 @@ const returnToStartMenu = async () => {
 }
 
 const returnToTournamentWaitingRoom = async () => {
-    //await sleep(1500);
     instructions1.style.display = "none";
     instructions2.style.display = "none";
     instructions3.style.display = "none";
@@ -103,14 +102,26 @@ const returnToTournamentWaitingRoom = async () => {
     gameTitle.style.display = "none";
     if (socket && socket.readyState === WebSocket.OPEN)
         socket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
-    gameCanvas.style.display = "none";
     showWaitingRoomTournament(gameState.mode);
+}
+
+const returnToStartMenuAfterTournament = async () => {
+    await sleep(5000);
+    instructions1.style.display = "none";
+    instructions2.style.display = "none";
+    instructions3.style.display = "none";
+    gameCanvas.style.display = "none";
+    gameTitle.style.display = "none";
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        await sleep(500);
+        socket.close();
+    }
+    gameMenuFirst.show();
 }
 
 function handleServerMessage(message) {
     console.log(`(FRONTEND) message.type here is: ${message.type}`);
 
-    const tournamentBanner = document.getElementById("tournamentBanner");
     switch (message.type) {
         case "started":
             gameState.running = true;
@@ -154,34 +165,15 @@ function handleServerMessage(message) {
             gameState.running = false; // right??
             startGameMenu();
             break;
-        // case "tournament_status": // needed
-        //     if (message.active) {
-        //         tournamentBanner.style.display = "block";
-        //         setTimeout(() => {
-        //             tournamentBanner.style.display = "none";
-        //         }, 20000); // 20sec
-        //     }
-        //     break;
-        // case "match_result":
-        //     // ADD STUFF
-        //     break;
-        case "tournament_full":
-            //tournamentOpen = false;
-            break;
         case "tournament_update":
             console.log(`MESSAGE COMING IN`); // to rm
             break;
         case "update_tournament":
             console.log(`Players in tournament: ${message.players_in}`); // to rm
             console.log(`Remaining spots: ${message.remaining_spots}`); // to rm
-            // if (message.remaining_spots > 0) {
-            //showTournamentAdBanner(message.players_in, message.remaining_spots + message.players_in);
-            // } else {
-            //     tournamentBanner.style.display = "none";
-            // }
             break;
-        case "tournament_end":
-            // show the overall winner
+        case "end_tournament":
+            returnToStartMenuAfterTournament();
             break;
         // default:
         //     console.warn("Unknown message type received:", message.type);

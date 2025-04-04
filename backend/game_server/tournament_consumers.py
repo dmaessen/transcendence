@@ -148,21 +148,17 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             if hasattr(self, 'match_name'):
                 await self.channel_layer.group_discard(self.match_name, self.channel_name)
 
-        elif action == "disconnect": # SEE WHAT WE USE THIS ONE FOR, HAVE ONE FOR THE WHOLE TOURNAMENT WS
-            for game_id in list(games.keys()):
-                game = games[game_id]
-                if self.player_id in game.players:
-                    game.remove_player(self.player_id)
-                    if not game.players:
-                        game.stop_game("No players")
-                        del games[game_id]
-                        print(f"Game {game_id} ended. Winner: No players", flush=True)
-
-            await self.close() # not sure about this one...
+        elif action == "disconnect":
+            if self.initiator == self.scope["user"]:
+                TournamentConsumer.tournament = None
+                TournamentConsumer.initiator = None
+            
+            await self.send_json({"type": "end_tournament"})
             print(f"WebSocket disconnected for player {self.player_id}", flush=True)
-
             if hasattr(self, 'match_name'):
                 await self.channel_layer.group_discard(self.match_name, self.channel_name)
+            await self.channel_layer.group_discard(self.room_name, self.channel_name)
+            await self.close()
     
         else:
             print(f"Unknown action: {action}")
@@ -234,20 +230,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         await self.broadcast_tournament_state()
 
     async def game_result(self, event):
-        print(f"HERE IN GAME-RESULT FINALLY", flush=True)
         game_id = event["game_id"]
         winner = event["winner"]
         winner_username = winner
-        
-        # if isinstance(winner, str):
-        #     winner_username = winner
-        # elif isinstance(winner, dict) and "player" in winner:
-        #     winner_username = winner["player"]["username"]
-        # else:
-        #     print(f"inccorect winner format: {winner}", flush=True)
-        #     return
 
-        print(f"WINNER HERE IN GAME-RESULT IS: {winner_username}", flush=True)
         # updates the tournament bracket
         await self.tournament.register_match_result(game_id, winner_username)
         await self.broadcast_tournament_state()
@@ -380,6 +366,16 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     "data": state_serializable,
                 }
             )
+
+            # if not self.tournament.running and self.tournament.final_winner not None:
+            #     await self.send_json({"type": "end_tournament"})
+            #     await self.channel_layer.group_send(
+            #         "tournament_lobby",
+            #         {
+            #             "type": "disconnect",
+            #         }
+            #     )
+
 
     async def broadcast_game_state(self, game_id):
         if game_id in games:
