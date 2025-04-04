@@ -17,6 +17,7 @@ class Game:
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
+        self.partOfTournament = False
         self.status = None #default can be "waiting", "started"
 
     def add_player(self, player_id, username):
@@ -62,6 +63,7 @@ class Game:
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
+        self.partOfTournament = False
 
     def update_state(self):
         # Update ball position
@@ -89,7 +91,8 @@ class Game:
             self.score["player"] += 1
             self._reset_ball(direction=-1)
 
-        if self.mode == "4" or self.mode == "8":
+        # if self.mode == "4" or self.mode == "8":
+        if self.partOfTournament == True:
             if self.score["player"] >= 3 or self.score["opponent"] >= 3:
                 winner_id = next(
                     (pid for pid, pdata in self.players.items() if self.score[pdata["role"]] >= 3),
@@ -110,32 +113,36 @@ class Game:
         if self.mode == "One Player" and len(self.players) > 1: # or should it be =
             self._move_ai()
 
-    def move_player(self, player_id, direction):
+    def move_player(self, player_id, directions):
+        if isinstance(directions, str):
+            directions = [directions]
         if self.mode == "Two Players (hot seat)" and player_id in self.players:
-            print(f"Moving player {player_id} with direction {direction}", flush=True)
-            print("111111")
+            # print(f"Moving player {player_id} with direction {direction[0]}", flush=True)
+            # print("111111")
             #paddle = self.players[player_id]
             player = self.players[player_id]
             opponent = self.players["opponent"]
-            if direction == "up" and opponent["y"] > 0:
-                opponent["y"] -= 10
-            elif direction == "down" and opponent["y"] + opponent["height"] < self.height:
-                opponent["y"] += 10
-            elif direction == "s_down" and player["y"] + player["height"] < self.height:
-                player["y"] += 10
-            elif direction == "w_up" and player["y"] > 0:
-                player["y"] -= 10
+            for direction in directions:
+                if direction == "up" and opponent["y"] > 0:
+                    opponent["y"] -= 10
+                if direction == "down" and opponent["y"] + opponent["height"] < self.height:
+                    opponent["y"] += 10
+                if direction == "s_down" and player["y"] + player["height"] < self.height:
+                    player["y"] += 10
+                if direction == "w_up" and player["y"] > 0:
+                    player["y"] -= 10
 
         elif player_id in self.players:
-            print(f"Moving player {player_id} with direction {direction}", flush=True)
-            print("22222")
+            # print(f"Moving player {player_id} with direction {direction[0]}", flush=True)
+            # print("22222")
             paddle = self.players[player_id]
-            if direction == "up" and paddle["y"] > 0:
-                paddle["y"] -= 10
-                print(f"Player {player_id} moved up to {paddle['y']}", flush=True)
-            elif direction == "down" and paddle["y"] + paddle["height"] < self.height:
-                paddle["y"] += 10
-                print(f"Player {player_id} moved down to {paddle['y']}", flush=True)
+            for direction in directions:
+                if direction == "up" and paddle["y"] > 0:
+                    paddle["y"] -= 10
+                    print(f"Player {player_id} moved up to {paddle['y']}", flush=True)
+                if direction == "down" and paddle["y"] + paddle["height"] < self.height:
+                    paddle["y"] += 10
+                    print(f"Player {player_id} moved down to {paddle['y']}", flush=True)
 
     def get_state(self):
         return {
@@ -147,7 +154,9 @@ class Game:
             "running": self.running,
             "mode": self.mode,
             "width": self.width,
-            "height": self.height
+            "height": self.height,
+            "status": self.status,
+            "partOfTournament": self.partOfTournament
         }
 
     def _check_collision(self, paddle):
@@ -203,7 +212,11 @@ class Game:
         # self.score = {"player": 0, "opponent": 0}
         self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
         print(f"Game ended. Winner: {winner}", flush=True)
-
+        return {"type": "end", "reason": f"Game Over: {winner} wins"}
+        
     def clear_game(self):
         self.players = {}  # Clear players
         self.score = {"player": 0, "opponent": 0}
+    
+    def is_partOfTournament(self):
+        self.partOfTournament = True
