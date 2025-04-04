@@ -36,9 +36,11 @@ function connectWebSocket(mode) {
                 console.log("Fetched tournament status:", data);
                 if (data.players_in == 0) {
                     socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+                    gameState.mode = mode;
                     console.log("start_tounrment from connectWebsocket undergoing");
                 }
                 socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
+                gameState.mode = mode;
                 showWaitingRoomTournament(mode);
             } catch (error) {
                 console.error("Error fetching tournament status:", error);
@@ -92,6 +94,19 @@ const returnToStartMenu = async () => {
     gameMenuFirst.show();
 }
 
+const returnToTournamentWaitingRoom = async () => {
+    //await sleep(1500);
+    instructions1.style.display = "none";
+    instructions2.style.display = "none";
+    instructions3.style.display = "none";
+    gameCanvas.style.display = "none";
+    gameTitle.style.display = "none";
+    if (socket && socket.readyState === WebSocket.OPEN)
+        socket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
+    gameCanvas.style.display = "none";
+    showWaitingRoomTournament(gameState.mode);
+}
+
 function handleServerMessage(message) {
     console.log(`(FRONTEND) message.type here is: ${message.type}`);
 
@@ -115,16 +130,29 @@ function handleServerMessage(message) {
             break;
         case "end":
             showEndMenu(`${message.reason}`);
-            returnToStartMenu();
+            if (gameState.mode != "8" && gameState.mode != "4")
+                returnToStartMenu();
+            else
+                returnToTournamentWaitingRoom();
+            break;
+        case "game_end":
+            showEndMenu(`${message.reason}`);
+            if (gameState.mode != "8" && gameState.mode != "4")
+                returnToStartMenu();
+            else
+                returnToTournamentWaitingRoom();
             break;
         case "match_found":
             console.log("(FRONTEND) Match found:", message.game_id);
             break;
         case 'match_start':
-            gameState.gameId = message.game_id;
-            console.log(`Game initialized with ID: ${gameState.gameId}`);
+            // gameState.gameId = message.game_id;
+            // console.log(`Game initialized with ID: ${gameState.gameId}`);
+            document.getElementById("tournamentBracket").style.display = "none";
+            document.getElementById("tournamentBracket4").style.display = "none";
+            instructions3.style.display = "block";
+            gameState.running = false; // right??
             startGameMenu();
-            //gameState.running = true;
             break;
         // case "tournament_status": // needed
         //     if (message.active) {
@@ -139,6 +167,9 @@ function handleServerMessage(message) {
         //     break;
         case "tournament_full":
             //tournamentOpen = false;
+            break;
+        case "tournament_update":
+            console.log(`MESSAGE COMING IN`); // to rm
             break;
         case "update_tournament":
             console.log(`Players in tournament: ${message.players_in}`); // to rm

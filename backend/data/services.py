@@ -1,5 +1,6 @@
 from .models import *
 from django.db.models import Q
+from django.core.cache import cache
 
 # Get data from tables 
 def get_all_users():
@@ -91,7 +92,23 @@ def frienship_status(user_id, friend_id):
 
 def get_friends(user_id):
     user = CustomUser.objects.get(id=user_id)
-    friends = Friendship.objects.filter(user, status='approved').values_list('friend__username', flat=True)
+    friendships = Friendship.objects.filter((Q(sender=user) | Q(receiver=user)), status='approved')
+    friends = []
+    for friend in friendships:
+        if(user == friend.sender):
+            status = cache.get(f"user_online_{friend.receiver.id}", False)
+            friends.append({
+                "friend": friend.receiver.username,
+                "friend_id": friend.receiver.id,
+                "is_online": status,
+            })
+        else:
+            status = cache.get(f"user_online_{friend.sender.id}", False)
+            friends.append({
+                "friend": friend.sender.username,
+                "friend_id": friend.sender.id,
+                "is_online": status,
+            })
     return list(friends)
 
 def get_friendship_requests(user_id):
