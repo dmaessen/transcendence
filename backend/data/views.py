@@ -42,7 +42,6 @@ import json
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
- 
 from rich import print
 
 logger = logging.getLogger(__name__)
@@ -55,14 +54,9 @@ def get_user_data(request):
 
     if not request.user.is_authenticated:
         return JsonResponse({"error": "User not authenticated"}, status=401)
-
     testUser = request.user
-    
     if not testUser:
         return JsonResponse({"error": "User not found"}, status=404)
-
-    # matches = get_user_3_matches(testUser.id)
-    # tournaments = get_user_3_tournaments(testUser.id)
 
     user_data = {
         "username": testUser.username,
@@ -81,10 +75,15 @@ def get_user_data(request):
 
     return JsonResponse(user_data, safe=False)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_user_matches(request):
     logging.info(f"Request {request}")
     
-    testUser = CustomUser.objects.filter(id=4).first()
+    testUser = request.user
+    if not testUser:
+        return JsonResponse({"error": "User not found"}, status=404)
+    testUser = request.user
     if not testUser:
         return JsonResponse({"error": "User not found"}, status=404)
 
@@ -102,10 +101,15 @@ def get_user_matches(request):
     
     return JsonResponse(match_data, safe=False)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_user_tournaments(request):
     logging.info(f"Request {request}")
     
     testUser = CustomUser.objects.filter(id=4).first()
+    if not testUser:
+        return JsonResponse({"error": "User not found"}, status=404)
+    testUser = request.user
     if not testUser:
         return JsonResponse({"error": "User not found"}, status=404)
     

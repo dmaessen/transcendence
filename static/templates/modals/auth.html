@@ -9,6 +9,16 @@
                     <button id="showRegister" class="btn btn-outline-dark w-100 mb-2">Register</button>
                     <button id="showLogin" class="btn btn-outline-dark w-100 mb-2">Log in</button>
                     <button id="Logout" class="btn btn-outline-dark w-100 mb-2">Log Out</button>
+                    <button id="enable2FA" class="btn btn-warning">Enable 2FA</button>
+                    <button id="disable2FA" class="btn btn-warning">Disable 2FA</button>
+                    <div id="qrContainer" class="overlay-form" style="display: none;">
+                        <h2>Here is the QR code for you to scan</h2>
+                        <img id= "qrCodeImage" src="" alt="QR Code" style="display: none; max-width: 100%; height: auto;">
+                        <p>Or enter this code manually, if you must...</p>
+                        <code id="otpKey"></code> 
+                        <button id="confirm2FA" class= "btn btn-success">Confirm 2FA</button>
+                        <button id="QR_back" class="btn btn-secondary">Back</button>
+                    </div> 
                     <button id="deleteAccount" class="btn btn-danger">Remove Account</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Back
@@ -22,6 +32,12 @@
                         <input type="password" id="loginPassword" placeholder="Password" required><br>
                         <button type="submit">Login</button>
                     </form>
+                    <div id="otpContainer" style="display: none;">
+                        <label for="otpToken">Enter OTP Code:</label>
+                        <input type="text" id="otpToken" name="otpToken" />
+                        <button type="submitOTP" id="submitOTPButton" class"btn btn-success">Submit OTP token</button>
+                        <button type="returnOTP" id="returnToLogin" class"btn btn-secondary">return</button>    
+                    </div>
                     <button id="backToMain1" class="btn btn-secondary">Back</button>
                 </div>
     
@@ -33,6 +49,9 @@
                         <input type="text" id="registerName" placeholder="Name" required><br>
                         <input type="email" id="registerEmail" placeholder="Email" required><br>
                         <input type="password" id="registerPassword" placeholder="Password" required><br>
+                        <label>
+                            <input type="checkbox" id="enable2FAonRegister"> Enable Two-Factor Authentication
+                        </label><br>
                         <button type="submit">Register</button>
                     </form>
                     <button id="backToMain2" class="btn btn-secondary">Back</button>
@@ -49,3 +68,6 @@
             </div>
         </div>
     </div>
+
+
+    {% comment %} {% include 'modals/enable_2fa.html' %} {% endcomment %}
