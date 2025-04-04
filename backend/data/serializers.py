@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from data.models import CustomUser, Match, Tournament
+from data.models import *
 import logging
 
 logger = logging.getLogger(__name__)
@@ -65,31 +65,49 @@ class TournamentSerializer(serializers.ModelSerializer):
 
 class MatchSummarySerializer(serializers.ModelSerializer):
     opponent = serializers.SerializerMethodField()
-    winner_name = serializers.CharField(source='winner.username')
+    opponentID = serializers.SerializerMethodField()
+    winner_name = serializers.ReadOnlyField(source='winner.username')
     
     class Meta:
         model = Match
-        fields = ["match_start", "winner_name", "opponent"]
+        fields = ["match_start", "winner_name", "opponent", "opponentID"]
 
     def get_opponent(self, obj):
-        """Return the name of the opponent."""
         user = self.context.get("user")
         if user:
-            opponent = obj.player_1.name if obj.player_2 == user else obj.player_2.name
-            logging.info(f"Opponent: {opponent}")  # Log the opponent here
+            opponent = obj.player_1.username if obj.player_2 == user else obj.player_2.username
             return opponent
         return "Unknown"
     
-
+    def get_opponentID(self, obj):
+        user = self.context.get("user")
+        if user:
+            opponentID = obj.player_1.id if obj.player_2 == user else obj.player_2.id
+            return opponentID
+        return "Unknown"
 
 class TournamentSummarySerializer(serializers.ModelSerializer):
-    winner = serializers.ReadOnlyField(source="first_place.name")
+    winner = serializers.ReadOnlyField(source="first_place.username")
+    winnerID = serializers.ReadOnlyField(source="first_place.id")
     start_date = serializers.DateTimeField()
-
+    userWon = serializers.SerializerMethodField()
+    
     class Meta:
         model = Tournament
-        fields = ["start_date", "winner"]
+        fields = ["start_date", "winner", "winnerID", "userWon"]
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     logging.info(f"Tournament winner: {self.validated_data.get('winner', 'Unknown')}")
+    def get_userWon (self, obj):
+        user = self.context.get("user")
+        if (user == obj.first_place):
+            return True
+        return False
+    
+class FriendRequestsSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Friendship
+        fields = ["user_id","receiver", "receiver_id", "sender", "sender_id", "friendship_id"]
+    
+
+# class FriendsSerializer(serializers.ModelSerializer):
+    

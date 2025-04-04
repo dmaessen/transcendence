@@ -3,15 +3,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong Game</title>
     <!-- Link Bootstrap toolkit -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css">
     <!-- Link CSS -->
-    <!-- <link rel="stylesheet" type="text/css" href="../frontend/static/styles.css"> -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
-     <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
 </head>
 <body>
     <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">
@@ -45,77 +44,6 @@
         </div>
     </div>
 
-    <!-- THIRD Game Menu Modal Tournament -->
-    <div class="modal fade" id="gameMenuTournament" tabindex="-1" aria-labelledby="gameMenuLabelTournament">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="gameMenuLabelTournament">Amount of players</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <button id="fourPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">4 Players</button>
-                    <button id="eightPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">8 Players</button>
-                    <button id="previous2Btn" class="btn btn-outline-secondary w-100 mb-2">Previous page</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Profile Modal -->
-    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <div class="avatar" id="uAvatar">
-                        <img id="userAvatar" src="{% static 'images/defaut.png' %}" alt="F****">
-                    </div>
-                    <h4 id="username">John Doe</h4>
-                    <p id="userEmail">johndoe@example.com</p>
-                    <button class="btn btn-primary">Edit Profile</button>
-                    <div class="matches">
-                        <div class="divider">Matches</div>
-                        <table id="matchesTable" class="table">
-                            <tbody>
-                                <!-- Filled dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="matches">
-                        <div class="divider">Tournaments</div> 
-                        <table id="tournamentsTable" class="table">
-                            <tbody>
-                                <!-- Filled dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!--Edit profile Modal-->
-
-    <!-- Friends Modal -->
-    <div class="modal fade" id="friendsModal" tabindex="-1" aria-labelledby="friendsModalLabel" inert>
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="friendsModalLabel">Friends</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <ul id="friendsList" class="list-group"></ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
     {% comment %} Modals {% endcomment %}
     {% include 'modals/auth.html' %}
     {% include 'modals/profile_modal.html' %}
@@ -123,6 +51,7 @@
     {% include 'modals/friends_modal.html' %}
     {% include 'modals/edit_profile_modal.html' %}
     {% include 'modals/tournament_modal.html' %}
+    {% include 'modals/add_friends.html' %}
 
 
     {% comment %} Scripts {% endcomment %}
@@ -132,10 +61,10 @@
     <script src="{% static 'js/tournament.js' %}"></script>
     <script src="{% static 'js/game.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
-    <!-- <script src="/static/script.js"></script> -->
-    <!-- profile page -->
     <script src="{% static 'js/profile.js' %}"></script>
+    <script src="{% static 'js/edit_profile.js' %}"></script>
     <script src="{% static 'js/button.js' %}"></script>
+    <script src="{% static 'js/add_friends.js' %}"></script>
 
 </body>
 </html>

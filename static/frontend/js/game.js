@@ -88,7 +88,7 @@ function startGame(mode) {
         connectWebSocket(mode);
     } if (mode === "Two Players (with a friend)") { // TODO
         alert(`${mode} mode is not yet implemented.`);
-        gameTitle.textContent = "Two Players (with a friend)";
+        gameTitle.textContent = mode;
         instructions1.style.display = "block";
         //connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
@@ -351,6 +351,7 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
+//TODO mapping the keys can be usefull
 document.addEventListener("keydown", (event) => {
     let direction = null;
     if (gameState.mode != "Two Players (hot seat)" && gameState.running)
