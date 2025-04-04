@@ -142,6 +142,12 @@ class Tournament:
             self.final_winner = self.winners[0]
             self.running = False
             print(f"Tournament ended. Winner: {self.final_winner['username']}", flush=True)
+            await channel_layer.group_send(
+                    "tournament_lobby",
+                    {
+                        "type": "disconnect",
+                    }
+                )
             return
 
         if len(self.matches) == 0 and len(self.winners) >= 2:
