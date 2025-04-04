@@ -38,12 +38,19 @@ def get_user_data(request):
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
     
+    matches_played = get_matches_count(user.id)
+    matches_won = get_win_cout(user.id)
+    matches_lost = matches_played - matches_won
+    
     logging.info(f"btn: {btnType}")
     user_data = {
         "username": user.username,
         "email": user.email,
         "avatar": user.avatar.url if user.avatar else None,
-        "btnType": btnType
+        "btnType": btnType,
+        "matches_played": matches_played,
+        "matches_won": matches_won,
+        "matches_lost": matches_lost
     }
     logging.info(f"userdata: {user_data}")
 
@@ -145,7 +152,8 @@ def get_user_friends(request):
     user = request.user
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
-    friends = get_friends(user)
+    friends = get_friends(user.id)
+    return JsonResponse(friends, safe=False)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

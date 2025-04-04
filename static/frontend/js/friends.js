@@ -1,26 +1,57 @@
-const friendsBtn = document.getElementById("friendsBnt");
+function populateFriends(data) {
+    if (!Array.isArray(data)) {
+        console.error("Provided data is not an array:", data);
+        return;
+    }
 
+    // Clear existing rows
+    friendsTable.innerHTML = "";
+
+    // Create a table head and append headers
+    let thead = friendsTable.querySelector('thead');
+    if (!thead) {
+        thead = document.createElement('thead');
+        friendsTable.appendChild(thead);
+    }
+    let headerRow = document.createElement("tr");
+    headerRow.innerHTML = "<th>Friend</th><th>Status</th>";
+    thead.appendChild(headerRow);
+
+    data.forEach(item => {
+        const row = document.createElement("tr");
+
+        const nameCell = document.createElement("td");
+        nameCell.textContent = item.friend;
+        row.appendChild(nameCell);
+
+        const statusCell = document.createElement("td");
+        if(item.is_online == false){
+            statusCell.textContent = "🔴";
+        } else {
+            statusCell.textContent = "🟢";
+        }
+        row.appendChild(statusCell);
+        friendsTable.appendChild(row);
+    });
+}
+
+async function loadFriends() {
+    const response = await fetch(`/data/api/getFriends`, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`Error, status: ${response.status}`);
+    }
+    const data = await response.json();
+    console.log("response: ", data);
+    populateFriends(data);
+    
+}
+
+const friendsBtn = document.getElementById("friendsBtn");
 if(friendsBtn) {
-    friendsBtn.addEventListener("click", function() {
-        fetch(`/data/api/friendsData`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-                "Content-Type": "application/json",
-            },
-        })
-        .then(response => {
-            if (!response.ok)
-                {
-                throw new Error(`HTML error, status: ${response.status}`)
-            }
-            return response.json();
-            })
-        .then(data => {
-            // console.log("Raw response:", data);
-
-        })
-            // .then(response => response.json())
-        .catch(error => console.error("Error fetching user data:", error));
-    })
+    friendsBtn.addEventListener("click", loadFriends)
 }
