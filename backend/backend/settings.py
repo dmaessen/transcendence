@@ -286,35 +286,72 @@ CACHES = {
 #     },
 # }
 
-
-
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
+    "version": 1,
+    "disable_existing_loggers": True,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'views': {  # Explicitly enable logs for views.py
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'serializers': {  # Explicitly enable logs for serializers.py
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} - {name} - {message}",
+            "style": "{",
         },
     },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",  # Change this to see all logs
+    },
+    "loggers": {
+        # "django": {
+        #     "handlers": ["console"],
+        #     "level": "DEBUG",
+        #     "propagate": True,
+        # },
+        "game_server": {  # Add logging for your app
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        # "data": {  # Add logging for the 'data' app
+        #     "handlers": ["console"],
+        #     "level": "DEBUG",
+        #     "propagate": False,
+        # },
+    }, 
 }
+
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'INFO',
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'INFO',
+#             'propagate': True,
+#         },
+#         'views': {  # Explicitly enable logs for views.py
+#             'handlers': ['console'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
+#         'serializers': {  # Explicitly enable logs for serializers.py
+#             'handlers': ['console'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
+#     },
+# }
 
 # LOGGING = {
 #     'version': 1,

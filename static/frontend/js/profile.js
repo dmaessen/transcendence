@@ -186,6 +186,9 @@ async function loadUserData(userID) {
         document.getElementById("username").textContent = data.username;
         document.getElementById("userEmail").textContent = data.email;
         document.getElementById("btnType").textContent = data.btnType;
+        document.getElementById("matchesPlayed").textContent = data.matches_played;
+        document.getElementById("wins").textContent = data.matches_won;
+        document.getElementById("losses").textContent = data.matches_lost;
 
         let btnType = document.getElementById("btnType");
         btnType.disabled = false;

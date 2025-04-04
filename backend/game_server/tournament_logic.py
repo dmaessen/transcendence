@@ -1,19 +1,33 @@
 import json
 import random
 import math
+import asyncio
 from game_server.game_logic import Game  # import the normal game logic to use in individual matches
+from channels.layers import get_channel_layer
 
 class Tournament:
+    _instance = None
+
+    def __new__(cls, mode):
+        if cls._instance is None:
+            cls._instance = super(Tournament, cls).__new__(cls)
+            cls._instance._initialized = False  # prevents reinitilizing
+        return cls._instance
+
     def __init__(self, mode):
-        self.mode = mode  # Either "4-player" or "8-player"
-        self.num_players = int(mode)  # Convert mode to an integer
-        self.players = []  # List of dictionaries with player IDs and usernames
-        self.matches = []  # Store ongoing matches
-        self.bracket = {}  # Stores matchups for each round
+        if self._initialized:
+            return
+        self.mode = mode
+        self.num_players = int(mode)
+        self.players = []  # player IDs and usernames
+        self.matches = []  # ongoing matches
+        self.bracket = {}  # matchups for each round -- THIS SEND TO LAURA
         self.current_round = 1
         self.running = False
-        self.winners = []  # Players who win their matches
+        self.winners = []  # players who won their matches
         self.final_winner = None
+        # self.room_name = None # for channel layer comm
+        self._initialized = True
 
     def add_player(self, player_id, username):
         if len(self.players) < self.num_players:
@@ -22,66 +36,129 @@ class Tournament:
         else:
             print(f"Tournament is full. Player {username} cannot join.", flush=True)
 
-    def start_tournament(self):
+    async def start_tournament(self):
         if len(self.players) != self.num_players:
             print("Not enough players to start the tournament.", flush=True)
             return
 
         self.running = True
         self._create_bracket()
-        self._start_next_round()
+        await self._start_next_round()
 
     def _create_bracket(self):
-        """Creates the tournament bracket by pairing up players."""
-        random.shuffle(self.players)
-        self.bracket[self.current_round] = [
-            (self.players[i], self.players[i + 1]) for i in range(0, len(self.players), 2)
-        ]
-        print(f"Tournament bracket created: {self.bracket}", flush=True)
+        # random.shuffle(self.players)
+        # self.bracket[self.current_round] = [
+        #     (self.players[i], self.players[i + 1]) for i in range(0, len(self.players), 2)
+        # ]
+        if self.current_round not in self.bracket:
+            self.bracket[self.current_round] = []
 
-    def _start_next_round(self):
+        self.bracket[self.current_round] = [
+            ({"player": self.players[i], "winner": False}, 
+            {"player": self.players[i + 1], "winner": False}) 
+            for i in range(0, len(self.players), 2)
+        ]
+
+        print(f"tournament bracket created: {self.bracket}", flush=True)
+
+    async def _start_next_round(self):
+        print(f"NEW ROUND IN START NEXT ROUND", flush=True)
         if self.final_winner:
-            print(f"Tournament already ended. Winner: {self.final_winner}", flush=True)
+            print(f"tournament already ended. Winner: {self.final_winner}", flush=True)
             return
 
         self.matches = []
         self.winners = []
+        channel_layer = get_channel_layer()
+
+        # if self.current_round not in self.bracket:
+        #     return
 
         for player1, player2 in self.bracket[self.current_round]:
-            #match = Game("Two Players (remote)") # works
-            match = Game(self.mode)
-            match.add_player(player1["id"], player1["username"])
-            match.add_player(player2["id"], player2["username"])
-            match.start_game()
-            self.matches.append((player1, player2, match))
+            match_exists = any(match["player1"] == player1["player"]["id"] and match["player2"] == player2["player"]["id"] for match in self.matches)
+            if not match_exists:
+                await channel_layer.group_send(
+                    "tournament_lobby",
+                    {
+                        "type": "create.game.tournament",
+                        "player1": player1["player"]["id"],
+                        "player2": player2["player"]["id"],
+                    }
+                )
+                print(f"Sent create.game.tournament message for {player1['player']['username']} vs {player2['player']['username']}", flush=True)
+                # self.matches.append({"player1": player1["id"], "player2": player2["id"]})
 
-        print(f"Round {self.current_round} started with {len(self.matches)} matches.", flush=True)
+        # print(f"Round {self.current_round} started with {len(self.matches)} matches.", flush=True)
+        print(f"Round {self.current_round} started.", flush=True)
 
-    def update_match(self, player1_id, player2_id, winner_id):
-        """Updates the tournament after a match is completed."""
-        winner = next(player for player in self.players if player["id"] == winner_id)
-        self.winners.append(winner)
+    async def register_match_result(self, game_id, winner_username):
+        print(f"Registering match result: Game {game_id}, Winner {winner_username}", flush=True)
+        
+        match_indices = [i for i, (g_id, p1, p2) in enumerate(self.matches) if g_id == game_id]
+        if not match_indices:
+            print(f"Game {game_id} not found in matches", flush=True)
+            return
+        
+        match_index = match_indices[0]
+        game_id, player1, player2 = self.matches[match_index]
+        
+        winner_player = next((player for player in self.players if player["username"] == winner_username), None)
+        if not winner_player:
+            print(f"Player {winner_username} not found in players list", flush=True)
+            return
+        if not any(winner["id"] == winner_player["id"] and winner["username"] == winner_player["username"] 
+                for winner in self.winners):
+            self.winners.append(winner_player)
+            print(f"✅ Added {winner_username} to winners list", flush=True)
+        else:
+            print(f"Player {winner_username} already in winners list", flush=True)
+        
+        # update bool with the winner of the match
+        if self.current_round in self.bracket:
+            bracket_updated = False
+            for i, match in enumerate(self.bracket[self.current_round]):
+                match = list(match)
+                if (match[0]["player"]["username"] == player1 and match[1]["player"]["username"] == player2) or \
+                (match[0]["player"]["username"] == player2 and match[1]["player"]["username"] == player1):
+                    match[0]["winner"] = (match[0]["player"]["username"] == winner_username)
+                    match[1]["winner"] = (match[1]["player"]["username"] == winner_username)
+                    self.bracket[self.current_round][i] = tuple(match)
+                    bracket_updated = True
+                    print(f"Updated bracket for round {self.current_round}, match between {player1} and {player2}", flush=True)
+                    break
+            
+            if not bracket_updated:
+                print(f"Could not find match in bracket for {player1} vs {player2}", flush=True)
+        
+        # rm previous matches 
+        self.matches = [(g_id, p1, p2) for g_id, p1, p2 in self.matches if g_id != game_id]
+         
+        if len(self.matches) == 0:
+            await self._advance_to_next_round()
 
-        # Remove the finished match
-        self.matches = [(p1, p2, g) for p1, p2, g in self.matches if p1["id"] != player1_id and p2["id"] != player2_id]
-
-        if len(self.matches) == 0:  # All matches in this round are completed
-            self._advance_to_next_round()
-
-    def _advance_to_next_round(self):
-        """Advances to the next round with the winners."""
+    async def _advance_to_next_round(self):
+        print(f"WINNERS BEFORE ADVANCE: {self.winners}", flush=True)
         if len(self.winners) == 1:
             self.final_winner = self.winners[0]
             self.running = False
             print(f"Tournament ended. Winner: {self.final_winner['username']}", flush=True)
             return
 
-        self.current_round += 1
-        self.bracket[self.current_round] = [
-            (self.winners[i], self.winners[i + 1]) for i in range(0, len(self.winners), 2)
-        ]
+        if len(self.matches) == 0 and len(self.winners) >= 2:
+            self.current_round += 1
+            self.bracket[self.current_round] = []
+            round_participants = self.winners.copy()
 
-        self._start_next_round()
+            while len(round_participants) >= 2:
+                player1 = round_participants.pop(0)
+                player2 = round_participants.pop(0)
+                
+                self.bracket[self.current_round].append(
+                    ({"player": player1, "winner": False}, {"player": player2, "winner": False})
+                )
+            
+            print(f"Round {self.current_round} created with {len(self.bracket[self.current_round])} matches.", flush=True)
+            await self._start_next_round()
 
     def get_tournament_state(self):
         return {
