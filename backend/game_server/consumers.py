@@ -19,11 +19,10 @@ from asgiref.sync import sync_to_async
 
 from game_server.player import Player
 from data.models import CustomUser, Match
-from django.core.cache import cache
-
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 games = {}  # games[game.id] = game ----game is Game()
 #player_queue = {} # self.player_queue[user.id] = f"{game.id}"
@@ -488,22 +487,6 @@ class GameConsumer(AsyncWebsocketConsumer):
 
                 await asyncio.sleep(0.05)
 
-class UserStatusConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        user = self.scope["user"]
-        logger.info(f"user {user.username} is now connected")
-        if user.is_authenticated:
-            cache.set(f"user_online_{user.id}", True, timeout=300)  # Set for 5 minutes
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        user = self.scope["user"]
-        logger.info(f"user {user.username} is now disconnected")
-        if user.is_authenticated:
-            cache.delete(f"user_online_{user.id}")
-            
-    
-            
 #TODO this functions exist on data 
 async def get_all_matches_count():
     return await sync_to_async(Match.objects.all().count)()

@@ -1,3 +1,23 @@
+const token = localStorage.getItem("access_token");
+const loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
+
+async function loginWebSocket(){
+    if (!token) {
+        console.error("No access token found! WebSocket authentication will fail.");
+        return;
+    }
+    loginsocket.onopen =  async function (){
+        console.log("onlineSocket openned");
+    }
+    loginsocket.onclose = function(event){
+        console.log("onlineSocket closed");
+    }
+    loginsocket.onerror = async function(error) {
+        console.error("WebSocket error:", error);
+    };
+
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     
     const showLogin = document.getElementById("showLogin");
@@ -299,9 +319,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok) {
                 localStorage.setItem("access_token", data.access);
                 localStorage.setItem("refresh_token", data.refresh);
-
+                
                 alert("Login successful!");
                 window.location.href = "/game_server";
+                await loginWebSocket();
+                console.log("login done");
             } else if(response.status === 403){
                 otpInputContainer.style.display = "block";
                 loginForm.style.display = "none"; // should the login form be hidden?
