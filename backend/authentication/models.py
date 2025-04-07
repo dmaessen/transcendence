@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 class CustomTOTPDevice(TOTPDevice):
-    customUser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="costum_totp_devices", blank=True, null=True)
+    customUser = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="custum_totp_devices", blank=True, null=True)
     extra_field = models.CharField(max_length=100, blank=True, null=True)
 
     def save(self, *args, **kwargs):
