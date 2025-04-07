@@ -471,38 +471,55 @@ document.addEventListener("DOMContentLoaded", function ()
             {
                 alert("using this access token", accessToken);
 
-                const response = await fetch(`${baseUrl}register-2fa/`, 
-                {
+                const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                     method: "POST",
-                    headers: 
-                    {
+                    headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${accessToken}`,
-                        "X-CSRFToken": getCSRFToken(),
                     },
                 });
 
-                const data = await response.json();
-                
-                console.log("2fa register return data: {otp_secret ", data.otp_secret, "}")
+                const twoFAData = await twoFAResponse.json();
+                console.log("2FA response:", twoFAData);
 
-                document.getElementById("qrCodeImage").src = data.qr_code;
-                document.getElementById("otpKey").innerText = data.otp_secret;
-                
+                if (!twoFAResponse.ok) {
+                    alert(`2FA Setup Failed: ${JSON.stringify(twoFAData)}`);
+                    return;
+                }
+
+                if (!twoFAData.qr_code) {
+                    alert("2FA response missing QR code.");
+                    return;
+                }
+
                 document.getElementById("registerContainer").style.display = "none";
                 document.getElementById("qrContainer").style.display = "block";
+                document.getElementById("qrCodeImage").src = `${twoFAData.qr_code}`;
+                document.getElementById("qrCodeImage").style.display = "block";
+                document.getElementById("otpKey").innerText = twoFAData.otp_secret;
+            // }
 
-                if (response.ok) 
-                {
-                    qrCodeImage.src = `${data.qr_code}`;
-                    // qrCodeImage.src = `data:image/png;base64,${data.qr_code}`;
-                    otpKey.innerText = data.otp_uri;
-                    qrContainer.style.display = "block";
-                } 
-                else 
-                {
-                    alert(`error: ${JSON.stringify(data)}`);
-                }
+                // const data = await response.json();
+                
+                // console.log("2fa register return data: {otp_secret ", data.otp_secret, "}")
+
+                // document.getElementById("qrCodeImage").src = data.qr_code;
+                // document.getElementById("otpKey").innerText = data.otp_secret;
+                
+                // document.getElementById("registerContainer").style.display = "none";
+                // document.getElementById("qrContainer").style.display = "block";
+
+                // if (response.ok) 
+                // {
+                //     qrCodeImage.src = `${data.qr_code}`;
+                //     // qrCodeImage.src = `data:image/png;base64,${data.qr_code}`;
+                //     otpKey.innerText = data.otp_uri;
+                //     qrContainer.style.display = "block";
+                // } 
+                // else 
+                // {
+                //     alert(`error: ${JSON.stringify(data)}`);
+                // }
             } 
             catch (error) 
             {
