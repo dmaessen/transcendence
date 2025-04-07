@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer
+from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 # from django.contrib.auth.decorators import login_required
 # from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -21,6 +22,7 @@ import qrcode
 import io
 import base64
 import pyotp
+# from passlib.totp import TOTP
 import sys
 
 # @otp_required
@@ -32,32 +34,31 @@ def login_2fa_required(request):
 def register_2fa(request):
 	user = request.user
 	try:
-		CustomTOTPDevice.objects.filter(customUser=user).delete() # possibly delete this later, allows reregistration.
 
-		device, created= CustomTOTPDevice.objects.get_or_create(customUser=user, name="default")
+		CustomTOTPDevice.objects.filter(customUser=user, confirmed=False).exclude(name="default").delete()
+		device = CustomTOTPDevice.objects.filter(customUser=user, confirmed=False).first()
 
-		# print(f"Device Created: {created}, Device Confirmed: {getattr(device, 'confirmed', None)}")
+		if not device:
+			device = CustomTOTPDevice(customUser=user, name="default")
+			otp_secret = pyotp.random_base32()
+			device.key = otp_secret
+			device.confirmed = False
+			device.save()
+		else:
+			otp_secret = device.key
 		
-		if not created and device.confirmed:
-			return JsonResponse({"error": "2FA is already enabled"}, status=400)
-
-		otp_secret = pyotp.random_base32()
-
-		byte_key = base64.b32decode(otp_secret)  # Convert from Base32 to raw bytes
-		base32_key = base64.b32encode(byte_key).decode().rstrip("=")
-		
-		device.key = base32_key
-		device.confirmed = False
-		print(f"OTP Secret before saving: {otp_secret}")
-		device.save()
-		
-		print(f"Stored OTP Secret: {otp_secret}") 
+		print("[DEBUG] All TOTP devices for user(in registration):")
+		for d in CustomTOTPDevice.objects.filter(customUser=user):
+			print(f"  - name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
+		print(f"[DEBUG] Generated secret: {otp_secret}")
+		print(f"[DEBUG] Device key saved: {device.key}")
+		# print(f"Stored OTP Secret: {otp_secret}") 
 
 		if not isinstance(otp_secret, str) or len(otp_secret) < 16:
 			return JsonResponse({"error": "Invalid OTP secret generated"}, status=500)
 
 
-		device = CustomTOTPDevice.objects.filter(customUser=user).first()
+		# device = CustomTOTPDevice.objects.filter(customUser=user).first()
 
 		totp = pyotp.TOTP(device.key)
 		otp_uri = totp.provisioning_uri(name=user.email, issuer_name="transcendence")
@@ -67,8 +68,6 @@ def register_2fa(request):
 		qr.save(stream, format="PNG")
 		qr_data = base64.b64encode(stream.getvalue()).decode("utf-8")
 
-		# user.two_factor_enabled = True
-		# user.save()
 		return JsonResponse({"qr_code": f"data:image/png;base64,{qr_data}", "otp_secret": otp_secret})
 	except Exception as e:
 		print(f"Error in register_2fa: {str(e)}")  # Debugging output
@@ -110,11 +109,11 @@ class LoginView(APIView):
 		email = request.data.get('email')
 		password = request.data.get('password')
 		otp_token = request.data.get('otp_token', None)
-		# device = CustomTOTPDevice.objects.filter(customUser=user).first()
 
 		if not email or not password:
 			return JsonResponse({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
+		print(f"login data received: {request.data}", file=sys.stderr)
 		try:
 			user = CustomUser.objects.get(email=email)
 		except CustomUser.DoesNotExist:
@@ -126,18 +125,20 @@ class LoginView(APIView):
 		device = CustomTOTPDevice.objects.filter(customUser=user).first()
 
 		if user.two_factor_enabled:
+			print("[DEBUG] All TOTP devices for user(in login):")
+			for d in CustomTOTPDevice.objects.filter(customUser=user):
+				print(f"  - name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
 			if not device:
 				return JsonResponse({'error': '2FA is enabled but no secret is set'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 			if not otp_token:
 				return JsonResponse({'error': '2FA required'}, status=status.HTTP_403_FORBIDDEN)
-			print(f"Received OTP Token: '{otp_token}' (Length: {len(otp_token)})", file=sys.stderr)
 			otp_secret = device.key
-			print(f"Stored OTP Secret (Base32): {otp_secret}", file=sys.stderr)
-			# print(f"Decoded OTP Secret: {base64.b32decode(otp_secret)}")
 			totp = pyotp.TOTP(otp_secret)
-			print(f"totp: {totp}", file=sys.stderr)
-			if not totp.verify(otp_token, valid_window=2):
-				print(f"OTP verification failed. Token: {otp_token}, Secret: {otp_secret}")
+
+			print(f"[DEBUG] Device used for verification: name={device.name}, key={otp_secret}")
+			if not totp.verify(otp_token, valid_window=1):
+				print(f"totp current: {totp.now()}", file=sys.stderr)
+				print(f"OTP verification failed. Token: {otp_token}, Secret: {otp_secret}", file=sys.stderr)
 				return JsonResponse({'error': 'Invalid 2FA code'}, status=status.HTTP_401_UNAUTHORIZED)
 		try:
 			refresh = RefreshToken.for_user(user)
@@ -157,17 +158,44 @@ class DeleteAccountView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 	def delete(self, request):
 		user = request.user
-		print(f"Auth Header: {request.headers.get('Authorization')}")
-		print(f"Deleting user: {request.user}")
 		try:
-			print(f"Deleting user: {user.email}")
-			
-			CustomTOTPDevice.objects.filter(customUser=user).delete()
-			user.delete()
-			return Response({"message": "Account deleted sucessfully"}, status=status.HTTP_204_NO_CONTENT)
+			# Count devices before deletion
+			initial_count = CustomTOTPDevice.objects.filter(customUser=user).count()
+			print(f"Initial device count: {initial_count}")
+
+			with transaction.atomic():
+				# Delete all devices associated with the user
+				deleted_count, _ = CustomTOTPDevice.objects.filter(customUser=user).delete()
+				print(f"Deleted {deleted_count} device(s).")
+
+				# Count devices after deletion
+				final_count = CustomTOTPDevice.objects.filter(customUser=user).count()
+				print(f"Final device count: {final_count}")
+
+				# Optionally, delete the user account
+				user.delete()
+				print(f"[DeleteAccountView] Before deletion: {initial_count} 2FA device(s) found for user {user.email}")
+				print(f"[DeleteAccountView] Deleted {deleted_count} 2FA device(s) for user {user.email}")
+				print(f"[DeleteAccountView] After deletion: {final_count} 2FA device(s) remaining for user {user.email}")
+
+			return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 		except Exception as e:
 			print(f"Error deleting account: {str(e)}")  # Debugging line
 			return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+	
+	# def delete(self, request):
+	# 	user = request.user
+	# 	print(f"Auth Header: {request.headers.get('Authorization')}")
+	# 	print(f"Deleting user: {request.user}")
+	# 	try:
+	# 		print(f"Deleting user: {user.email}")
+			
+	# 		CustomTOTPDevice.objects.filter(customUser=user).delete()
+	# 		user.delete()
+	# 		return Response({"message": "Account deleted sucessfully"}, status=status.HTTP_204_NO_CONTENT)
+	# 	except Exception as e:
+	# 		print(f"Error deleting account: {str(e)}")  # Debugging line
+	# 		return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -229,3 +257,4 @@ def refresh_token(request):
 
 def home(request):
 	return render(request, 'base.html')
+
