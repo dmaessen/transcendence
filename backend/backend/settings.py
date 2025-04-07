@@ -77,7 +77,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth_2fa.middleware.AllauthTwoFactorMiddleware',
-    # 'django_otp.middleware.OTPMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 # governs whether your server accepts requests from different origins (domains, subdomains, or ports)
@@ -132,9 +132,10 @@ TEMPLATES = [
     },
 ]
 
-AUTHENTICATION_BACKEND = [
-    "allauth.accaunt.auth_backend.AuthenticationBackend",
+AUTHENTICATION_BACKENDS = [
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
 WSGI_APPLICATION = 'backend.wsgi.application'
 ASGI_APPLICATION = "backend.asgi.application"
 
