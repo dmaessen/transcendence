@@ -24,6 +24,8 @@ import base64
 import pyotp
 # from passlib.totp import TOTP
 import sys
+from django.core.cache import cache
+
 
 # @otp_required
 def login_2fa_required(request):
@@ -200,6 +202,7 @@ class DeleteAccountView(APIView):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def sign_out(request):
+	user = request.user
 	logout(request)
 	messages.success(request,f'You have been logged out')
 	return HttpResponse("you have been signed out")

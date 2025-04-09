@@ -1,21 +1,34 @@
-const token = localStorage.getItem("access_token");
-const loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
+let loginsocket;
 
 async function loginWebSocket(){
+    console.log("Let's open those sockets bebê");
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        console.error("No token no game!");
+        return;
+    }
+    console.log("toke: ", token);
+    loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
+    console.log("socket: ", loginsocket);
     if (!token) {
         console.error("No access token found! WebSocket authentication will fail.");
         return;
     }
-    loginsocket.onopen =  async function (){
+    loginsocket.onopen =  async (event) => {
         console.log("onlineSocket openned");
+        setInterval(() => {
+            // loginsocket.send(JSON.stringify({ type: "ping" }));
+            loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
+        }, 15000); // every 15s
     }
-    loginsocket.onclose = function(event){
+    loginsocket.onclose = (event) => {
         console.log("onlineSocket closed");
     }
     loginsocket.onerror = async function(error) {
-        console.error("WebSocket error:", error);
+        console.error("onlineSocket error:", error);
     };
-
+    console.log("socket: ", loginsocket);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -322,13 +335,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 alert("Login successful!");
                 window.location.href = "/game_server";
-                await loginWebSocket();
                 console.log("login done");
+                await loginWebSocket();
             } else if(response.status === 403){
                 otpInputContainer.style.display = "block";
                 loginForm.style.display = "none"; // should the login form be hidden?
                 alert("2FA required. enter your OTP code please.");
-
+                
             } else if(response.status === 401 && data["2fa_required"]){
                 alert("wrong OTP code entered, please try again");
             } else {

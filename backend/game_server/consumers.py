@@ -32,6 +32,9 @@ player_queue = [] #player_id s int
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if self.scope["user"].is_authenticated:
+            user = self.scope["user"]
+            logger.info(f"user {user}")
+            print(f"user {user}")
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username
         else:
