@@ -1,16 +1,16 @@
-// const websocket = `ws://${window.location.host}/ws/game_server/`;
-// const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
+// const webwebsocket = `ws://${window.location.host}/ws/game_server/`;
+// const tournamentwebwebsocket = `ws://${window.location.host}/ws/tournament/`;
 
 let websocket;
-let tournamentwebsocket;
+// let tournamentwebwebsocket;
 
 let socket;
 let reconnecting = false; // needed??
 let resetting = false; // needed?
 
 function connectWebSocket(mode) {
-    // if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
-    //     console.log("WebSocket already connected.");
+    // if (websocket && websocket.readyState === WebwebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif websocket
+    //     console.log("WebwebSocket already connected.");
     //     startGameMenu(); // or not
     //     return;
     // }
@@ -30,13 +30,13 @@ function connectWebSocket(mode) {
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
     if (mode == "4" || mode == "8")
-        socket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
+        websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
     else
-        socket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
+        websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
 
-    socket.onopen = async() => {
+    websocket.onopen = async() => {
         console.log("Connected to the game server.");
-        socket.send(JSON.stringify({ action: "connect", mode: mode }));
+        websocket.send(JSON.stringify({ action: "connect", mode: mode }));
         reconnecting = false;
         if (mode != "4" && mode != "8") {
             startGameMenu();
@@ -45,11 +45,11 @@ function connectWebSocket(mode) {
                 const data = await fetchData("http://localhost:8080/api/tournament-status/");
                 console.log("Fetched tournament status:", data);
                 if (data.players_in == 0) {
-                    socket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+                    websocket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
                     gameState.mode = mode;
                     console.log("start_tounrment from connectWebsocket undergoing");
                 }
-                socket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
+                websocket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
                 gameState.mode = mode;
                 showWaitingRoomTournament(mode);
             } catch (error) {
@@ -58,7 +58,7 @@ function connectWebSocket(mode) {
         }
     };
 
-    socket.onmessage = (event) => {
+    websocket.onmessage = (event) => {
         try {
             const message = JSON.parse(event.data);
             handleServerMessage(message);
@@ -67,13 +67,13 @@ function connectWebSocket(mode) {
         }
     };
 
-    socket.onclose = () => {
+    websocket.onclose = () => {
         console.log(`Disconnected from the game server: ${gameState.playerId}`);
         reconnecting = false;
-        //setTimeout(() => connectWebSocket(mode), 2000); // reconnects after 2 seconds
+        //setTimeout(() => connectWebwebSocket(mode), 2000); // reconnects after 2 seconds
     };
 
-    socket.onerror = (error) => {
+    websocket.onerror = (error) => {
         console.error("WebSocket error:", error);
         alert(`WebSocket error: ${error.message}`);
         reconnecting = false;
@@ -81,8 +81,8 @@ function connectWebSocket(mode) {
 }
 
 function resetGame(mode) {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ action: "reset", gameId: gameState.gameId, mode }));
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+      websocket.send(JSON.stringify({ action: "reset", gameId: gameState.gameId, mode }));
     }
     gameState.running = false;
     displayStartPrompt();
@@ -96,10 +96,10 @@ const returnToStartMenu = async () => {
     instructions2.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
         await sleep(500);
-        socket.close();
+        websocket.close();
     }
     gameMenuFirst.show();
 }
@@ -110,8 +110,8 @@ const returnToTournamentWaitingRoom = async () => {
     instructions3.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    if (socket && socket.readyState === WebSocket.OPEN)
-        socket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
+    if (websocket && websocket.readyState === WebSocket.OPEN)
+        websocket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
     showWaitingRoomTournament(gameState.mode);
 }
 
@@ -122,9 +122,9 @@ const returnToStartMenuAfterTournament = async () => {
     instructions3.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
         await sleep(500);
-        socket.close();
+        websocket.close();
     }
     gameMenuFirst.show();
 }
