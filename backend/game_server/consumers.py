@@ -20,6 +20,10 @@ from asgiref.sync import sync_to_async
 
 from game_server.player import Player
 from data.models import CustomUser, Match
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 games = {}  # games[game.id] = game ----game is Game()
 #player_queue = {} # self.player_queue[user.id] = f"{game.id}"
@@ -47,6 +51,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.close()  # Close if no token is provided
         #If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
+            user = self.scope["user"]
+            logger.info(f"user {user}")
+            print(f"user {user}")
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username
         else:
@@ -502,6 +509,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
                 await asyncio.sleep(0.05)
 
+#TODO this functions exist on data 
 async def get_all_matches_count():
     return await sync_to_async(Match.objects.all().count)()
 

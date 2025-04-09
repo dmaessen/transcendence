@@ -1,3 +1,36 @@
+let loginsocket;
+
+async function loginWebSocket(){
+    console.log("Let's open those sockets bebê");
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        console.error("No token no game!");
+        return;
+    }
+    console.log("toke: ", token);
+    loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
+    console.log("socket: ", loginsocket);
+    if (!token) {
+        console.error("No access token found! WebSocket authentication will fail.");
+        return;
+    }
+    loginsocket.onopen =  async (event) => {
+        console.log("onlineSocket openned");
+        setInterval(() => {
+            // loginsocket.send(JSON.stringify({ type: "ping" }));
+            loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
+        }, 15000); // every 15s
+    }
+    loginsocket.onclose = (event) => {
+        console.log("onlineSocket closed");
+    }
+    loginsocket.onerror = async function(error) {
+        console.error("onlineSocket error:", error);
+    };
+    console.log("socket: ", loginsocket);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     
     const showLogin = document.getElementById("showLogin");
@@ -299,14 +332,16 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok) {
                 localStorage.setItem("access_token", data.access);
                 localStorage.setItem("refresh_token", data.refresh);
-
+                
                 alert("Login successful!");
                 window.location.href = "/game_server";
+                console.log("login done");
+                await loginWebSocket();
             } else if(response.status === 403){
                 otpInputContainer.style.display = "block";
                 loginForm.style.display = "none"; // should the login form be hidden?
                 alert("2FA required. enter your OTP code please.");
-
+                
             } else if(response.status === 401 && data["2fa_required"]){
                 alert("wrong OTP code entered, please try again");
             } else {

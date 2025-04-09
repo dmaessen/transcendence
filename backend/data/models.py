@@ -28,11 +28,11 @@ class CustomUserManager(BaseUserManager):
 #TODO encrypt name, email, location, avatar
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)  # Unique email for login
-    name = models.CharField(max_length=30)  # Non-unique name field
+    name = models.CharField(max_length=30)  # Non-unique name field TODO can we remove this one ?
     username = models.CharField(unique=True, max_length=30) # Unique as well
     two_factor_enabled = models.BooleanField(default=False)
     avatar = models.ImageField(upload_to='avatars/', default='default.png')
-    location = models.CharField(max_length=30, blank=True, null=True)
+    location = models.CharField(max_length=30, blank=True, null=True) # Made for funzies, should we get rid of it ?
     oauth_tokens = models.JSONField(null=True, blank=True)
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)
     friends = models.ManyToManyField('self', through='Friendship', symmetrical=False)
@@ -52,13 +52,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.name
 
 class Friendship(models.Model):
-    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_creator_set')
-    friend = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_receiver_set')
+    sender = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_creator_set')
+    receiver = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendship_receiver_set')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=(('pending', 'Pending'), ('approved', 'Approved')))
 
     class Meta:
-        unique_together = ('user', 'friend')
+        unique_together = ('sender', 'receiver')
 
 class Match(models.Model):
     player_1 = models.ForeignKey(CustomUser, related_name="player_1_matches", on_delete=models.SET_NULL, null=True)
