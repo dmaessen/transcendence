@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django_otp.decorators import otp_required
-from .forms import LoginForm, RegisterForm
+# from .forms import LoginForm, RegisterForm
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
@@ -13,7 +13,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer
 from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
-# from django.contrib.auth.decorators import login_required
 # from django_otp.plugins.otp_totp.models import TOTPDevice
 from authentication.models import CustomTOTPDevice
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -94,15 +93,6 @@ class RegisterView(APIView):
 				status=status.HTTP_201_CREATED,
 			)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class UserTOTPDevice(TOTPDevice):
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
-#     def save(self, *args, **kwargs):
-#         super().save(*args, **kwargs)
-#         if not self.user.two_factor_enabled:
-#             self.user.two_factor_enabled = True
-#             self.user.save(update_fields=["two_factor_enabled"])
 
 class LoginView(APIView):
 	def post(self, request):

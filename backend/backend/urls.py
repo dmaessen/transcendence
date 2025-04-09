@@ -20,6 +20,12 @@ from data.views import *
 from django.conf import settings
 from django.conf.urls.static import static
 from game_server.views import get_tournament_status
+from dj_rest_auth.registration.views import SocialAccountListView
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +35,9 @@ urlpatterns = [
     path('data/', include('data.urls')),
     path("accounts/", include("allauth.urls")),
     path("accounts/2fa", include("allauth_2fa.urls")),
+    path('api/auth/', include('dj_rest_auth.urls')),  # login, logout, etc.
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),  # signup
+    path('api/auth/google/', GoogleLogin.as_view(), name='google_login'),
     #path('api/', include('game_server.urls')),
     # path("get_user_data/", get_user_data, name="get_user_data"),
     # path("get_user_matches/", get_user_matches, name="get_user_matches"),

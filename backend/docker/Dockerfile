@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/l
 
 EXPOSE 8000
 
+RUN pip install --upgrade pip setuptools wheel
 RUN pip install -r requirements.txt
 RUN pip install python-decouple
 RUN pip install rich

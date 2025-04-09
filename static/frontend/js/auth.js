@@ -411,8 +411,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 }
             })  
-            // .catch(error => {console.error("Error:", error);
-            // alert("an error occured"); });
         });
     }
 });
@@ -474,30 +472,7 @@ document.addEventListener("DOMContentLoaded", function ()
                 document.getElementById("qrContainer").style.display = "block";
                 document.getElementById("qrCodeImage").src = `${twoFAData.qr_code}`;
                 document.getElementById("qrCodeImage").style.display = "block";
-                document.getElementById("otpKey").innerText = twoFAData.otp_secret;
-            // }
-
-                // const data = await response.json();
-                
-                // console.log("2fa register return data: {otp_secret ", data.otp_secret, "}")
-
-                // document.getElementById("qrCodeImage").src = data.qr_code;
-                // document.getElementById("otpKey").innerText = data.otp_secret;
-                
-                // document.getElementById("registerContainer").style.display = "none";
-                // document.getElementById("qrContainer").style.display = "block";
-
-                // if (response.ok) 
-                // {
-                //     qrCodeImage.src = `${data.qr_code}`;
-                //     // qrCodeImage.src = `data:image/png;base64,${data.qr_code}`;
-                //     otpKey.innerText = data.otp_uri;
-                //     qrContainer.style.display = "block";
-                // } 
-                // else 
-                // {
-                //     alert(`error: ${JSON.stringify(data)}`);
-                // }
+                document.getElementById("otpKey").innerText = twoFAData.otp_secret;;
             } 
             catch (error) 
             {

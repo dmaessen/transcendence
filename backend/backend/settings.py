@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
+# from allauth.socialaccount.models import SocialApp
 
 import os
 
@@ -50,12 +51,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'channels',
     'corsheaders',
-    # 'dj_rest_auth',
-    # 'dj_rest_auth.registration',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    "allauth_2fa",
+    'allauth.socialaccount.providers.google',
+    'allauth_2fa',
     'django_otp',
     'django_otp.plugins.otp_totp',
     "django_otp.plugins.otp_static",
@@ -133,6 +135,7 @@ TEMPLATES = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
@@ -223,7 +226,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_SIGNUP_REDIRECT_URL = "api/authentication/2fa/setup"
 
-ACCOUNT_ARAPTER = "allauth_2fa.adapter.OTPAdapter"
+ACCOUNT_ADAPTER = "allauth_2fa.adapter.OTPAdapter"
 
 REST_AUTH = {
     "USE_JWT": True,
@@ -268,6 +271,41 @@ LOGGING = {
         },
     },
 }
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    },
+}
+
+if DEBUG:
+    def create_google_social_app():
+        import django
+        django.setup()
+
+        from allauth.socialaccount.models import SocialApp
+        from django.contrib.sites.models import Site
+
+        site = Site.objects.get_or_create(
+            id=SITE_ID, defaults={"domain": "localhost:8000", "name": "localhost"})[0]
+
+        if not SocialApp.objects.filter(provider="google").exists():
+            app = SocialApp.objects.create(
+                provider="google",
+                name="Google",
+                client_id=os.getenv("GOOGLE_CLIENT_ID"),
+                secret=os.getenv("GOOGLE_SECRET"),
+            )
+            app.sites.add(site)
+
+    create_google_social_app()
 
 # LOGGING = {
 #     'version': 1,
