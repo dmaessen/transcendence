@@ -7,7 +7,9 @@ from matchmaking.utils import create_match
 import uuid
 import msgspec
 from autobahn.websocket.protocol import Disconnected
+
 from rest_framework_simplejwt.tokens import AccessToken
+from urllib.parse import parse_qs
 
 from datetime import timedelta
 
@@ -32,6 +34,7 @@ player_queue = [] #player_id s int
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        logger.info(f"WE CONNECTED IN GAMECONSUMER\n\n")
         query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
         token = query_params.get("token", [None])[0]
         logger.info(f"querry: {query_params}\ntoken: {token}")
@@ -42,6 +45,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             user_id = access_token["user_id"]
             logger.info(f"----userid: {user_id}\n\n")
             # Fetch the user from the database based on the user_id
+            # ITS START BUGGIN HERE
             user = await sync_to_async(CustomUser.objects.get)(id=user_id)
             logger.info(f"username: {user.username}")
             self.scope["user"] = user  # Assign the user to the scope

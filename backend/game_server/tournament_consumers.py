@@ -15,7 +15,10 @@ from channels.layers import get_channel_layer
 from autobahn.websocket.protocol import Disconnected
 from datetime import timedelta
 from rest_framework_simplejwt.tokens import AccessToken
+from urllib.parse import parse_qs
+import logging
 
+logger = logging.getLogger(__name__)
 games = {}
 
 class TournamentConsumer(AsyncWebsocketConsumer):
