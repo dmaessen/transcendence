@@ -1,3 +1,5 @@
+const dataUrl = "http://localhost:8000/data/";
+
 function populateTable(table, data, columns, flag) {
     console.log("table:", table);
     console.log("data:", data);
@@ -52,51 +54,69 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (profileBtn) {
         profileBtn.addEventListener("click", function () {
-            console.log("hey");
-            // const matchesTable = document.getElementById("matchesTable").querySelector("tbody");
-            // const tournamentsTable = document.getElementById("tournamentTable").querySelector("tbody");
-            
-            fetch("/data/api/userData/") // Fetch user info
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Raw response:", data);
-
-                    document.getElementById("userAvatar").src = data.avatar;
-                    document.getElementById("username").textContent = data.username;
-                    document.getElementById("userEmail").textContent = data.email;
-
-                    profileModal.show();
-                });
-                // .catch(error => console.error("Error fetching data:", error));
-
-            fetch("/data/api/userMatches/")
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Raw response:", data);  // Log the whole response
-                    console.log("Matches:", data.matches);  // Check the 'matches' array specifically
-            
-                    // Ensure that we're checking 'data.matches' correctly
-                    if (Array.isArray(data.matches)) {
-                        populateTable(matchesTable, data.matches, ["match_start", "winner_name", "opponent"], 1);
-                    } else {
-                        console.error("Data.matches is not an array:", data.matches);
-                    }
+            fetch(`${dataUrl}api/userData/`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            })
+            .then(response => {
+                if (!response.ok)
+                    {
+                    throw new Error(`HTML error, status: ${response.status}`)
+                }
+                return response.json();
                 })
-                .catch(error => console.error("Error fetching matches:", error));
+            .then(data => {
+                console.log("Raw response:", data);
 
-            fetch("/data/api/userTournaments/") // Fetch tournament data
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Raw response:", data);  // Log the whole response
-                    console.log("Tournaments:", data.tournaments);  // Check the 'tournaments' array specifically
+                document.getElementById("userAvatar").src = data.avatar;
+                document.getElementById("username").textContent = data.username;
+                document.getElementById("userEmail").textContent = data.email;
 
-                    // Ensure that we're checking 'data.matches' correctly
-                    if (Array.isArray(data.tournaments)) {
-                        populateTable(tournamentsTable, data.tournaments, ["start_date", "winner"], 2);
-                    } else {
-                        console.error("Data.tournaments is not an array:", data.tournaments);
-                    }
-                })
+                profileModal.show();
+            })
+            .catch(error => console.error("Error fetching user data:", error));
+            fetch("/data/api/userMatches/", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            })
+            .then(data => {
+                console.log("Raw response:", data);  // Log the whole response
+                console.log("Matches:", data.matches);  // Check the 'matches' array specifically
+        
+                // Ensure that we're checking 'data.matches' correctly
+                if (Array.isArray(data.matches)) {
+                    populateTable(matchesTable, data.matches, ["match_start", "winner_name", "opponent"], 1);
+                } else {
+                    console.error("Data.matches is not an array:", data.matches);
+                }
+            })
+            .catch(error => console.error("Error fetching matches data:", error));
+            fetch("/data/api/userTournaments/", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Raw response:", data);  // Log the whole response
+                console.log("Tournaments:", data.tournaments);  // Check the 'tournaments' array specifically
+
+                // Ensure that we're checking 'data.matches' correctly
+                if (Array.isArray(data.tournaments)) {
+                    populateTable(tournamentsTable, data.tournaments, ["start_date", "winner"], 2);
+                } else {
+                    console.error("Data.tournaments is not an array:", data.tournaments);
+                }
+            })
+            .catch(error => console.error("Error fetching tournament data:", error));
         });
     }
 });

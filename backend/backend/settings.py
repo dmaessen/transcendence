@@ -55,6 +55,11 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    "allauth_2fa",
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    "django_otp.plugins.otp_static",
+    'qrcode',
     #'game_server',
 
     'matchmaking.apps.MatchmakingConfig',
@@ -71,7 +76,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'allauth_2fa.middleware.AllauthTwoFactorMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 # governs whether your server accepts requests from different origins (domains, subdomains, or ports)
@@ -124,6 +130,10 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+AUTHENTICATION_BACKENDS = [
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
@@ -206,9 +216,14 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS512",
 }
 
-SITE_ID = 1  # make sure SITE_ID is set
-ACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "none"
+SITE_ID = 1
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_SIGNUP_REDIRECT_URL = "api/authentication/2fa/setup"
+
+ACCOUNT_ARAPTER = "allauth_2fa.adapter.OTPAdapter"
 
 REST_AUTH = {
     "USE_JWT": True,
@@ -243,7 +258,7 @@ LOGGING = {
         },
         'views': {  # Explicitly enable logs for views.py
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False,
         },
         'serializers': {  # Explicitly enable logs for serializers.py
