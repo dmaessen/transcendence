@@ -1,5 +1,5 @@
 DOCK_COMPOSE_CMD := docker compose
-DOCK_COMPOSE_FILE :=    docker-compose.yaml
+DOCK_COMPOSE_FILE := docker-compose.yaml
 DOCK_COMPOSE_KEYS := docker-compose.keys.yaml
 
 
@@ -39,7 +39,7 @@ run: down build updetach
 re: down buildclean updetach
 
 rmi:
-	docker rmi $(shell docker images -aq) -f | true
+	-docker rmi $(shell docker images -aq) -f || true
 
 clean:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) down --rmi local --remove-orphans
@@ -66,12 +66,3 @@ resetall: pruneall fclean
 	@rm -rf $(HOME)/.tranceanddance/
 	
 .PHONY: all build up down kill updateach buildclean show run re clean fclean
-
-
-
-
-
-
-
-
-
