@@ -1,0 +1,22 @@
+<div class="modal fade" id="addFriendsModal" tabindex="-1" aria-labelledby="addFriendsModalLabel" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addFriendsModalLabel">Add Friends</h5>
+                <button id="previous1Btn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <form id="searchForm" autocomplete="off">
+                    <input type="search" id="searchInput" class="form-control" placeholder="Search username">
+                </form>
+                <div id="searchResults" class="list-group mt-2"></div>
+                <table id="frienshipRequestTable" class="table">
+                    <tbody>
+                        <!-- Filled dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% comment %} TODO also load the list of friends request with accept and refuse buttons {% endcomment %}

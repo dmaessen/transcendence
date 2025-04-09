@@ -89,6 +89,19 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:80",
 ]
 
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+]
+
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+]
+
 #CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
@@ -241,64 +254,46 @@ CACHES = {
     }
 }
 
+
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
+    "version": 1,
+    "disable_existing_loggers": True,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'views': {  # Explicitly enable logs for views.py
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'serializers': {  # Explicitly enable logs for serializers.py
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} - {name} - {message}",
+            "style": "{",
         },
     },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+    "loggers": {
+        # "django": {
+        #     "handlers": ["console"],
+        #     "level": "DEBUG",
+        #     "propagate": True,
+        # },
+        "game_server": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "data": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "authentication": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    }, 
 }
-
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'file': {
-#             'level': 'ERROR',  # Only log errors and critical issues
-#             'class': 'logging.FileHandler',
-#             'filename': os.path.join(BASE_DIR, 'logs/django_errors.log'),  # Log file path
-#             'formatter': 'verbose',
-#         },
-#         'console': {
-#             'level': 'ERROR',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'verbose',
-#         },
-#     },
-#     'formatters': {
-#         'verbose': {
-#             'format': '[{levelname}] {asctime} - {name} - {message}',
-#             'style': '{',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file', 'console'],
-#             'level': 'ERROR',
-#             'propagate': True,
-#         },
-#     },
-# }
-
-
-#TODO for ngnix change path for all media and statics
