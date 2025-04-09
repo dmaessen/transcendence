@@ -27,6 +27,8 @@ urlpatterns = [
     path('game_server/', include('game_server.urls')),
 	path('api/authentication/', include('authentication.urls')),
     path('data/', include('data.urls')),
+    path("accounts/", include("allauth.urls")),
+    path("accounts/2fa", include("allauth_2fa.urls")),
     #path('api/', include('game_server.urls')),
     # path("get_user_data/", get_user_data, name="get_user_data"),
     # path("get_user_matches/", get_user_matches, name="get_user_matches"),

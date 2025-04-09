@@ -1,7 +1,7 @@
 DOCK_COMPOSE_CMD :=	docker compose
 DOCK_COMPOSE_FILE :=	docker-compose.yaml
 
-all: build_folder build updetach
+all: build_folder buildclean updetach
 
 build_folder:
 	mkdir -p $(HOME)/.tranceanddance/pgdata
