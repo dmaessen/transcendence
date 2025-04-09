@@ -11,34 +11,72 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer
-from django.contrib.auth.decorators import login_required
-from django_otp.plugins.otp_totp.models import TOTPDevice
+from django.db import transaction
+from rest_framework.decorators import api_view, permission_classes
+# from django.contrib.auth.decorators import login_required
+# from django_otp.plugins.otp_totp.models import TOTPDevice
+from authentication.models import CustomTOTPDevice
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_simplejwt.exceptions import InvalidToken
 import qrcode
 import io
+import base64
+import pyotp
+# from passlib.totp import TOTP
+import sys
+from django.core.cache import cache
 
-@otp_required
+
+# @otp_required
 def login_2fa_required(request):
     return redirect("game_server")
 
-@login_required
-def enable_2fa(request):
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def register_2fa(request):
 	user = request.user
-	device, created = TOTPDevice.objects.get_or_create(user=user, confirmed=False)
+	try:
 
-	if request.method == "POST":
-		device.confirmed = True
-		device.save()
-		return redirect("account_profile")
-	
-	otp_uri = device.config_url
-	qr = qrcode.make(otp_uri)
-	stream = io.BytesIO()
-	qr.save(stream, "PNG")
-	qr_data = stream.getvalue()
+		CustomTOTPDevice.objects.filter(customUser=user, confirmed=False).exclude(name="default").delete()
+		device = CustomTOTPDevice.objects.filter(customUser=user, confirmed=False).first()
 
-	return render(request, "authentication/templates/enable_2fa.html", {"qr_code": qr_data})
+		if not device:
+			device = CustomTOTPDevice(customUser=user, name="default")
+			otp_secret = pyotp.random_base32()
+			device.key = otp_secret
+			device.confirmed = False
+			device.save()
+		else:
+			otp_secret = device.key
+		
+		print("[DEBUG] All TOTP devices for user(in registration):")
+		for d in CustomTOTPDevice.objects.filter(customUser=user):
+			print(f"  - name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
+		print(f"[DEBUG] Generated secret: {otp_secret}")
+		print(f"[DEBUG] Device key saved: {device.key}")
+		# print(f"Stored OTP Secret: {otp_secret}") 
+
+		if not isinstance(otp_secret, str) or len(otp_secret) < 16:
+			return JsonResponse({"error": "Invalid OTP secret generated"}, status=500)
+
+
+		# device = CustomTOTPDevice.objects.filter(customUser=user).first()
+
+		totp = pyotp.TOTP(device.key)
+		otp_uri = totp.provisioning_uri(name=user.email, issuer_name="transcendence")
+		print("OTP URI:", otp_uri)
+		qr = qrcode.make(otp_uri)
+		stream = io.BytesIO()
+		qr.save(stream, format="PNG")
+		qr_data = base64.b64encode(stream.getvalue()).decode("utf-8")
+
+		return JsonResponse({"qr_code": f"data:image/png;base64,{qr_data}", "otp_secret": otp_secret})
+	except Exception as e:
+		print(f"Error in register_2fa: {str(e)}")  # Debugging output
+		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
+
 class RegisterView(APIView):
-	def post(self, request):
+	def post(self, request, *args, **kwargs):
 		serializer = UserSerializer(data=request.data)
 		if serializer.is_valid():
 			user = serializer.save()
@@ -59,97 +97,167 @@ class RegisterView(APIView):
 			)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# class UserTOTPDevice(TOTPDevice):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    
+#     def save(self, *args, **kwargs):
+#         super().save(*args, **kwargs)
+#         if not self.user.two_factor_enabled:
+#             self.user.two_factor_enabled = True
+#             self.user.save(update_fields=["two_factor_enabled"])
+
 class LoginView(APIView):
 	def post(self, request):
 		email = request.data.get('email')
 		password = request.data.get('password')
+		otp_token = request.data.get('otp_token', None)
 
-		print(f"Attempting login for user with email: {email}")
+		if not email or not password:
+			return JsonResponse({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
+		print(f"login data received: {request.data}", file=sys.stderr)
 		try:
 			user = CustomUser.objects.get(email=email)
 		except CustomUser.DoesNotExist:
-			return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+			return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 		if not user.check_password(password):
-			return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-		
-		refresh = RefreshToken.for_user(user)
-		return Response({
+			return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+		device = CustomTOTPDevice.objects.filter(customUser=user).first()
+
+		if user.two_factor_enabled:
+			print("[DEBUG] All TOTP devices for user(in login):")
+			for d in CustomTOTPDevice.objects.filter(customUser=user):
+				print(f"  - name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
+			if not device:
+				return JsonResponse({'error': '2FA is enabled but no secret is set'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+			if not otp_token:
+				return JsonResponse({'error': '2FA required'}, status=status.HTTP_403_FORBIDDEN)
+			otp_secret = device.key
+			totp = pyotp.TOTP(otp_secret)
+
+			print(f"[DEBUG] Device used for verification: name={device.name}, key={otp_secret}")
+			if not totp.verify(otp_token, valid_window=1):
+				print(f"totp current: {totp.now()}", file=sys.stderr)
+				print(f"OTP verification failed. Token: {otp_token}, Secret: {otp_secret}", file=sys.stderr)
+				return JsonResponse({'error': 'Invalid 2FA code'}, status=status.HTTP_401_UNAUTHORIZED)
+		try:
+			refresh = RefreshToken.for_user(user)
+			access_token = str(refresh.access_token)
+		except Exception as e:
+			return JsonResponse({'error': f'Token generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+		return JsonResponse({
 			'refresh': str(refresh),
-			'access': str(refresh.access_token),
-		}, status=status.HTTP_200_OK)
+			'access': access_token,
+			'message': 'Login successful'
+		})
 
 User = get_user_model()
 
 class DeleteAccountView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
-
-	# @login_required
 	def delete(self, request):
 		user = request.user
-		user.delete()
-		return Response({"message": "Account deleted sucessfully"}, status=status.HTTP_204_NO_CONTENT)
+		try:
+			# Count devices before deletion
+			initial_count = CustomTOTPDevice.objects.filter(customUser=user).count()
+			print(f"Initial device count: {initial_count}")
 
-def sign_in(request):
-	if request.method == 'GET':
-		# user = authenticate(email = 'email', password = 'password')
-		if request.user.is_authenticated:
-			messages.succes(request, f'already signed in')
-			return redirect('game_server')
-		form = LoginForm()
-		return render(request, 'users/login.html', {'form':form})
+			with transaction.atomic():
+				# Delete all devices associated with the user
+				deleted_count, _ = CustomTOTPDevice.objects.filter(customUser=user).delete()
+				print(f"Deleted {deleted_count} device(s).")
+
+				# Count devices after deletion
+				final_count = CustomTOTPDevice.objects.filter(customUser=user).count()
+				print(f"Final device count: {final_count}")
+
+				# Optionally, delete the user account
+				user.delete()
+				print(f"[DeleteAccountView] Before deletion: {initial_count} 2FA device(s) found for user {user.email}")
+				print(f"[DeleteAccountView] Deleted {deleted_count} 2FA device(s) for user {user.email}")
+				print(f"[DeleteAccountView] After deletion: {final_count} 2FA device(s) remaining for user {user.email}")
+
+			return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+		except Exception as e:
+			print(f"Error deleting account: {str(e)}")  # Debugging line
+			return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 	
-	if request.method == 'POST':
-		form = LoginForm(request.POST)
-		# HttpResponse("posted")
+	# def delete(self, request):
+	# 	user = request.user
+	# 	print(f"Auth Header: {request.headers.get('Authorization')}")
+	# 	print(f"Deleting user: {request.user}")
+	# 	try:
+	# 		print(f"Deleting user: {user.email}")
+			
+	# 		CustomTOTPDevice.objects.filter(customUser=user).delete()
+	# 		user.delete()
+	# 		return Response({"message": "Account deleted sucessfully"}, status=status.HTTP_204_NO_CONTENT)
+	# 	except Exception as e:
+	# 		print(f"Error deleting account: {str(e)}")  # Debugging line
+	# 		return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-		if form.is_valid():
-			messages.success(request,f'loaded successfully')
-			# email = form.cleaned_data['email']
-			name = form.cleaned_data.get('name')
-			password = form.cleaned_data.get('password')
-			user = authenticate(request, name=name, password=password)
-			if not name or not password: 
-				return HttpResponse("username or password is missing")
-			if user is not None:
-				login(request, user)
-				return HttpResponse("logged in!")
-				# return redirect('users/valid.html') #this should probably be home, also SPA?
-			else:
-				return HttpResponse("user sign in did not work!")
-	
-	# messages.error(request,f'Invalid username or password')
-	# return render(request, 'users/login.html',{'form': form})
-
-@login_required
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def sign_out(request):
+	user = request.user
 	logout(request)
 	messages.success(request,f'You have been logged out')
 	return HttpResponse("you have been signed out")
 	# return redirect('sign_in')
 
-def register(request):
-	if request.method == 'GET': 
-		form = RegisterForm()
-		return render(request, 'users/register.html', {'form': form})
-	
-	if request.method == 'POST':
-		form = RegisterForm(request.POST)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def enable_2fa(request):
+	user = request.user
+	device = CustomTOTPDevice.objects.filter(customUser=user).first()
 
-		if form.is_valid():
-			user = form.save(commit=False)
-			user.username = form.cleaned_data['username']
-			user.name = form.cleaned_data['name']
-			user.email = form.cleaned_data['email']
-			user.password = form.cleaned_data['password']
-			# TODO: store other info, create JWT token and send it insted of using login method
-			user.save()
-			messages.success(request, 'you have signed up sucesfully.')
-			login(request, user)
-			return redirect('sign_out')
-		else:
-			return render(request, 'users/register.html', {'form': form})
+	if not device:
+		return Response({"error": "No 2FA device found for this user"}, status=400)
+
+	device.confirmed = True
+	device.save()
+	user.two_factor_enabled = True
+	user.save()
+
+	return Response({"message": "2FA has been enabled succesfully"}, status=200)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def disable_2fa(request):
+	user = request.user
+	device = CustomTOTPDevice.objects.filter(customUser=user).first()
+	if not device:
+		return Response({"error": "2FA is not enabled for this user."}, status=400)
+
+	device.delete()
+	user.two_factor_enabled = False
+	user.save()
+
+	return Response({"message": "2FA has been disabled successfully."}, status=200)
+
+@api_view(["POST"])
+@permission_classes([AllowAny]) 
+def refresh_token(request):
+    re = request.data.get("refresh_token")
+
+    if not re:
+        return Response({"error": "Refresh token is required"}, status=400)
+
+    try:
+        refresh = RefreshToken(re)
+        ac_token = str(refresh.access_token)
+        re_token = str(refresh) 
+
+        return Response({
+            "access_token": ac_token,
+            "refresh_token": re_token
+        })
+    except InvalidToken:
+        return Response({"error": "Invalid refresh token"}, status=401)
 
 def home(request):
 	return render(request, 'base.html')
+

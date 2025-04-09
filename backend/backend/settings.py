@@ -55,8 +55,10 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    "allauth_2fa",
     'django_otp',
     'django_otp.plugins.otp_totp',
+    "django_otp.plugins.otp_static",
     'qrcode',
     #'game_server',
 
@@ -74,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth_2fa.middleware.AllauthTwoFactorMiddleware',
     'django_otp.middleware.OTPMiddleware',
 ]
 
@@ -142,10 +145,10 @@ TEMPLATES = [
     },
 ]
 
-
-AUTHENTICATION_BACKEND = [
-    "allauth.accaunt.auth_backend.AuthenticationBackend",
+AUTHENTICATION_BACKENDS = [
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
 WSGI_APPLICATION = 'backend.wsgi.application'
 ASGI_APPLICATION = "backend.asgi.application"
 
@@ -272,9 +275,14 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS512",
 }
 
-SITE_ID = 1  # make sure SITE_ID is set
-ACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "none"
+SITE_ID = 1
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_SIGNUP_REDIRECT_URL = "api/authentication/2fa/setup"
+
+ACCOUNT_ARAPTER = "allauth_2fa.adapter.OTPAdapter"
 
 REST_AUTH = {
     "USE_JWT": True,
@@ -291,6 +299,7 @@ CACHES = {
         }
     }
 }
+
 
 # LOGGING = {
 #     'version': 1,
@@ -319,37 +328,3 @@ CACHES = {
 #         },
 #     },
 # }
-
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'file': {
-#             'level': 'ERROR',  # Only log errors and critical issues
-#             'class': 'logging.FileHandler',
-#             'filename': os.path.join(BASE_DIR, 'logs/django_errors.log'),  # Log file path
-#             'formatter': 'verbose',
-#         },
-#         'console': {
-#             'level': 'ERROR',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'verbose',
-#         },
-#     },
-#     'formatters': {
-#         'verbose': {
-#             'format': '[{levelname}] {asctime} - {name} - {message}',
-#             'style': '{',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file', 'console'],
-#             'level': 'ERROR',
-#             'propagate': True,
-#         },
-#     },
-# }
-
-
-#TODO for ngnix change path for all media and statics
