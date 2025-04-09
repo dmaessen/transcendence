@@ -22,6 +22,24 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     initiator = None
 
     async def connect(self):
+        # query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
+        # token = query_params.get("token", [None])[0]
+        # logger.info(f"querry: {query_params}\ntoken: {token}")
+        # if token:
+        #     # Validate the JWT token
+        #     access_token = AccessToken(token)
+        #     logger.info(f"----access token: {access_token}\n\n")
+        #     user_id = access_token["user_id"]
+        #     logger.info(f"----userid: {user_id}\n\n")
+        #     # Fetch the user from the database based on the user_id
+        #     user = await sync_to_async(CustomUser.objects.get)(id=user_id)
+        #     logger.info(f"username: {user.username}")
+        #     self.scope["user"] = user  # Assign the user to the scope
+        #     logger.info(f"Authenticated user {user.username} connected via WebSocket.")
+        # else:
+        #     logger.warning("No token provided.")
+        #     await self.close()  # Close if no token is provided
+        # # If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username

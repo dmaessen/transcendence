@@ -1,9 +1,12 @@
-const websocket = `ws://${window.location.host}/ws/game_server/`;
-const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
+// const websocket = `ws://${window.location.host}/ws/game_server/`;
+// const tournamentwebsocket = `ws://${window.location.host}/ws/tournament/`;
+
+let websocket;
+let tournamentwebsocket;
 
 let socket;
-let reconnecting = false;
-let resetting = false;
+let reconnecting = false; // needed??
+let resetting = false; // needed?
 
 function connectWebSocket(mode) {
     // if (socket && socket.readyState === WebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif socket
@@ -16,13 +19,20 @@ function connectWebSocket(mode) {
         console.warn("Reconnection already in progress.");
         return;
     }
+    
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        console.error("No token no game!");
+        return;
+    }
+    console.log("token: ", token);
 
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
     if (mode == "4" || mode == "8")
-        socket = new WebSocket(tournamentwebsocket);
+        socket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
     else
-        socket = new WebSocket(websocket);
+        socket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
 
     socket.onopen = async() => {
         console.log("Connected to the game server.");
