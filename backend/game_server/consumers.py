@@ -45,7 +45,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         else:
             logger.warning("No token provided.")
             await self.close()  # Close if no token is provided
-        If the user is authenticated, mark them as online
+        #If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username
