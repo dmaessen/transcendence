@@ -35,9 +35,9 @@ class UserStatusConsumer(AsyncWebsocketConsumer):
             logger.warning("No token provided.")
             await self.close()  # Close if no token is provided
 
-        # If the user is authenticated, mark them as online
+        # If the user is authenticated, mar them as online
         if self.scope["user"].is_authenticated:
-            cache.set(f"user_online_{self.scope['user'].id}", True, timeout=3000)
+            cache.set(f"user_online_{user.id}", True, timeout=3000)
             logger.info(f"user {user.username} is cached\n\n")
 
         await self.accept()
@@ -45,7 +45,13 @@ class UserStatusConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         logger.info(f"Gottcha: {text_data}")
-        await self.send(text_data="pong")
+        data = json.loads(text_data)
+        if data.get("type") == "ping":
+            user = self.scope["user"]
+            if user.is_authenticated:
+                cache.set(f"user_online_{user.id}", True, timeout=3000)  # refresh timeout
+                logger.info(f"Refreshed online status for {user.username}")
+        await self.send(text_data=json.dumps({"type": "pong"}))
 
     async def disconnect(self, close_code):
         user = self.scope["user"]
@@ -53,5 +59,4 @@ class UserStatusConsumer(AsyncWebsocketConsumer):
         if user.is_authenticated:
             cache.delete(f"user_online_{user.id}")
             logger.info(f"user {user.username} is decached\n\n")
-        await self.send(text_data=json.dumps({"type": "close", "message": "Doei doei!"}))
         await self.close(code=1000)

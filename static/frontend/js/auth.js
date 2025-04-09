@@ -8,9 +8,9 @@ async function loginWebSocket(){
         console.error("No token no game!");
         return;
     }
-    console.log("toke: ", token);
+    // console.log("toke: ", token);
     loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
-    console.log("socket: ", loginsocket);
+    // console.log("socket: ", loginsocket);
     if (!token) {
         console.error("No access token found! WebSocket authentication will fail.");
         return;
@@ -28,7 +28,7 @@ async function loginWebSocket(){
     loginsocket.onerror = async function(error) {
         console.error("onlineSocket error:", error);
     };
-    console.log("socket: ", loginsocket);
+    // console.log("socket: ", loginsocket);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
