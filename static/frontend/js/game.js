@@ -7,6 +7,7 @@ const gameTitle = document.getElementById("gameTitle");
 const exitButton = document.getElementById("exitButton");
 const instructions1 = document.getElementById("game-instruction1");
 const instructions2 = document.getElementById("game-instruction2");
+const instructions3 = document.getElementById("game-instruction3");
 
 const gameCanvas = document.getElementById("game");
 const gameContext = gameCanvas.getContext("2d");
@@ -19,6 +20,7 @@ let keyboardEnabled = true;
 
 instructions1.style.display = "none";
 instructions2.style.display = "none";
+instructions3.style.display = "none";
 
 const gameMenuFirst = new bootstrap.Modal(gameMenuElementFirst, {
     backdrop: "static",
@@ -82,18 +84,12 @@ function startGame(mode) {
         instructions2.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (remote)") {
-        alert(`${mode} mode is not yet implemented.`);
         gameTitle.textContent = "Two Players (remote)";
         instructions1.style.display = "block";
         connectWebSocket(mode);
-    } if (mode === "Two Players (with a friend)") { // TODO
-        alert(`${mode} mode is not yet implemented.`);
-        gameTitle.textContent = "Two Players (with a friend)";
-        instructions1.style.display = "block";
-        //connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
         gameMenuTournament.hide();
-        alert(`${mode} mode is not yet implemented.`);
+        //alert(`${mode} mode is not yet implemented.`);
         // gameTitle.textContent = `${mode}`;
         // instructions1.style.display = "block";
         if (mode === "Tournament - 4 Players")
@@ -103,9 +99,6 @@ function startGame(mode) {
     }
 }
 
-// document.getElementById("profileBtn").addEventListener("click", () => ); // TODO connect with Laura
-// document.getElementById("friendsBtn").addEventListener("click", () => ); // TODO connect with Laura
-// document.getElementById("tournamentInfoBtn").addEventListener("click", () => ); // TODO connect with Laura
 
 document.getElementById("playBtn").addEventListener("click", async() => {
     gameMenuFirst.hide();
@@ -126,29 +119,22 @@ document.getElementById("playBtn").addEventListener("click", async() => {
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
-document.getElementById("twoPlayersFriendsBtn").addEventListener("click", () => startGame("Two Players (with a friend)"));
-
 document.getElementById("tournamentBtn").addEventListener("click", () => {
         gameMenuTournament.show();
-        gameMenu.hide();
-});
+        gameMenu.hide();});
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    disableTournamentButtons();
-});
+    disableTournamentButtons();});
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    disableTournamentButtons();
-});
+    disableTournamentButtons();});
 
 document.getElementById("previous1Btn").addEventListener("click", () => {
     gameMenu.hide();
-    gameMenuFirst.show();
-});
+    gameMenuFirst.show();});
 document.getElementById("previous2Btn").addEventListener("click", () => {
     gameMenuTournament.hide();
-    gameMenu.show();
-});
+    gameMenu.show();});
 
 document.getElementById("exitButton").addEventListener("click", () =>  {
     keyboardEnabled = false;
@@ -159,7 +145,8 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     instructions2.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    tournCanvas.style.display = "none";
+    document.getElementById("tournamentBracket").style.display = "none"; // this working??
+    document.getElementById("tournamentBracket4").style.display = "none"; // this working??
     socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
     socket.close()
     gameMenuFirst.show();
@@ -175,7 +162,17 @@ tournamentBanner.addEventListener("click", async(event) => {
             gameMenuFirst.hide();
             gameMenu.hide();
             gameMenuTournament.hide();
+
             gameState.mode = data.players_in + data.remaining_spots; 
+            keyboardEnabled = true;
+            gameState.running = false;
+            gameTitle.style.display = "block";
+            gameCanvas.style.display = "block";
+            gameCanvas.width = 1400;
+            gameCanvas.height = 1000;
+            gameCanvas.style.width = gameCanvas.width / 2 + "px";
+            gameCanvas.style.height = gameCanvas.height / 2 + "px";
+
             connectWebSocket(data.players_in + data.remaining_spots);
         }
     } catch (error) {
@@ -185,6 +182,8 @@ tournamentBanner.addEventListener("click", async(event) => {
 
 window.addEventListener("load", async () => {
     gameMenuFirst.show();
+    const bracketElement = document.getElementById("tournamentBracket");
+    bracketElement.style.display = "none";
 
     try {
         const data = await fetchData("http://localhost:8080/api/tournament-status/");
@@ -221,7 +220,11 @@ function showWaitingRoomTournament(mode) {
     //gameTitle.textContent = "Tournament";
     gameTitle.style.display = "none"; // needed??
     gameCanvas.style.display = "none"; // needed??
-    drawBracket(mode); // working on it
+
+    // const bracketElement = document.getElementById("tournamentBracket");
+    // console.log("Bracket element:", bracketElement);
+    // bracketElement.style.display = "grid";
+    drawBracket(mode);
 
     // gameContext.font = "50px Courier New";
     // gameContext.fillStyle = "#000000";
@@ -276,16 +279,19 @@ function updateGameState(data) {
 
 function displayStartPrompt() {
     gameCanvas.style.display = "block";
+    gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     gameContext.font = "50px Courier New";
     gameContext.fillStyle = "#000000";
     gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
     gameContext.fillStyle = "#ffffff";
     gameContext.textAlign = "center";
-    gameContext.fillText("Press any key to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
+    gameContext.fillText("Press any key twice to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
     keyboardEnabled = true;
 }
 
 function startGameMenu() {
+    if (gameState.running == true)
+        return;
     gameState.running = false;
     displayStartPrompt();
 }
@@ -351,17 +357,57 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-document.addEventListener("keydown", (event) => {
-    let direction = null;
-    if (gameState.mode != "Two Players (hot seat)" && gameState.running)
-        direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
-    else (gameState.mode === "Two Players (hot seat)" && gameState.running)
-        direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : event.key === "w" ? "w_up" : event.key === "s" ? "s_down" : null;
-    if (direction) {
-        console.log("ARROWS PRESSED");
-        socket.send(JSON.stringify({ action: "move", direction: direction, game_id: gameState.gameId }));
+const pressedKeys = new Set();
+document.addEventListener("keydown", (event) => { 
+    if (gameState.running) {
+        pressedKeys.add(event.key);
+        sendMovements();
     }
 });
+document.addEventListener("keyup", (event) => { 
+    if (gameState.running) {
+        pressedKeys.delete(event.key);
+    }
+});
+function sendMovements() {
+    if (!gameState.running)
+        return;
+
+    let directions = [];
+
+    if (gameState.mode != "Two Players (hot seat)") {
+        if (pressedKeys.has("ArrowUp"))
+            directions.push("up");
+        if (pressedKeys.has("ArrowDown"))
+            directions.push("down");
+    } else {
+        if (pressedKeys.has("ArrowUp"))
+            directions.push("up");
+        if (pressedKeys.has("ArrowDown"))
+            directions.push("down");
+        if (pressedKeys.has("w"))
+            directions.push("w_up");
+        if (pressedKeys.has("s"))
+            directions.push("s_down");
+    }
+
+    if (directions.length > 0) {
+        console.log("keys pressed: ", [...pressedKeys]); // to rm
+        socket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
+    }
+}
+
+// document.addEventListener("keydown", (event) => {
+//     let direction = null;
+//     if (gameState.mode != "Two Players (hot seat)" && gameState.running)
+//         direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
+//     else if (gameState.mode === "Two Players (hot seat)" && gameState.running)
+//         direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : event.key === "w" ? "w_up" : event.key === "s" ? "s_down" : null;
+//     if (direction) {
+//         console.log("ARROWS PRESSED");
+//         socket.send(JSON.stringify({ action: "move", direction: direction, game_id: gameState.gameId }));
+//     }
+// });
 
 window.addEventListener("beforeunload", () => {
     if (socket && socket.readyState === WebSocket.OPEN) {

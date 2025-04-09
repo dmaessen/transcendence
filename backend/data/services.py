@@ -1,5 +1,6 @@
 from .models import *
 from django.db.models import Q
+from django.core.cache import cache
 
 # Get data from tables 
 def get_all_users():
@@ -20,7 +21,7 @@ def get_tournaments():
     return Tournament.objects.all()
 
 def get_tournament_data(tournament_id):
-    tournament = Tournament.objects.get(tournament_id)
+    tournament = Tournament.objects.get(id=tournament_id)
     return tournament
 
 def get_win_cout(user_id):
@@ -43,7 +44,7 @@ def get_score(user_id):
     return score
     
 def get_match_time(match_id):
-    matchid = Match.objects.get(match_id)
+    matchid = Match.objects.get(id=match_id)
     total_seconds = int(matchid.match_time.total_seconds())
     minutes = total_seconds // 60
     seconds = total_seconds % 60
@@ -51,68 +52,90 @@ def get_match_time(match_id):
     return match_time_str
 
 # Manage friendships 
-def add_friend(user_id, friend_id):
-    user = CustomUser.objects.get(user_id)
-    friend = CustomUser.objects.get(friend_id)
-    if Friendship.objects.filter(user=user, friend=friend).exists():
+def add_new_friend(user_id, friend_id):
+    user = CustomUser.objects.filter(id=user_id).first()
+    friend = CustomUser.objects.filter(id=friend_id).first()
+    if frienship_status(user_id, friend_id) == "pending":
+        accept_friend(user_id, friend_id)
         return f"Friendship request or connection already exists between {user.username} and {friend.username}."
     
-    Friendship.objects.create(user=user, friend=friend, status='pending')
+    Friendship.objects.create(sender=user, receiver=friend, status='pending')
     return f"Friend request sent from {user.username} to {friend.username}."
 
-def accept_friend(user_id, friend_id):
-    user = CustomUser.objects.get(user_id)
-    friend = CustomUser.objects.get(friend_id)
-    try:
-        friendship = Friendship.objects.get(user, friend, status='pending')
-        friendship.status = 'approved'
-        friendship.save()
-        Friendship.objects.create(user, friend, status='approved')
-        return f"{user.username} and {friend.username} are now friends!"
-    except Friendship.DoesNotExist:
-        return f"No pending friend request from {friend.username} to {user.username}."
+def accept_friend(friendship_id):
+    friendship = Friendship.objects.get(id=friendship_id)
+    friendship.status = 'approved'
+    friendship.save()
+    return f"Friendship is a success!"
 
-def remove_friendship(user_id, friend_id):
-    user = CustomUser.objects.get(user_id)
-    friend = CustomUser.objects.get(friend_id)
-    deleted_count = Friendship.objects.filter(
-        Q(user, friend) | Q(user, friend)
+def cancel_friend(friendship_id):
+    friendship_id = Friendship.objects.get(id=friendship_id).delete()
+    return f"request canceled"
+
+def remove_friend(user_id, friend_id):
+    user = CustomUser.objects.get(id=user_id)
+    friend = CustomUser.objects.get(id=friend_id)
+    Friendship.objects.filter(
+        models.Q(sender=user, receiver=friend) | 
+        models.Q(sender=friend, receiver=user)
     ).delete()
-    if deleted_count[0] > 0:
-        return f"Friendship or request between {user.username} and {friend.username} has been removed."
-    return f"No friendship or request exists between {user.username} and {friend.username}."
+    return f"No longer friends."
 
-def are_friends(user_id, friend_id):
-    user = CustomUser.objects.get(user_id)
-    friend = CustomUser.objects.get(friend_id)
-    return Friendship.objects.filter(user, friend, status='approved').exists()
+def frienship_status(user_id, friend_id):
+    user = CustomUser.objects.get(id=user_id)
+    friend = CustomUser.objects.get(id=friend_id)
+    friendship = Friendship.objects.filter(
+        models.Q(sender=user, receiver=friend) | 
+        models.Q(sender=friend, receiver=user)
+    ).first()
+    return friendship.status if friendship else None 
 
 def get_friends(user_id):
-    user = CustomUser.objects.get(user_id)
-    friends = Friendship.objects.filter(user, status='approved').values_list('friend__username', flat=True)
+    user = CustomUser.objects.get(id=user_id)
+    friendships = Friendship.objects.filter((Q(sender=user) | Q(receiver=user)), status='approved')
+    friends = []
+    for friend in friendships:
+        if(user == friend.sender):
+            status = cache.get(f"user_online_{friend.receiver.id}", False)
+            friends.append({
+                "friend": friend.receiver.username,
+                "friend_id": friend.receiver.id,
+                "is_online": status,
+            })
+        else:
+            status = cache.get(f"user_online_{friend.sender.id}", False)
+            friends.append({
+                "friend": friend.sender.username,
+                "friend_id": friend.sender.id,
+                "is_online": status,
+            })
     return list(friends)
 
-def get_received_friend_requests(user_id):
-    user = CustomUser.objects.get(user_id)
-    requests = Friendship.objects.filter(user, status='pending')
-    output = []
+def get_friendship_requests(user_id):
+    user = CustomUser.objects.get(id=user_id)
+    requests = Friendship.objects.filter((Q(sender=user) | Q(receiver=user)), status='pending')
+    fRequests = []
     for req in requests:
-        output.append({
-            "from": req.user.username,
-            "sent_at": req.created_at,
+        fRequests.append({
+            "user_id": user.id,
+            "receiver": req.receiver.username,
+            "receiver_id": req.receiver.id,
+            "sender": req.sender.username,
+            "sender_id": req.sender.id,
+            "friendship_id": req.id
         })
-    return output
+    return fRequests
 
-def get_sent_friend_requests(user_id):
-    user = CustomUser.objects.get(user_id)
-    requests = Friendship.objects.filter(user=user, status='pending')
-    output = []
-    for req in requests:
-        output.append({
-            "from": req.user.username,
-            "sent_at": req.created_at,
-        })
-    return output
+# def get_sent_friend_requests(user_id):
+#     user = CustomUser.objects.get(user_id)
+#     requests = Friendship.objects.filter(user=user, status='pending')
+#     output = []
+#     for req in requests:
+#         output.append({
+#             "from": req.user.username,
+#             "sent_at": req.created_at,
+#         })
+#     return output
 
 # Manage profile 
 def change_name(req, user_id):

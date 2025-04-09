@@ -19,6 +19,10 @@ from asgiref.sync import sync_to_async
 
 from game_server.player import Player
 from data.models import CustomUser, Match
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 games = {}  # games[game.id] = game ----game is Game()
 #player_queue = {} # self.player_queue[user.id] = f"{game.id}"
@@ -28,6 +32,9 @@ player_queue = [] #player_id s int
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if self.scope["user"].is_authenticated:
+            user = self.scope["user"]
+            logger.info(f"user {user}")
+            print(f"user {user}")
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username
         else:
@@ -53,7 +60,17 @@ class GameConsumer(AsyncWebsocketConsumer):
         #player = Player(self.player_id, self.session_key, 'online')
         player_queue.append(self.player_id)
         #self.match_data = "waiting"
-        
+
+        # checking if part of a tournament game
+        # self.tournament_id = self.scope['url_route']['kwargs'].get('tournament_id', 'tournament_lobby')  # none if not a tournament game
+        # self.tournament_game_id = self.scope['url_route']['kwargs'].get('game_id', 'default_game') 
+        # if self.tournament_id:
+        #     print(f"MADE IT HERE")
+        self.room_name = "game_lobby"
+            # self.room_name = f'tournament_{self.tournament_id}_game_{self.tournament_game_id}'
+        await self.channel_layer.group_add(self.room_name, self.channel_name)
+        print(f"GameConsumer connected to room: {self.room_name}", flush=True)
+
         await self.accept()
 
     async def check_connection_timeout(self):
@@ -83,6 +100,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         try:
             if hasattr(self, 'match_name'):
                 await self.channel_layer.group_discard(self.match_name, self.channel_name)
+            elif hasattr(self, 'room_name'):
+                await self.channel_layer.group_discard(self.room_name, self.channel_name)
         except Exception as e:
             print(f"Error during disconnection: {e}")
         
@@ -118,11 +137,20 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
+        print("Received WebSocket message:", data, flush=True) # to rm
         action = data.get("action")
         #game_id = data.get("game_id")
         mode = data.get("mode", "One Player")
         player_id = self.player_id
         user = await get_user_by_id(player_id)
+
+        if data.get("type") == "create.game.tournament":
+            print("IN TYPE", flush=True) # to rm
+            await self.create_game_tournament(data)
+        
+        if action == "create.game.tournament":
+            print("IN ACTION", flush=True) # to rm
+            await self.create_game_tournament(data)
 
         if action == "connect":
             print(f"Player {player_id} trying to connect to game.", flush=True)
@@ -142,15 +170,23 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             else:
                 self.game_id = f"game_{player_id}"
-                match = await sync_to_async(Match.objects.create)(
-                    player_1=user, 
-                    match_time=timedelta(minutes=2)
-                )
                 self.match_name = self.game_id
                 await self.send(text_data=json.dumps({
                     'action': 'created',
-                    'gameId': match.id
+                    'gameId': self.game_id #in old version it was "'gameId': self.player_id" but it didnt make sense now,
+                                            # so i made it 'gameId': self.game_id, lmk if that breaks anything
                 }))
+
+                #  THIS COMMENT-OUT VERSION WAS THE REASON OF "KEY ERROR"
+                # match = await sync_to_async(Match.objects.create)(
+                #     player_1=user, 
+                #     match_time=timedelta(minutes=2)
+                # )
+                # self.match_name = self.game_id
+                # await self.send(text_data=json.dumps({
+                #     'action': 'created',
+                #     'gameId': match.id
+                # }))
                 if self.game_id in games:
                     game = games[self.game_id]
                     # if not game.running:
@@ -222,7 +258,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 game.ready_players.add(player_id)
                 print(f"Player {player_id} is ready! Ready count: {len(game.ready_players)}", flush=True)
 
-            if mode == "Two Players (remote)" or mode == "4" or mode == "8" or mode == "Two players (with a friend)":
+            if mode == "Two Players (remote)" or mode == "4" or mode == "8":
                 if len(game.ready_players) == 2:
                     print("Both players are ready. Starting game!", flush=True)
                     game.start_game() # this makes them start without having to press on a key
@@ -237,8 +273,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                 game.clear_game()
 
         elif action == "stop":
-        #     # if player_id in ready_players:
-        #     #     ready_players.remove(player_id)
             if self.game_id in games:
                 del games[self.game_id]
                 await self.broadcast_game_state(self.game_id)
@@ -331,6 +365,47 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         return self.match_name
 
+    # async def create_game_tournament(self, event):
+    #     print("Received tournament creation request:", event, flush=True)
+
+    #     player1_id = event["player1"]
+    #     player2_id = event["player2"]
+
+    #     user1 = await get_user_by_id(player1_id)
+    #     user2 = await get_user_by_id(player2_id)
+
+    #     match = await sync_to_async(Match.objects.create)(
+    #         player_1=user1,
+    #         player_2=user2,
+    #         match_time=timedelta(minutes=2)
+    #     )
+
+    #     game_id = match.id
+    #     self.match_name = str(f"match_{match.id}")
+
+    #     await self.channel_layer.group_add(self.match_name, self.channel_name)
+
+    #     game = Game("Two Players (remote)") # this correct??
+    #     game.add_player(user1.id, user1.username)
+    #     game.add_player(user2.id, user2.username)
+    #     game.status = "started"
+    #     games[game_id] = game
+
+    #     await self.channel_layer.group_send(
+    #         "game_lobby",
+    #         {
+    #             "type": "game.created",
+    #             # "action": "game.created",
+    #             "game_id": game_id,
+    #             "player1": user1.username,
+    #             "player2": user2.username
+    #         }
+    #     )
+    #     print(f"Game {game_id} created for {user1.username} vs {user2.username}.", flush=True)
+    
+    #     async def game_result(self, event):
+    #         await self.send(text_data=json.dumps(event))
+
     # async def broadcast_game_state(self, game_id):
     #     if game_id in games:
     #         game = games[game_id]
@@ -389,6 +464,18 @@ class GameConsumer(AsyncWebsocketConsumer):
                         print(f"Winner determined: {winner}", flush=True)
 
                         await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                        # if game.mode == "4" or game.mode == "8":
+                        # if self.tournament_id:
+                        #     await self.channel_layer.group_send(
+                        #         # f'tournament_{self.tournament_id}', 
+                        #         "game_lobby",  # tournament group name
+                        #         {
+                        #             # "action": "game.result",
+                        #             "type": "game.result",
+                        #             "game_id": game_id,
+                        #             "winner": winner
+                        #         }
+                        #     )
                         await self.channel_layer.group_send(
                             self.match_name,
                             {
@@ -403,6 +490,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
                 await asyncio.sleep(0.05)
 
+#TODO this functions exist on data 
 async def get_all_matches_count():
     return await sync_to_async(Match.objects.all().count)()
 

@@ -27,6 +27,8 @@ urlpatterns = [
     path('game_server/', include('game_server.urls')),
 	path('api/authentication/', include('authentication.urls')),
     path('data/', include('data.urls')),
+    path("accounts/", include("allauth.urls")),
+    path("accounts/2fa", include("allauth_2fa.urls")),
     #path('api/', include('game_server.urls')),
     path('tournament-status/', get_tournament_status, name='tournament-status'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

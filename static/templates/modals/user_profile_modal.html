@@ -1,22 +1,19 @@
- <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" data-bs-backdrop="static" data-prev>
+<div class="modal fade" id="userProfileModal" tabindex="-1" aria-labelledby="userProfileModalLabel" data-bs-backdrop="static" data-prev>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+                <h5 class="modal-title" id="rofileModalLabel">User Profile</h5>
                 <button id="previous1Btn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
                 <div class="avatar" id="uAvatar">
                     <img id="userAvatar" src="" alt="F****">
                 </div>
-                <h4><span id="username">John Doe</span></h4>
-                <p><span id="userEmail">johndoe@example.com</span></p>
-                <div class="player-stats d-flex justify-content-center gap-4 mt-2">
-                    <div><strong>Matches Played:</strong> <span id="matchesPlayed">42</span></div>
-                    <div><strong>Wins:</strong> <span id="wins">42</span></div>
-                    <div><strong>Losses:</strong> <span id="losses">42</span></div>
-                </div>
-                <button id="btnType" class="btn btn-outline-dark w-100 mb-2"></button>
+                <h4 id="username">John Doe</h4>
+                <p id="userEmail">johndoe@example.com</p>
+                <button id="editProfileBtn" class="btn btn-outline-dark w-100 mb-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    Add friend
+                </button>
                 <div class="matches">
                     <div class="divider">Matches</div>
                     <table id="matchesTable" class="table">

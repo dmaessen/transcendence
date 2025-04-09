@@ -1,6 +1,37 @@
+let loginsocket;
+
+async function loginWebSocket(){
+    console.log("Let's open those sockets bebê");
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        console.error("No token no game!");
+        return;
+    }
+    console.log("toke: ", token);
+    loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
+    console.log("socket: ", loginsocket);
+    if (!token) {
+        console.error("No access token found! WebSocket authentication will fail.");
+        return;
+    }
+    loginsocket.onopen =  async (event) => {
+        console.log("onlineSocket openned");
+        setInterval(() => {
+            // loginsocket.send(JSON.stringify({ type: "ping" }));
+            loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
+        }, 15000); // every 15s
+    }
+    loginsocket.onclose = (event) => {
+        console.log("onlineSocket closed");
+    }
+    loginsocket.onerror = async function(error) {
+        console.error("onlineSocket error:", error);
+    };
+    console.log("socket: ", loginsocket);
+}
 
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("DOM fully loaded");
     
     const showLogin = document.getElementById("showLogin");
     const showRegister = document.getElementById("showRegister");
@@ -8,15 +39,25 @@ document.addEventListener("DOMContentLoaded", function () {
     const registerContainer = document.getElementById("registerContainer");
     const backToMain1 = document.getElementById("backToMain1");
     const backToMain2 = document.getElementById("backToMain2");
-
+    const qrBack = document.getElementById("QR_back");
+    const confirm2FA = document.getElementById("confirm2FA")
+    const disable2FA = document.getElementById("disable2FA");
+    const submitOTP = document.getElementById("submitOTPButton");
+    const returnOTP = document.getElementById("returnToLogin");
     // Debugging: Check if elements exist
+    
     console.log("Elements found:", {
         showLogin,
-        showRegister,
+        showRegister,      
         loginContainer,
         registerContainer,
         backToMain1,
-        backToMain2
+        backToMain2,
+        qrBack,
+        confirm2FA,
+        disable2FA,
+        submitOTP,
+        returnOTP
     });
 
     if (showLogin) {
@@ -27,6 +68,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     } else {
         console.warn("showLogin button not found!");
+    }
+
+    if (returnOTP){
+        showLogin.addEventListener("click", function() {
+            otpContainer.style.display = "none";
+            loginContainer.style.display = "block";
+        })
     }
 
     if (showRegister) {
@@ -86,13 +134,26 @@ document.addEventListener("DOMContentLoaded", function () {
         registerContainer.style.display = "none";
     });
 
+    document.getElementById("QR_back").addEventListener("click", function() {
+        qrContainer.style.display = "none";
+    });
+
+    document.getElementById("confirm2FA").addEventListener("click", function () {
+        setup2FA();
+        alert("2FA set up!");
+    })
+
+    document.getElementById("disable2FA").addEventListener("click", function (){
+        disable2FA();
+        alert("2FA disabled");
+    })
+
     // Close forms when modal is closed
     signInMenu.addEventListener("hidden.bs.modal", function () {
         loginContainer.style.display = "none";
         registerContainer.style.display = "none";
     });
 });
-
 
 document.addEventListener("DOMContentLoaded", function () {
     // Ensure Bootstrap is loaded
@@ -115,15 +176,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (registerForm) {
         registerForm.addEventListener("submit", async function (e) {
             e.preventDefault();
-            console.log("Register form submitted!");
 
             const name = document.getElementById("registerName").value;
             const username = document.getElementById("registerUsername").value;
             const email = document.getElementById("registerEmail").value;
             const password = document.getElementById("registerPassword").value;
+            const enable2FA = document.getElementById("enable2FAonRegister").checked;
 
             try {
-                const response = await fetch(`${baseUrl}register/`, {
+                const registerData = await fetch(`${baseUrl}register/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -132,15 +193,94 @@ document.addEventListener("DOMContentLoaded", function () {
                     body: JSON.stringify({ username, name, email, password }),
                 });
 
-                const data = await response.json();
-                console.log("Server response:", data);
-
-                if (response.ok) {
-                    alert("Registration successful! You can now log in.");
-                    window.location.reload(); // Reload page to show login form
-                } else {
-                    alert(`Error: ${JSON.stringify(data)}`);
+                const registrationDataResponse = await registerData.json();
+                console.log("Server response, from registration:", registrationDataResponse);
+                
+                if (!registerData.ok) {
+                    if (registerData.status == 400){
+                        alert ("registration failed, user may already exist") 
+                    }
+                    else {
+                        alert(`Registration failed: ${JSON.stringify(registerData)}`);
+                    }
+                    return;
                 }
+
+                alert("Registration successful! You will now be logged in automatically");
+
+                // const requestBody = {email, password};
+
+                // const loginData = await fetch(`${baseUrl}login/`, {
+                //     method: "POST",
+                //     headers: {
+                //         "Content-Type": "application/json",
+                //         "X-CSRFToken": getCSRFToken(),
+                //     },
+                //     body: JSON.stringify(requestBody),
+                // });
+                
+                const accessToken = registrationDataResponse.access;
+                const refreshToken = registrationDataResponse.refresh;
+
+                if (!accessToken || !refreshToken) {
+                    alert("Registration successful, but failed to retrieve tokens.");
+                    return;
+                }
+
+                // if (!loginData.ok) {
+                //     alert("Login failed. Please log in manually.");
+                //     return;
+                // }
+
+                // const loginDataResponse = await loginData.json();
+                // alert("Server response, from login:", loginDataResponse);
+                
+                console.log("accesstoken = ", accessToken);
+                console.log("refreshtoken = ", refreshToken);
+
+                localStorage.setItem("access_token", accessToken);
+                localStorage.setItem("refresh_token", refreshToken);
+                
+                if (!localStorage.getItem("access_token") || !localStorage.getItem("refresh_token")) {
+                    alert("Login failed somehow")
+                    return ;
+                }
+                alert("login complete.");
+
+                if (enable2FA) {
+                    console.log("Enabling 2FA...");
+                    // const accessToken = loginData.access;
+
+                    const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${accessToken}`,
+                        },
+                    });
+
+                    const twoFAData = await twoFAResponse.json();
+                    console.log("2FA response:", twoFAData);
+
+                    if (!twoFAResponse.ok) {
+                        alert(`2FA Setup Failed: ${JSON.stringify(twoFAData)}`);
+                        return;
+                    }
+
+                    if (!twoFAData.qr_code) {
+                        alert("2FA response missing QR code.");
+                        return;
+                    }
+
+                    document.getElementById("registerContainer").style.display = "none";
+                    document.getElementById("qrContainer").style.display = "block";
+                    document.getElementById("qrCodeImage").src = `${twoFAData.qr_code}`;
+                    document.getElementById("qrCodeImage").style.display = "block";
+                    document.getElementById("otpKey").innerText = twoFAData.otp_secret;
+                }
+
+                // window.location.href = "/game_server";
+
             } catch (error) {
                 console.error("Error:", error);
                 alert("An error occurred. Check the console.");
@@ -151,46 +291,113 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const loginForm = document.getElementById("loginForm");
+    const otpInputContainer = document.getElementById("otpContainer");
+    const otpInput = document.getElementById("otpToken");
+    const otpSubmitButton = document.getElementById('submitOTPButton');
+    const otpReturn = document.getElementById('returnToLogin');
+
+    console.log("OTP Submit Button:", otpSubmitButton);
+
+    function saveLoginCredentials(email, password){
+        sessionStorage.setItem("loginEmail", email);
+        sessionStorage.setItem("loginPassword", password);
+    }
+
+    function getSavedLoginCredentials(){
+        return {
+            email: sessionStorage.getItem("loginEmail"),
+            password: sessionStorage.getItem("loginPassword")
+        }
+    }
+
+
+
+    async function loginRequest(email, password, otp_token = null) {
+        try {
+            const requestBody = {email, password};
+            if (otp_token) requestBody.otp_token = otp_token;
+
+            const response = await fetch(`${baseUrl}login/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            const data = await response.json();
+            console.log("Server response:", data);
+
+            if (response.ok) {
+                localStorage.setItem("access_token", data.access);
+                localStorage.setItem("refresh_token", data.refresh);
+                
+                alert("Login successful!");
+                window.location.href = "/game_server";
+                console.log("login done");
+                await loginWebSocket();
+            } else if(response.status === 403){
+                otpInputContainer.style.display = "block";
+                loginForm.style.display = "none"; // should the login form be hidden?
+                alert("2FA required. enter your OTP code please.");
+                
+            } else if(response.status === 401 && data["2fa_required"]){
+                alert("wrong OTP code entered, please try again");
+            } else {
+                alert("login failed, check credentials");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred. Check the console.");
+        }
+    }
 
     if (loginForm) {
         loginForm.addEventListener("submit", async function (e) {
             e.preventDefault();
             console.log("Login form submitted!");
 
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
+            // if (otpInputContainer.style.display === "block"){
+            //     const otp_token = otpInput.value.trim();
+            //     if (!otp_token) {
+            //         alert("Please enter the OTP token");
+            //         return;
+            //     }
+            //     await loginRequest(email, password, otp_token)
+            //     return;
+            // }
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value.trim();
 
-            try {
-                const response = await fetch(`${baseUrl}login/`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": getCSRFToken(),
-                    },
-                    body: JSON.stringify({ email, password }),
-                });
+            saveLoginCredentials(email, password);
 
-                const data = await response.json();
-                console.log("Server response:", data);
-
-                if (response.ok) {
-                    localStorage.setItem("access_token", data.access);
-                    localStorage.setItem("refresh_token", data.refresh);
-                    const twoFaResponse = await fetch("http://localhost:8000/api/authentication/login-2fa/");
-                    if (twoFaResponse.ok) {
-                        window.location.href = "/enable-2fa/"; // Redirect to 2FA page
-                    } else {
-                        alert("Login successful!");
-                        window.location.href = "/game_server";
-                    }
-                } else {
-                    alert("Login failed! Check your credentials.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("An error occurred. Check the console.");
-            }
+            await loginRequest(email, password);
         });
+    }
+
+    if (otpReturn){
+        showLogin.addEventListener("click", function() {
+            otpContainer.style.display = "none";
+            loginContainer.style.display = "block";
+        })
+    }
+
+    if (otpSubmitButton) {
+        otpSubmitButton.addEventListener("click", async function () {
+            console.log("OTP Submit button clicked!");
+
+            const { email, password } = getSavedLoginCredentials();
+            const otp_token = otpInput.value.trim();
+
+            if (!otp_token) {
+                alert("Please enter the OTP token.");
+                return;
+            }
+            console.log("Submitting OTP:", otp_token);
+
+            await loginRequest(email, password, otp_token);
+        })
     }
 });
 
@@ -200,10 +407,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (logoutButton) {
         logoutButton.addEventListener("click", function () {
-            localStorage.removeItem("access");
-            localStorage.removeItem("refresh");
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
             alert("Logged out successfully!");
-            window.location.href = "/";
+            window.location.href = "/game_server/";
         });
     }
 });
@@ -223,22 +430,262 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
                 fetch(`${baseUrl}delete/`, {
-                method: "DELETE",
-                headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" }
+                    method: "DELETE",
+                    headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" }
             })
+            // .then(resp => resp.json().then(data => ({ status: resp.status, body: data })))
             .then(resp => {
-                if (resp.ok) {alert("Your account is now removed permanently");
+                if (resp.status === 204) {alert("Your account is now removed permanently");
                     localStorage.removeItem("access_token");
+                    localStorage.removeItem("refresh_token");
                     window.location.href = "/game_server/";
                 }
                 else {
-                    return response.json().then(data => {
+                    return resp.json().then(data => {
                         alert("Error: " + (data.detail || "Account could not be deleted."));
                     });
                 }
             })  
-            .catch(error => console.error("Error:", error));
-        })
-        
+            // .catch(error => {console.error("Error:", error);
+            // alert("an error occured"); });
+        });
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () 
+{
+    const enable2FAButton = document.getElementById("enable2FA");
+    const qrContainer = document.getElementById("qrContainer");
+    const qrCodeImage = document.getElementById("qrCodeImage")
+    const otpKey = document.getElementById("otpKey")
+    const confirm2FA = document.getElementById("confirm2FA")
+    const qrBack = document.getElementById("qrBack")
+    
+    console.log("Enable 2FA button clicked");
+    
+    if (enable2FAButton) 
+    {
+        enable2FAButton.addEventListener("click", async function ()
+        {
+            console.log("Enable 2FA button clicked")
+            let accessToken = localStorage.getItem("access_token");
+
+            if (!accessToken) {
+                console.log("no access token found when enabling 2FA");
+                console.log("trying to refresh..");
+                accessToken = await refreshAccessToken();
+                if (!accessToken){
+                    alert("You are not logged in, please do so now.")
+                    window.location.href = "/game_server/"
+                    return
+                };
+            }
+            try 
+            {
+                alert("using this access token", accessToken);
+
+                const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${accessToken}`,
+                    },
+                });
+
+                const twoFAData = await twoFAResponse.json();
+                console.log("2FA response:", twoFAData);
+
+                if (!twoFAResponse.ok) {
+                    alert(`2FA Setup Failed: ${JSON.stringify(twoFAData)}`);
+                    return;
+                }
+
+                if (!twoFAData.qr_code) {
+                    alert("2FA response missing QR code.");
+                    return;
+                }
+
+                document.getElementById("registerContainer").style.display = "none";
+                document.getElementById("qrContainer").style.display = "block";
+                document.getElementById("qrCodeImage").src = `${twoFAData.qr_code}`;
+                document.getElementById("qrCodeImage").style.display = "block";
+                document.getElementById("otpKey").innerText = twoFAData.otp_secret;
+            // }
+
+                // const data = await response.json();
+                
+                // console.log("2fa register return data: {otp_secret ", data.otp_secret, "}")
+
+                // document.getElementById("qrCodeImage").src = data.qr_code;
+                // document.getElementById("otpKey").innerText = data.otp_secret;
+                
+                // document.getElementById("registerContainer").style.display = "none";
+                // document.getElementById("qrContainer").style.display = "block";
+
+                // if (response.ok) 
+                // {
+                //     qrCodeImage.src = `${data.qr_code}`;
+                //     // qrCodeImage.src = `data:image/png;base64,${data.qr_code}`;
+                //     otpKey.innerText = data.otp_uri;
+                //     qrContainer.style.display = "block";
+                // } 
+                // else 
+                // {
+                //     alert(`error: ${JSON.stringify(data)}`);
+                // }
+            } 
+            catch (error) 
+            {
+                console.error("Error regestering 2FA:", error);
+                alert("there have been issues, please start panicking!");
+            }
+        });
+    }
+    if (confirm2FA) {
+        confirm2FA.addEventListener("click", async function () 
+        {
+            try 
+            {
+                const response = await fetch(`${baseUrl}enable-2fa/`, 
+                {
+                    method: "POST",
+                    headers: 
+                    {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+                        "X-CSRFToken": getCSRFToken(),
+                    },
+                });
+                
+                if (response.ok) 
+                {
+                    alert("2FA enabled!");
+                    qrContainer.style.display = "none";
+                }
+                else if (response.status === 500)
+                {
+                    alert("there was an issue generating the otp code")
+                }
+                else
+                {
+                    alert("2FA failure :(");
+                }
+            }
+            catch (error) 
+            {
+                console.error("Error confirming 2FA :(", error);
+            }
+        });
+    }
+
+    if (qrBack) 
+    {
+        qrBack.addEventListener("click", async function () 
+        {
+            qrContainer.style.display = "none";
+        });
+    }
+});
+
+
+function disable2FA() {
+    let access_token = localStorage.getItem("access+token");
+
+    if(!access_token){
+        access_token = refreshAccessToken();
+        if(!access_token){
+            alert("you are not logged in, please do so now");
+            return null;
+        }
+    }
+
+    const response = fetch(`${baseUrl}disable-2fa/`, 
+        {
+            method: "POST",
+            headers: 
+            {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${access_token}`,
+                "X-CSRFToken": getCSRFToken(),
+            },
+        })
+}
+
+function setup2FA() {
+    let access_token;
+
+    access_token = localStorage.getItem("access_token"); 
+    if (!access_token) {
+        try {
+            access_token = refreshAccessToken()
+        } catch (error) {
+            console.error("Error refreshing token", error);
+            alert("No refresh token found, please login.")
+            // window.location.href = "/game_server";;
+            return null;
+        }
+    }
+
+    const response = fetch(`${baseUrl}register-2fa/`, 
+    {
+        method: "POST",
+        headers: 
+        {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${access_token}`,
+            "X-CSRFToken": getCSRFToken(),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.qr_code) {
+            document.getElementById("qrCodeImage").src = data.qr_code;
+            document.getElementById("otpKey").innerText = data.otp_secret;
+            document.getElementById("qrContainer").style.display = "block";
+        }
+        else {
+            alert ("there was a problem in setting up your 2fa");
+        }
+    })
+    .catch(error => console.error("Error:", error))
+}
+
+
+async function refreshAccessToken(){
+    let accessToken = localStorage.getItem("access_token");
+    const refreshToken = localStorage.getItem("refresh_token");
+
+    if (!refreshToken) {
+        console.warn("No refresh token found, please login.");
+        alert("No refresh token found, please login.")
+        // windowl.location.href = "/game_server";
+        return null;
+    }
+
+    try {
+        const response = await fetch(`${baseUrl}refresh/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json"}, 
+            body: JSON.stringify({refresh: refreshToken}),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error("Refresh token invalid:", data);
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            alert("Session expired. Please log in again.");
+            // window.location.href = "/game_server";
+            return null;
+        } 
+        alert("refresh access token called, new access token:", accessToken)
+        localStorage.setItem("access_token", data.access);
+        console.log("Access token refreshed.");
+        return data.access
+    } catch (error) {
+        console.error("Error refreshing token", error);
+        // window.location.href = "/game_server";;
+        return null;
+    }
+}

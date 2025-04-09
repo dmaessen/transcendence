@@ -3,7 +3,7 @@ DOCK_COMPOSE_FILE :=    docker-compose.yaml
 DOCK_COMPOSE_KEYS := docker-compose.keys.yaml
 
 
-all: build_folder build updetach
+all: build_folder buildclean updetach
 
 build_folder:
 	mkdir -p $(HOME)/.tranceanddance/pgdata
