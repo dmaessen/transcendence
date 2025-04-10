@@ -15,12 +15,13 @@ async function loginWebSocket(){
         console.error("No access token found! WebSocket authentication will fail.");
         return;
     }
-    loginsocket.onopen =  async (event) => {
+    loginsocket.onopen =  async(event) => {
         console.log("onlineSocket openned");
-        setInterval(() => {
-            // loginsocket.send(JSON.stringify({ type: "ping" }));
-            loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
-        }, 15000); // every 15s
+        loginsocket.send(JSON.stringify({ type: "ping", message: "Hello server!!!!" }));
+        // setInterval(() => {
+        //     // loginsocket.send(JSON.stringify({ type: "ping" }));
+        //     loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
+        // }, 15000); // every 15s
     }
     loginsocket.onclose = (event) => {
         console.log("onlineSocket closed");
