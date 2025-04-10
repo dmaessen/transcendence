@@ -31,6 +31,7 @@ function connectWebSocket(mode) {
     console.log("Attempting to connect to websocket...");
     if (mode == "4" || mode == "8")
         websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
+        // websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/`);
     else
         websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
 

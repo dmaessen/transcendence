@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 alert("Login successful!");
                 window.location.href = "/game_server";
                 console.log("login done");
-                await loginWebSocket();
+                // await loginWebSocket();
             } else if(response.status === 403){
                 otpInputContainer.style.display = "block";
                 loginForm.style.display = "none"; // should the login form be hidden?

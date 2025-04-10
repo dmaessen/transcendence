@@ -46,11 +46,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             user_id = access_token["user_id"]
             logger.info(f"----userid: {user_id}\n\n")
             # Fetch the user from the database based on the user_id
-            # ITS START BUGGIN HERE
-            # user = await sync_to_async(CustomUser.objects.get)(id=user_id)
-            # logger.info(f"username: {user.username}")
-            # self.scope["user"] = user  # Assign the user to the scope
-            # logger.info(f"Authenticated user {user.username} connected via WebSocket.")
             try:
                 user = await sync_to_async(CustomUser.objects.get)(id=user_id)
                 logger.info(f"username: {user.username}")
@@ -69,11 +64,16 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.close()  # Close if no token is provided
         #If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
-            user = self.scope["user"]
-            logger.info(f"user {user}")
-            print(f"user {user}")
-            self.player_id = self.scope["user"].id
-            self.username = self.scope["user"].username
+            try:
+                user = self.scope["user"]
+                logger.info(f"user {user}")
+                print(f"user {user}")
+                self.player_id = self.scope["user"].id
+                self.username = self.scope["user"].username
+            except Exception as e:
+                logger.exception("Exception during WebSocket connection:")
+                await self.close()
+                return
         # else:
         #     # Use sync_to_async for session creation
         #     session = await sync_to_async(SessionStore)()
@@ -95,16 +95,13 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         print(f"player_id == {self.player_id}", flush=True)
         #player = Player(self.player_id, self.session_key, 'online')
+        print("Before append:", player_queue, flush=True)
         player_queue.append(self.player_id)
+        print("After append:", player_queue, flush=True)
+
         #self.match_data = "waiting"
 
-        # checking if part of a tournament game
-        # self.tournament_id = self.scope['url_route']['kwargs'].get('tournament_id', 'tournament_lobby')  # none if not a tournament game
-        # self.tournament_game_id = self.scope['url_route']['kwargs'].get('game_id', 'default_game') 
-        # if self.tournament_id:
-        #     print(f"MADE IT HERE")
         self.room_name = "game_lobby"
-            # self.room_name = f'tournament_{self.tournament_id}_game_{self.tournament_game_id}'
         await self.channel_layer.group_add(self.room_name, self.channel_name)
         print(f"GameConsumer connected to room: {self.room_name}", flush=True)
 
@@ -343,12 +340,17 @@ class GameConsumer(AsyncWebsocketConsumer):
         #await self.channel_layer.group_add(self.match_name, self.channel_name)
 
         match = await sync_to_async(Match.objects.filter)(player_2__isnull=True, tournament__isnull=True)
+        #print(f"Player {self.player_id} entered find_match() PRINT1", flush=True) # to rm
         if await sync_to_async(match.count)() == 0:
             await self.create_game(self.player_id)
             match = await sync_to_async(Match.objects.latest)('id')
+            #print(f"Player {self.player_id} entered find_match() PRINT2", flush=True) # to rm
+            #print(f"Player {self.player_id} entered find_match() PRINT3", flush=True) # to rm
         else:
             match = await sync_to_async(match.first)()
             self.match_name = await self.join_game(match, 2, self.player_id)
+            #print(f"Player {self.player_id} entered find_match() PRINT4", flush=True) # to rm
+            #print(f"Player {self.player_id} entered find_match() PRINT5", flush=True) # to rm
 
         player_queue.remove(self.player_id)
 
@@ -376,6 +378,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.join_game(match, 1, player_id)
 
     async def join_game(self, match, numb_of_players, player_id):
+        print(f"Player {self.player_id} entered join_game()", flush=True)
         user = await get_user_by_id(player_id)
         if numb_of_players == 1:
             game = games[match.id]
