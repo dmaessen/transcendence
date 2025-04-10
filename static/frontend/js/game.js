@@ -147,8 +147,8 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     gameTitle.style.display = "none";
     document.getElementById("tournamentBracket").style.display = "none"; // this working??
     document.getElementById("tournamentBracket4").style.display = "none"; // this working??
-    socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-    socket.close()
+    websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+    websocket.close()
     gameMenuFirst.show();
     // also needs to be pulled out of games/tournament and declare opponent as the winner
 });
@@ -341,17 +341,17 @@ document.addEventListener("keydown", (event) => {
     //     startTimer();
     // }
     if (gameState.mode != "One Player" && gameState.mode != "Two Players (hot seat)") {
-        if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+        if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed, 'ready' state, waiting for the other player to start the game...");
-            socket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
+            websocket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
             // startTimer();
         }
     }
     else {
-        if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+        if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed. Starting the game...");
             gameState.running = true;
-            socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+            websocket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
             startTimer();
         }
     }
@@ -393,7 +393,7 @@ function sendMovements() {
 
     if (directions.length > 0) {
         console.log("keys pressed: ", [...pressedKeys]); // to rm
-        socket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
+        websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
 }
 
@@ -410,7 +410,7 @@ function sendMovements() {
 // });
 
 window.addEventListener("beforeunload", () => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
         console.log("Closing WebSocket before page unload.");
         gameState.running = false;
         stopTimer();
@@ -418,8 +418,8 @@ window.addEventListener("beforeunload", () => {
         instructions2.style.display = "none";
         gameCanvas.style.display = "none";
         gameTitle.style.display = "none";
-        socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-        socket.close()
+        websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+        websocket.close()
         gameMenuFirst.show();
     }
 });

@@ -4,7 +4,7 @@
 let websocket;
 // let tournamentwebwebsocket;
 
-let socket;
+// let socket;
 let reconnecting = false; // needed??
 let resetting = false; // needed?
 
