@@ -50,7 +50,8 @@ def get_user_data(request):
         "btnType": btnType,
         "matches_played": matches_played,
         "matches_won": matches_won,
-        "matches_lost": matches_lost
+        "matches_lost": matches_lost,
+        "user_id": user.id
     }
     logging.info(f"userdata: {user_data}")
 

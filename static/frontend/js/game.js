@@ -181,7 +181,14 @@ tournamentBanner.addEventListener("click", async(event) => {
 });
 
 window.addEventListener("load", async () => {
-    gameMenuFirst.show();
+    //get token to check if user is logged, if it is, open main menu if not login modal
+    const accessToken = localStorage.getItem("access_token");
+    console.log("access_token on game: ", accessToken);
+    if (accessToken) {
+        gameMenuFirst.show();
+    } else {
+        SignInMenu.show();
+    }
     const bracketElement = document.getElementById("tournamentBracket");
     bracketElement.style.display = "none";
 
@@ -420,6 +427,7 @@ window.addEventListener("beforeunload", () => {
         gameTitle.style.display = "none";
         socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
         socket.close()
-        gameMenuFirst.show();
+        gameMenuFirstshow();
+        // SignInMenu.show();
     }
 });
