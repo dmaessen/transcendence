@@ -185,6 +185,11 @@ window.addEventListener("load", async () => {
     const accessToken = localStorage.getItem("access_token");
     console.log("access_token on game: ", accessToken);
     if (accessToken) {
+        // Ensure the onlineWebSocket is open if it wasn't already
+        if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
+            // Reconnect or create the online WebSocket
+            await loginWebSocket();
+        }
         gameMenuFirst.show();
     } else {
         SignInMenu.show();
@@ -417,7 +422,7 @@ function sendMovements() {
 // });
 
 window.addEventListener("beforeunload", () => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (socket && socket.readyState === WebSocket.OPEN && socket !== loginsocket) {
         console.log("Closing WebSocket before page unload.");
         gameState.running = false;
         stopTimer();
@@ -427,7 +432,7 @@ window.addEventListener("beforeunload", () => {
         gameTitle.style.display = "none";
         socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
         socket.close()
-        gameMenuFirstshow();
         // SignInMenu.show();
     }
+    gameMenuFirst.show();
 });
