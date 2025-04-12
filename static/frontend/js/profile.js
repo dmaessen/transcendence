@@ -189,6 +189,7 @@ async function loadUserData(userID) {
         document.getElementById("matchesPlayed").textContent = data.matches_played;
         document.getElementById("wins").textContent = data.matches_won;
         document.getElementById("losses").textContent = data.matches_lost;
+        document.getElementById("AllMatchesModal").setAttribute("data-user-id", data.user_id);
 
         let btnType = document.getElementById("btnType");
         btnType.disabled = false;
@@ -278,5 +279,6 @@ const profileBtn = document.getElementById("profileBtn");
 if (profileBtn) {
     profileBtn.addEventListener("click", function () {
         loadProfile("self");
+        
     });
 }
