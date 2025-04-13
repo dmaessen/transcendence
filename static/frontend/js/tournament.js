@@ -1,22 +1,23 @@
 let winners4 = [];
 let winners8 = [];
 let winners8_final = [];
+let tournamentInterval = null;
 
 async function drawBracket(mode) {
     console.log("drawBracket called with mode:", mode);
-    if (mode == "4") {
+    if (mode == 4) {
         document.getElementById("tournamentBracket4").style.display = "grid";
         document.getElementById("tournamentBracket4").style.background = "white";
-        clearPlayerFields(mode);
+        // clearPlayerFields(mode);
     }
     else {
         document.getElementById("tournamentBracket").style.display = "grid";
         document.getElementById("tournamentBracket").style.background = "white";
-        clearPlayerFields(mode);
+        // clearPlayerFields(mode);
     }
 
     await updateBracketWithData(mode);
-    let tournamentInterval = setInterval(async () => await updateBracketWithData(mode), 5000); // Auto-update every 5s
+    tournamentInterval = setInterval(async () => await updateBracketWithData(mode), 5000); // Auto-update every 5s
 }
 
 function stopTournamentUpdates() {
@@ -32,6 +33,8 @@ async function updateBracketWithData(mode) {
         console.log("Fetched tournament status:", data);
 
         if (data) {
+            if (data.running == false && (data.players_in == 0 || data.players_in == 1))
+                clearPlayerFields(mode);
             if (data.running == false)
                 updatePlayerFields(mode, data.players, data.results);
             updateBracket(mode, data.bracket, data.current_round, data.final_winner);
@@ -54,7 +57,7 @@ function updatePlayerFields(mode, players, results = []) {
         if (mode == 8) {
             playerElem = document.getElementById(`Player${i + 1}`);
             resultElem = document.getElementById(`Result${i + 1}`);
-        } else if (mode == "4") {
+        } else if (mode == 4) {
             playerElem = document.getElementById(`Player${i + 1}_`);
             resultElem = document.getElementById(`Result${i + 1}_`);
         }
@@ -74,13 +77,24 @@ function updatePlayerFields(mode, players, results = []) {
     }
 }
 
-function updateBracket(mode, bracket, currentRound, final_winner) {
+const clearArrayWinners = async () => {
+    await sleep(1000);
+    winners4 = [];
+    winners8 = [];
+    winners8_final = [];
+}
+
+async function updateBracket(mode, bracket, currentRound, final_winner) {
     console.log("Updating bracket with mode:", mode);
 
     let playerElem;
     let resultElem;
 
-    if (mode == "4" && final_winner != null) { // WORKING
+    // let winners4 = [];
+    // let winners8 = [];
+    // let winners8_final = [];
+
+    if (mode == 4 && final_winner != null) { // WORKING
         playerElem = document.getElementById(`Player${13}_`);
         if (playerElem && playerElem.textContent.trim() === final_winner.username) {
             resultElem = document.getElementById(`Result${13}_`);
@@ -94,8 +108,9 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
             }
         }
         // winners4 = [];
+        await clearArrayWinners();
     }
-    if (mode == "8" && final_winner != null) {
+    if (mode == 8 && final_winner != null) {
         playerElem = document.getElementById(`Player${13}`);
         if (playerElem && playerElem.textContent.trim() === final_winner.username) {
             resultElem = document.getElementById(`Result${13}`);
@@ -108,10 +123,11 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
             }
         }
+        await clearArrayWinners();
         // winners8 = [];
         // winners8_final = [];
     }
-    if (mode == "4" && (currentRound == 1 || currentRound == 2)) {
+    if (mode == 4 && (currentRound == 1 || currentRound == 2)) {
         if (bracket && bracket[1]) {
             for (let i = 0; i < mode; i++) {
                 playerElem = document.getElementById(`Player${i + 1}_`);
@@ -123,13 +139,15 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
                         if (playerElem && playerElem.textContent.trim() === playerName) {
                             if (playerObj.winner) {
                                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
-                                winners4.push(playerName);
+                                if (!winners4.includes(playerName)) {
+                                    winners4.push(playerName);
+                                }
                             }
                         }
                     });
                 });}}
     }
-    if (mode == "8" && (currentRound == 1 || currentRound == 2)) {
+    if (mode == 8 && (currentRound == 1 || currentRound == 2)) {
         if (bracket && bracket[1]) {
             for (let i = 0; i < mode; i++) {
                 playerElem = document.getElementById(`Player${i + 1}`);
@@ -140,13 +158,15 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
                         if (playerElem && playerElem.textContent.trim() === playerName) {
                             if (playerObj.winner) {
                                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
-                                winners8.push(playerName);
+                                if (!winners8.includes(playerName)) {
+                                    winners8.push(playerName);
+                                }
                             }
                         }
                     });
         });}}
     }
-    if (mode == "4" && winners4.length == 2){
+    if (mode == 4 && winners4.length == 2){
         playerElem = document.getElementById(`Player${13}_`);
         if (playerElem){
             playerElem.innerText = winners4[0];
@@ -156,7 +176,7 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
             playerElem.innerText = winners4[1];
         }
     }
-    if (mode == "8" && winners8.length == 4) {
+    if (mode == 8 && winners8.length == 4) {
         playerElem = document.getElementById(`Player${9}`);
         if (playerElem) {
             playerElem.innerText = winners8[0];
@@ -174,7 +194,7 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
             playerElem.innerText = winners8[3];
         }
     }
-    if (mode == "8" && (currentRound == 3 || currentRound == 2)) {
+    if (mode == 8 && (currentRound == 3 || currentRound == 2)) {
         if (bracket && bracket[2]) {
             for (let i = 8; i < 13; i++) {
                 playerElem = document.getElementById(`Player${i + 1}`);
@@ -185,13 +205,15 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
                         if (playerElem && playerElem.textContent.trim() === playerName) {
                             if (playerObj.winner) {
                                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
-                                winners8_final.push(playerName);
+                                if (!winners8_final.includes(playerName)) {
+                                    winners8_final.push(playerName);
+                                }
                             }
                         }
                     });
         });}}
     }
-    if (mode == "8" && winners8_final.length == 2){
+    if (mode == 8 && winners8_final.length == 2){
         playerElem = document.getElementById(`Player${13}`);
         if (playerElem){
             playerElem.innerText = winners8_final[0];

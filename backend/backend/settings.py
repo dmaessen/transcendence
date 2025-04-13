@@ -280,11 +280,11 @@ LOGGING = {
         #     "level": "DEBUG",
         #     "propagate": True,
         # },
-        "game_server": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
+        # "game_server": {
+        #     "handlers": ["console"],
+        #     "level": "DEBUG",
+        #     "propagate": False,
+        # },
         "data": {
             "handlers": ["console"],
             "level": "DEBUG",

@@ -27,53 +27,53 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     initiator = None
 
     async def connect(self):
-        query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
-        token = query_params.get("token", [None])[0]
-        logger.info(f"querry: {query_params}\ntoken: {token}")
-        if token:
-            # Validate the JWT token
-            access_token = AccessToken(token)
-            logger.info(f"----access token: {access_token}\n\n")
-            user_id = access_token["user_id"]
-            logger.info(f"----userid: {user_id}\n\n")
-            # Fetch the user from the database based on the user_id
-            try:
-                user = await sync_to_async(CustomUser.objects.get)(id=user_id)
-                logger.info(f"username: {user.username}")
-                self.scope["user"] = user
-                logger.info(f"Authenticated user {user.username} connected via WebSocket.")
-            except ObjectDoesNotExist:
-                logger.warning(f"User with id {user_id} not found.")
-                await self.close()
-                return
-            except Exception as e:
-                logger.error(f"Unexpected error while fetching user: {e}")
-                await self.close()
-                return
-        else:
-            logger.warning("No token provided.")
-            await self.close()  # Close if no token is provided
+        # query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
+        # token = query_params.get("token", [None])[0]
+        # logger.info(f"querry: {query_params}\ntoken: {token}")
+        # if token:
+        #     # Validate the JWT token
+        #     access_token = AccessToken(token)
+        #     logger.info(f"----access token: {access_token}\n\n")
+        #     user_id = access_token["user_id"]
+        #     logger.info(f"----userid: {user_id}\n\n")
+        #     # Fetch the user from the database based on the user_id
+        #     try:
+        #         user = await sync_to_async(CustomUser.objects.get)(id=user_id)
+        #         logger.info(f"username: {user.username}")
+        #         self.scope["user"] = user
+        #         logger.info(f"Authenticated user {user.username} connected via WebSocket.")
+        #     except ObjectDoesNotExist:
+        #         logger.warning(f"User with id {user_id} not found.")
+        #         await self.close()
+        #         return
+        #     except Exception as e:
+        #         logger.error(f"Unexpected error while fetching user: {e}")
+        #         await self.close()
+        #         return
+        # else:
+        #     logger.warning("No token provided.")
+        #     await self.close()  # Close if no token is provided
         # If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username
-        # else:
-        #     session = await sync_to_async(SessionStore)()
-        #     await sync_to_async(session.create)()
+        else:
+            session = await sync_to_async(SessionStore)()
+            await sync_to_async(session.create)()
             
-        #     CustomUser = get_user_model()
-        #     unique_username = f"Guest_{uuid.uuid4().hex[:12]}"
-        #     guest_user = await sync_to_async(CustomUser.objects.create)(
-        #         username=unique_username,
-        #         name=f"Guest_{session.session_key[:12]}",
-        #         email=f"{session.session_key[:10]}",
-        #         is_active=False
-        #     )
-        #     print(f"guest user {guest_user.name}")
+            CustomUser = get_user_model()
+            unique_username = f"Guest_{uuid.uuid4().hex[:12]}"
+            guest_user = await sync_to_async(CustomUser.objects.create)(
+                username=unique_username,
+                name=f"Guest_{session.session_key[:12]}",
+                email=f"{session.session_key[:10]}",
+                is_active=False
+            )
+            print(f"guest user {guest_user.name}")
             
-        #     self.player_id = guest_user.id
-        #     self.session_key = session.session_key
-        #     self.username = guest_user.username
+            self.player_id = guest_user.id
+            self.session_key = session.session_key
+            self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
         player = Player(self.player_id, self.session_key, 'online')
@@ -143,18 +143,18 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 game.ready_players.add(self.player_id)
                 print(f"Player {self.player_id} is ready! Ready count: {len(game.ready_players)}", flush=True)
 
-            # WORK ON THIS
-            if len(game.ready_player) == 1:
-                asyncio.create_task(self.tournament1v1game_timeout_task(self.game_id, self.player_id))
-                # start timer of xx sec 
-                # if timer done then this player is winner, game ends
+                # WORK ON THIS
+                # if len(game.ready_players) == 1:
+                #     asyncio.create_task(self.tournament1v1game_timeout_task(self.game_id, self.player_id))
+                    # start timer of xx sec 
+                    # if timer done then this player is winner, game ends
 
-            if len(game.ready_players) == 2:
-                print("Both players are ready. Starting game!", flush=True)
-                game.start_game()
-                await self.send_json({"type": "started", "game_id": self.game_id})
-                await self.send_game_state(game)
-                asyncio.create_task(self.broadcast_game_state(self.game_id))
+                if len(game.ready_players) == 2:
+                    print("Both players are ready. Starting game!", flush=True)
+                    game.start_game()
+                    await self.send_json({"type": "started", "game_id": self.game_id})
+                    await self.send_game_state(game)
+                    asyncio.create_task(self.broadcast_game_state(self.game_id))
         
         elif action == "end": #this one aint needed i guess??
             if self.game_id in games:
@@ -183,8 +183,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         game.stop_game("No players")
                         del games[game_id]
                         print(f"Game {game_id} ended. Winner: No players", flush=True)
-            if hasattr(self, 'match_name'):
-                await self.channel_layer.group_discard(self.match_name, self.channel_name)
+                if hasattr(self, 'match_name'):
+                    await self.channel_layer.group_discard(self.match_name, self.channel_name)
 
         elif action == "disconnect":
             if self.initiator == self.scope["user"]:
@@ -264,7 +264,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 print(f"Game {game_id} in tournament timed out. Declaring a winner {player_id}.")
 
                 player_username = None
-                for player in game.players.items():
+                for _, player in game.players.items():
                     if player.get("id") == player_id:
                         player_username = player.get("username")
 
