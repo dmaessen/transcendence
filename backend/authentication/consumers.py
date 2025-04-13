@@ -53,5 +53,5 @@ class UserStatusConsumer(AsyncWebsocketConsumer):
         if user.is_authenticated:
             cache.delete(f"user_online_{user.id}")
             logger.info(f"user {user.username} is decached\n\n")
-        await self.send(text_data=json.dumps({"type": "close", "message": "Doei doei!"}))
-        await self.close(code=1000)
+        # await self.send(text_data=json.dumps({"type": "close", "message": "Doei doei!"}))
+        # await self.close(code=1000)
