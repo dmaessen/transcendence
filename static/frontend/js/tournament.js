@@ -1,3 +1,7 @@
+let winners4 = [];
+let winners8 = [];
+let winners8_final = [];
+
 async function drawBracket(mode) {
     console.log("drawBracket called with mode:", mode);
     if (mode == "4") {
@@ -28,7 +32,8 @@ async function updateBracketWithData(mode) {
         console.log("Fetched tournament status:", data);
 
         if (data) {
-            updatePlayerFields(mode, data.players, data.results);
+            if (data.running == false)
+                updatePlayerFields(mode, data.players, data.results);
             updateBracket(mode, data.bracket, data.current_round, data.final_winner);
 
             // Stop updates if tournament is over or a player quits
@@ -74,9 +79,6 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
 
     let playerElem;
     let resultElem;
-    let winners4 = [];
-    let winners8 = [];
-    let winners8_final = [];
 
     if (mode == "4" && final_winner != null) { // WORKING
         playerElem = document.getElementById(`Player${13}_`);
@@ -91,7 +93,7 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
             }
         }
-        winners4 = [];
+        // winners4 = [];
     }
     if (mode == "8" && final_winner != null) {
         playerElem = document.getElementById(`Player${13}`);
@@ -106,8 +108,8 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
             }
         }
-        winners8 = [];
-        winners8_final = [];
+        // winners8 = [];
+        // winners8_final = [];
     }
     if (mode == "4" && (currentRound == 1 || currentRound == 2)) {
         if (bracket && bracket[1]) {
@@ -205,6 +207,10 @@ function updateBracket(mode, bracket, currentRound, final_winner) {
 function clearPlayerFields(mode) {
     let playerElem;
     let resultElem;
+
+    winners4 = [];
+    winners8 = [];
+    winners8_final = [];
 
     if (mode == 8) {
         for (let i = 0; i < 14; i++) {
