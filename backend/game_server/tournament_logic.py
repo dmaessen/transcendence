@@ -71,11 +71,15 @@ class Tournament:
         self.winners = []
         channel_layer = get_channel_layer()
 
-        # if self.current_round not in self.bracket:
-        #     return
-
         for player1, player2 in self.bracket[self.current_round]:
             match_exists = any(match["player1"] == player1["player"]["id"] and match["player2"] == player2["player"]["id"] for match in self.matches)
+            
+            # WORK ON THIS
+            # if player1["player"]["username"] == "wildcard":
+            #     # then no need to start match as then other player is the winner directly
+            # if player2["player"]["username"] == "wildcard":
+            #     # then no need to start match as then other player is the winner directly
+            
             if not match_exists:
                 await channel_layer.group_send(
                     "tournament_lobby",
