@@ -189,7 +189,7 @@ async function loadUserData(userID) {
         document.getElementById("matchesPlayed").textContent = data.matches_played;
         document.getElementById("wins").textContent = data.matches_won;
         document.getElementById("losses").textContent = data.matches_lost;
-        document.getElementById("AllMatchesModal").setAttribute("data-user-id", data.user_id);
+        // document.getElementById("AllMatchesModal").setAttribute("data-user-id", data.user_id);
 
         let btnType = document.getElementById("btnType");
         btnType.disabled = false;
@@ -280,5 +280,18 @@ if (profileBtn) {
     profileBtn.addEventListener("click", function () {
         loadProfile("self");
         
+    });
+}
+
+const profileCloseButton = document.getElementById("profileCloseButton");
+if(profileCloseButton){
+    profileCloseButton.addEventListener("click", function() {
+        console.log("profile close clicked");
+        const profileModalElement = document.getElementById("profileModal");
+        const profileModal = bootstrap.Modal.getInstance(profileModalElement);
+        profileModal.hide();
+        const gameMenuFirstElement = document.getElementById("gameMenuFirst");
+        const gameMenuFirst = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
+        gameMenuFirst.show();
     });
 }
