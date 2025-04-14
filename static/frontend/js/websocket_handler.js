@@ -118,12 +118,14 @@ const returnToTournamentWaitingRoom = async () => {
 }
 
 const returnToStartMenuAfterTournament = async () => {
-    await sleep(5000);
+    await sleep(1000);
     instructions1.style.display = "none";
     instructions2.style.display = "none";
     instructions3.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
+    document.getElementById("tournamentBracket4").style.display = "none";
+    document.getElementById("tournamentBracket").style.display = "none";
     if (websocket && websocket.readyState === WebSocket.OPEN) {
         await sleep(500);
         websocket.close();

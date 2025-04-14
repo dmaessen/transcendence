@@ -225,13 +225,6 @@ function showWaitingRoomTournament(mode) {
     // console.log("Bracket element:", bracketElement);
     // bracketElement.style.display = "grid";
     drawBracket(mode);
-
-    // gameContext.font = "50px Courier New";
-    // gameContext.fillStyle = "#000000";
-    // gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
-    // gameContext.fillStyle = "#ffffff";
-    // gameContext.textAlign = "center";
-    // gameContext.fillText("Waiting for players to join...", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
 }
 
 function updateGameState(data) {
