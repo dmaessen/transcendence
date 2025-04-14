@@ -187,7 +187,6 @@ window.addEventListener("load", async () => {
     if (accessToken) {
         // Ensure the onlineWebSocket is open if it wasn't already
         if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
-            // Reconnect or create the online WebSocket
             await loginWebSocket();
         }
         gameMenuFirst.show();
