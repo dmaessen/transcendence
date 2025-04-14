@@ -161,3 +161,16 @@ searchInput.addEventListener("input", async function(){
         
     })
 })
+
+const addFriendCloseBtn = document.getElementById("addFriendCloseBtn");
+if(addFriendCloseBtn){
+    addFriendCloseBtn.addEventListener("click", function() {
+        console.log("add close clicked");
+        const addFriendsModalElement = document.getElementById("addFriendsModal");
+        const addFriendsModal = bootstrap.Modal.getInstance(addFriendsModalElement);
+        addFriendsModal.hide();
+        const friendsModalElement = document.getElementById("friendsModal");
+        const friendsModal = bootstrap.Modal.getOrCreateInstance(friendsModalElement);
+        friendsModal.show();
+    });
+}
