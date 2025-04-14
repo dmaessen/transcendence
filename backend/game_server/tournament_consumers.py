@@ -143,11 +143,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 game.ready_players.add(self.player_id)
                 print(f"Player {self.player_id} is ready! Ready count: {len(game.ready_players)}", flush=True)
 
-                # WORK ON THIS
-                # if len(game.ready_players) == 1:
-                #     asyncio.create_task(self.tournament1v1game_timeout_task(self.game_id, self.player_id))
-                    # start timer of xx sec 
-                    # if timer done then this player is winner, game ends
+                # if timer done then this player is winner, game ends
+                if len(game.ready_players) == 1:
+                    asyncio.create_task(self.tournament1v1game_timeout_task(self.game_id, self.player_id))
 
                 if len(game.ready_players) == 2:
                     print("Both players are ready. Starting game!", flush=True)
@@ -156,7 +154,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     await self.send_game_state(game)
                     asyncio.create_task(self.broadcast_game_state(self.game_id))
         
-        elif action == "end": #this one aint needed i guess??
+        elif action == "end":
             if self.game_id in games:
                 game = games.pop(self.game_id, None)
                 if game:
@@ -187,22 +185,60 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     await self.channel_layer.group_discard(self.match_name, self.channel_name)
 
         elif action == "disconnect":
-            if self.initiator == self.scope["user"]:
-                TournamentConsumer.tournament = None
-                TournamentConsumer.initiator = None
-            
-            await self.send_json({"type": "end_tournament"})
+            if self.game_id in games:
+                game = games[self.game_id]
+                if self.player_id in game.players:
+                    game.remove_player(self.player_id)
+                    if not game.players:
+                        game.stop_game("No players")
+                        del games[self.game_id]
+                        print(f"Game {game_id} ended. Winner: No players", flush=True)
+                    else: # DECLARE THE OTHER ONE THE WINNER DIRECTLY
+                        player_username = None
+                        for player_id, player in game.players.items():
+                            player_username = player.get("username")
+                            if player_username:
+                                winner = player_username
+                                print(f"Winner determined: {winner}", flush=True)
 
-            # WORK ON THIS - to test
-            # reset tournament_state for the next tournament
-            state = default_tournament_state.copy()
-            state_serializable = msgspec.json.encode(state).decode("utf-8")
-            cache.set("tournament_state", state_serializable)
+                                game.stop_game(winner)
+                                game.reset_game("Two Players (remote)") 
+
+                                await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                                await self.channel_layer.group_send(
+                                    self.match_name,
+                                    {
+                                        "type": "game.end",
+                                        "reason": f"Game Over: {winner} wins"
+                                    }
+                                )
+                                await self.channel_layer.group_send(
+                                    "tournament_lobby",
+                                    {
+                                        "type": "game.result",
+                                        "game_id": self.game_id,
+                                        "winner": winner
+                                    }
+                                )
+
+            if self.tournament.running is False and self.tournament.final_winner is not null:
+                if self.initiator == self.scope["user"]:
+                    TournamentConsumer.tournament = None
+                    TournamentConsumer.initiator = None
+                
+                await self.send_json({"type": "end_tournament"})
+
+                # WORK ON THIS - to test
+                # reset tournament_state for the next tournament
+                state = default_tournament_state.copy()
+                state_serializable = msgspec.json.encode(state).decode("utf-8")
+                cache.set("tournament_state", state_serializable)
+
+                if hasattr(self, 'match_name'):
+                    await self.channel_layer.group_discard(self.match_name, self.channel_name)
+                await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
             print(f"WebSocket disconnected for player {self.player_id}", flush=True)
-            if hasattr(self, 'match_name'):
-                await self.channel_layer.group_discard(self.match_name, self.channel_name)
-            await self.channel_layer.group_discard(self.room_name, self.channel_name)
             await self.close()
     
         else:
@@ -220,7 +256,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         self.initiator = self.player_id
         self.tournament = Tournament(mode=mode)
         # self.tournament.add_room_name("tournament_lobby")
-        print(f"Starting a {mode}-player tournament. Initiator: {self.initiator}")
+        print(f"Starting a {mode}-player tournament. Initiator: {self.initiator}", flush=True)
         await self.broadcast_tournament_state()
 
     async def handle_join_tournament(self, data):
@@ -256,20 +292,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             "type": "tournament_full"
         })
     
-    async def tournament1v1game_timeout_task(self, game_id, player_id, duration=60):
-        await asyncio.sleep(duration)  # 1 minute
+    async def tournament1v1game_timeout_task(self, game_id, player_id, duration=30):
+        print(f"Game {game_id} in tournament1v1game_timeout_task", flush=True)
+        await asyncio.sleep(duration)  # 30sec
         if game_id in games:
             game = games[game_id]
-            if game.get_state_isrunning() is False:
-                print(f"Game {game_id} in tournament timed out. Declaring a winner {player_id}.")
-
-                player_username = None
-                for _, player in game.players.items():
-                    if player.get("id") == player_id:
-                        player_username = player.get("username")
-
-                if player_username:
-                    winner = player_username
+            if game.get_state_isrunning() == False:
+                print(f"Game {game_id} in tournament timed out. Declaring a winner {player_id}.", flush=True)
+                if self.username:
+                    winner = self.username
                     print(f"Winner determined: {winner}", flush=True)
 
                     await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
@@ -316,27 +347,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         await self.tournament.register_match_result(game_id, winner_username)
         await self.broadcast_tournament_state()
     
-    async def game_end(self, event): # which one do we use??
-        # await asyncio.sleep(0.2) # checking if this works
+    async def game_end(self, event):
         if self.game_id in games:
-            game = games.pop(self.game_id, None)
+            game = games[self.game_id]
             if game:
                 game.clear_game()
         else:
             print(f"Game already cleared: {self.game_id}", flush=True)
 
         await self.send_json({"type": "end", "reason": event.get("reason")}) # needed?? might be double when called
-        await self.channel_layer.group_send(
-            self.match_name,
-            {
-                "type": "game.end.message",
-                "reason": event.get("reason")
-            }
-        )
-
-    # async def game_end_message(self, event): # which one do we use??
-    #     reason = event.get("reason")
-    #     await self.send_json({"type": "end", "reason": reason})
 
     async def tournament_update(self, event):
         """Receives the tournament state update and sends it to the frontend"""
@@ -445,15 +464,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     "data": state_serializable,
                 }
             )
-
-            # if not self.tournament.running and self.tournament.final_winner not None:
-            #     await self.send_json({"type": "end_tournament"})
-            #     await self.channel_layer.group_send(
-            #         "tournament_lobby",
-            #         {
-            #             "type": "disconnect",
-            #         }
-            #     )
 
     async def broadcast_game_state(self, game_id):
         if game_id in games:

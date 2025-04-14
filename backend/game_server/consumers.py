@@ -333,24 +333,13 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def find_match(self, user):
         print(f"Player {self.player_id} entered find_match()", flush=True)
-        # timeout = 300  # 5 min max
-        # start_time = asyncio.get_event_loop().time()
-
-        #self.match_name = f"waiting_room_{player_id}"
-        #await self.channel_layer.group_add(self.match_name, self.channel_name)
-
         match = await sync_to_async(Match.objects.filter)(player_2__isnull=True, tournament__isnull=True)
-        #print(f"Player {self.player_id} entered find_match() PRINT1", flush=True) # to rm
         if await sync_to_async(match.count)() == 0:
             await self.create_game(self.player_id)
             match = await sync_to_async(Match.objects.latest)('id')
-            #print(f"Player {self.player_id} entered find_match() PRINT2", flush=True) # to rm
-            #print(f"Player {self.player_id} entered find_match() PRINT3", flush=True) # to rm
         else:
             match = await sync_to_async(match.first)()
             self.match_name = await self.join_game(match, 2, self.player_id)
-            #print(f"Player {self.player_id} entered find_match() PRINT4", flush=True) # to rm
-            #print(f"Player {self.player_id} entered find_match() PRINT5", flush=True) # to rm
 
         player_queue.remove(self.player_id)
 

@@ -2,7 +2,6 @@ import json
 import random
 import math
 import asyncio
-from game_server.game_logic import Game  # import the normal game logic to use in individual matches
 from channels.layers import get_channel_layer
 
 class Tournament:
@@ -26,7 +25,6 @@ class Tournament:
         self.running = False
         self.winners = []  # players who won their matches
         self.final_winner = None
-        # self.room_name = None # for channel layer comm
         self._initialized = True
 
     def add_player(self, player_id, username):
@@ -146,12 +144,12 @@ class Tournament:
             self.final_winner = self.winners[0]
             self.running = False
             print(f"Tournament ended. Winner: {self.final_winner['username']}", flush=True)
-            await channel_layer.group_send(
-                    "tournament_lobby",
-                    {
-                        "type": "disconnect",
-                    }
-                )
+            # await channel_layer.group_send(
+            #         "tournament_lobby",
+            #         {
+            #             "type": "disconnect",
+            #         }
+            #     )
             return
 
         if len(self.matches) == 0 and len(self.winners) >= 2:
@@ -185,3 +183,25 @@ class Tournament:
             "players_in": len(self.players),
             "remaining_spots": self.num_players - len(self.players),
         }
+
+    # def reset_tournament(self, mode):
+    #     self.mode = 4
+    #     self.players = {}
+    #     self.ready_players.clear()
+    #     self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
+    #     self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
+    #     self.score = {"player": 0, "opponent": 0}
+    #     self.running = False
+    #     self.partOfTournament = False
+    #     self.mode = mode
+    #     self.num_players = int(mode)
+    #     self.players = []  # player IDs and usernames
+    #     self.matches = []  # ongoing matches
+    #     self.bracket = {}  # matchups for each round -- THIS SEND TO LAURA
+    #     self.current_round = 1
+    #     self.running = False
+    #     self.winners = []  # players who won their matches
+    #     self.final_winner = None
+    #     # self.room_name = None # for channel layer comm
+    #     self._initialized = True
+

@@ -8,23 +8,24 @@ async function drawBracket(mode) {
     if (mode == 4) {
         document.getElementById("tournamentBracket4").style.display = "grid";
         document.getElementById("tournamentBracket4").style.background = "white";
-        // clearPlayerFields(mode);
     }
     else {
         document.getElementById("tournamentBracket").style.display = "grid";
         document.getElementById("tournamentBracket").style.background = "white";
-        // clearPlayerFields(mode);
     }
 
     await updateBracketWithData(mode);
     tournamentInterval = setInterval(async () => await updateBracketWithData(mode), 5000); // Auto-update every 5s
 }
 
-function stopTournamentUpdates() {
+const stopTournamentUpdates = async (mode) => {
+    await sleep(2000);
     if (tournamentInterval) {
         clearInterval(tournamentInterval);
         console.log("Tournament updates stopped.");
     }
+    clearPlayerFields(mode);
+    console.log("Tournament updates stopped. DONE");
 }
 
 async function updateBracketWithData(mode) {
@@ -33,16 +34,18 @@ async function updateBracketWithData(mode) {
         console.log("Fetched tournament status:", data);
 
         if (data) {
-            if (data.running == false && (data.players_in == 0 || data.players_in == 1))
-                clearPlayerFields(mode);
-            if (data.running == false)
+            // if (data.running == false && (data.players_in == 0 || data.players_in == 1))
+            //     clearPlayerFields(mode);
+            if (data.current_round < 2)
                 updatePlayerFields(mode, data.players, data.results);
             updateBracket(mode, data.bracket, data.current_round, data.final_winner);
-
-            // Stop updates if tournament is over or a player quits
-            // if (!data.tournament_active || data.players_in < mode) {
-            //     stopTournamentUpdates();
-            // }
+            if (data.running == false && data.final_winner != null) {
+                await stopTournamentUpdates(mode);
+                if (websocket && websocket.readyState === WebSocket.OPEN) {
+                    websocket.send(JSON.stringify({ action: "disconnect" }));
+                }
+                return;
+            }
         }
     } catch (error) {
         console.error("Error fetching tournament status:", error);
@@ -78,7 +81,7 @@ function updatePlayerFields(mode, players, results = []) {
 }
 
 const clearArrayWinners = async () => {
-    await sleep(1000);
+    await sleep(3000);
     winners4 = [];
     winners8 = [];
     winners8_final = [];
@@ -90,16 +93,12 @@ async function updateBracket(mode, bracket, currentRound, final_winner) {
     let playerElem;
     let resultElem;
 
-    // let winners4 = [];
-    // let winners8 = [];
-    // let winners8_final = [];
-
-    if (mode == 4 && final_winner != null) { // WORKING
+    if (mode == 4 && final_winner != null) {
         playerElem = document.getElementById(`Player${13}_`);
         if (playerElem && playerElem.textContent.trim() === final_winner.username) {
             resultElem = document.getElementById(`Result${13}_`);
             if (resultElem) {
-                resultElem.innerText = " 👑 ";
+                resultElem.innerHTML = "&nbsp;&nbsp;👑";
             }
         } else {
             resultElem = document.getElementById(`Result${14}_`);
@@ -107,7 +106,6 @@ async function updateBracket(mode, bracket, currentRound, final_winner) {
                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
             }
         }
-        // winners4 = [];
         await clearArrayWinners();
     }
     if (mode == 8 && final_winner != null) {
@@ -117,15 +115,21 @@ async function updateBracket(mode, bracket, currentRound, final_winner) {
             if (resultElem) {
                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
             }
+            resultElem = document.getElementById(`Result${14}`);
+            if (resultElem) {
+                resultElem.innerHTML = "&nbsp;";
+            }
         } else {
             resultElem = document.getElementById(`Result${14}`);
             if (resultElem) {
                 resultElem.innerHTML = "&nbsp;&nbsp;👑";
             }
+            resultElem = document.getElementById(`Result${13}`);
+            if (resultElem) {
+                resultElem.innerHTML = "&nbsp;";
+            }
         }
         await clearArrayWinners();
-        // winners8 = [];
-        // winners8_final = [];
     }
     if (mode == 4 && (currentRound == 1 || currentRound == 2)) {
         if (bracket && bracket[1]) {
@@ -299,8 +303,3 @@ function clearPlayerFields(mode) {
         }
     }
 }
-
-
-
-
-
