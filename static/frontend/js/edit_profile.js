@@ -60,3 +60,16 @@ if (saveChangesBtn) {
         }
     });
 }
+
+const editCloseBtn = document.getElementById("editCloseBtn")
+if(editCloseBtn){
+    editCloseBtn.addEventListener("click", function (){
+        console.log("profile close clicked");
+        const editProfileModalElement = document.getElementById("editProfileModal");
+        const editProfileModal = bootstrap.Modal.getInstance(editProfileModalElement);
+        editProfileModal.hide();
+        const profileModalElement = document.getElementById("profileModal");
+        const profileModal = bootstrap.Modal.getInstance(profileModalElement);
+        profileModal.show();
+    });
+}
