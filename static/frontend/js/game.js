@@ -433,5 +433,10 @@ window.addEventListener("beforeunload", () => {
         socket.close()
         // SignInMenu.show();
     }
-    gameMenuFirst.show();
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        SignInMenu.show();
+    } else {
+        gameMenuFirst.show();
+    }
 });
