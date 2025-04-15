@@ -21,6 +21,16 @@
                 </div>
                 <button id="saveChanges" type="submit" class="btn btn-outline-dark w-100 mb-2">Save changes</button>
               </form>
+              <button id="enable2FA" class="btn btn-outline-dark w-100 mb-2">Enable 2FA</button>
+              <button id="disable2FA" class="btn btn-outline-dark w-100 mb-2">Disable 2FA</button>
+              <div id="qrContainer" class="overlay-form" style="display: none;">
+                  <h2>Here is the QR code for you to scan</h2>
+                  <img id= "qrCodeImage" src="" alt="QR Code" style="display: none; max-width: 100%; height: auto;">
+                  <p>Or enter this code manually, if you must...</p>
+                  <code id="otpKey"></code> 
+                  <button id="confirm2FA" class= "btn btn-success">Confirm 2FA</button>
+                  <button id="QR_back" class="btn btn-secondary">Back</button>
+              </div>
               <button id="deleteAccount" class="btn btn-danger">Remove Account</button>
             </div>
         </div>
