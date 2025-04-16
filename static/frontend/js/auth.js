@@ -235,8 +235,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 // const loginDataResponse = await loginData.json();
                 // alert("Server response, from login:", loginDataResponse);
                 
-                console.log("accesstoken = ", accessToken);
-                console.log("refreshtoken = ", refreshToken);
+                // console.log("accesstoken = ", accessToken);
+                // console.log("refreshtoken = ", refreshToken);
 
                 localStorage.setItem("access_token", accessToken);
                 localStorage.setItem("refresh_token", refreshToken);
@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert("Login failed somehow")
                     return ;
                 }
-                alert("login complete.");
+                // alert("login complete.");
 
                 if (enable2FA) {
                     console.log("Enabling 2FA...");
@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
 
                     const twoFAData = await twoFAResponse.json();
-                    console.log("2FA response:", twoFAData);
+                    // console.log("2FA response:", twoFAData);
 
                     if (!twoFAResponse.ok) {
                         alert(`2FA Setup Failed: ${JSON.stringify(twoFAData)}`);
@@ -589,7 +589,7 @@ document.addEventListener("DOMContentLoaded", function ()
 
 
 function disable2FA() {
-    let access_token = localStorage.getItem("access+token");
+    let access_token = localStorage.getItem("access_token");
 
     if(!access_token){
         access_token = refreshAccessToken();
@@ -650,7 +650,6 @@ function setup2FA() {
     .catch(error => console.error("Error:", error))
 }
 
-
 async function refreshAccessToken(){
     let accessToken = localStorage.getItem("access_token");
     const refreshToken = localStorage.getItem("refresh_token");
@@ -689,3 +688,143 @@ async function refreshAccessToken(){
         return null;
     }
 }
+
+
+window.onload = function () {
+    async function handleGoogleCredentialResponse(response) {
+        console.log("Google credential response:", response);
+
+        try {
+            const result = await fetch("/api/authentication/google-login/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({
+                    id_token: response.credential,
+                }),
+            });
+
+            const data = await result.json();
+            console.log("Server response:", data);
+
+            if (result.ok) {
+                localStorage.setItem("access_token", data.access);
+                localStorage.setItem("refresh_token", data.refresh);
+                alert("Google login successful!");
+                window.location.href = "/static/auth.html";
+            } else {
+                console.log("data: ", data);
+                alert(data.error || "Google login failed.");
+            }
+        } catch (error) {
+            console.error("Error during Google login:", error);
+            alert("An error occurred during Google login.");
+        }
+    }
+    const googleClientId = document
+        .querySelector('meta[name="google-signin-client_id"]')
+        ?.getAttribute("content");
+
+    const googleSignInDiv = document.getElementById("googleSignInButton");
+
+    if (googleClientId && googleSignInDiv && window.google) {
+        google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleCredentialResponse,
+        });
+
+        google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleCredentialResponse,
+            ux_mode: "popup", // 🔒 explicit
+            auto_select: false, // 👈 optional: prevent auto-login that might force redirect
+            cancel_on_tap_outside: true, // 👈 optional: lets user cancel popup
+        });
+
+        google.accounts.id.renderButton(
+            googleSignInDiv,
+            {
+                theme: "outline",
+                size: "large",
+                width: 300,
+            }
+        );
+
+        console.log("✅ Google Sign-In button initialized");
+    } else {
+        console.warn("Google Sign-In setup failed: missing client ID, container, or GIS script.");
+    }
+};
+
+
+window.onload = function () {
+    async function handleFTCredentialResponse(response) {
+        console.log("42 credential response:", response);
+
+        try {
+            const result = await fetch("/api/authentication/callback_42", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({
+                    id_token: response.credential,
+                }),
+            });
+
+            const data = await result.json();
+            console.log("Server response:", data);
+
+            if (result.ok) {
+                localStorage.setItem("access_token", data.access);
+                localStorage.setItem("refresh_token", data.refresh);
+                alert("42 login successful!");
+                // window.location.href = "/static/auth.html";
+            } else {
+                console.log("data: ", data);
+                alert(data.error || "Google login failed.");
+            }
+        } catch (error) {
+            console.error("Error during Google login:", error);
+            alert("An error occurred during Google login.");
+        }
+    }
+    const googleClientId = document
+        .querySelector('meta[name="google-signin-client_id"]')
+        ?.getAttribute("content");
+
+    const googleSignInDiv = document.getElementById("googleSignInButton");
+
+    if (googleClientId && googleSignInDiv && window.google) {
+        google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleCredentialResponse,
+        });
+
+        google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleCredentialResponse,
+            ux_mode: "popup", // 🔒 explicit
+            auto_select: false, // 👈 optional: prevent auto-login that might force redirect
+            cancel_on_tap_outside: true, // 👈 optional: lets user cancel popup
+        });
+
+        google.accounts.id.renderButton(
+            googleSignInDiv,
+            {
+                theme: "outline",
+                size: "large",
+                width: 300,
+            }
+        );
+
+        console.log("✅ Google Sign-In button initialized");
+    } else {
+        console.warn("Google Sign-In setup failed: missing client ID, container, or GIS script.");
+    }
+};
+
+

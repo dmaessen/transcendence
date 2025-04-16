@@ -50,16 +50,19 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'channels',
     'corsheaders',
-    # 'dj_rest_auth',
-    # 'dj_rest_auth.registration',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     "allauth_2fa",
     'django_otp',
     'django_otp.plugins.otp_totp',
     "django_otp.plugins.otp_static",
     'qrcode',
+    # 'google-auth',
+    'oauth2',
     #'game_server',
 
     'matchmaking.apps.MatchmakingConfig',
@@ -102,7 +105,12 @@ CORS_ALLOW_HEADERS = [
     "content-type",
 ]
 
-#CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
+SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -206,6 +214,11 @@ STATICFILES_DIRS = [
     os.path.join(STATIC_ROOT, 'frontend'),  # Ensure Django knows where to find them
 ]
 
+# 42 api settings
+FT_CLIENT_ID='u-s4t2ud-bbad87ac8d63ec2d044050f726b210a6e4856caad9cad7d284c0ea9bdcb4fd97'
+FT_CLIENT_SECRET='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'
+FT_REDIRECT_URI='https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-bbad87ac8d63ec2d044050f726b210a6e4856caad9cad7d284c0ea9bdcb4fd97&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fgame_server%2F&response_type=code'
+
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
@@ -300,6 +313,24 @@ CACHES = {
     }
 }
 
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         'SCOPE': [
+#             'profile',
+#             'email',
+#         ],
+#         'AUTH_PARAMS': {
+#             'access_type': 'online',
+#         },
+#         'APP': {
+#             'client_id': os.getenv("GOOGLE_CLIENT_ID"),
+#             'secret': os.getenv("GOOGLE_CLIENT_SECRET"),
+#             'key': ''
+#         }
+#     }
+# }
 
 # LOGGING = {
 #     'version': 1,

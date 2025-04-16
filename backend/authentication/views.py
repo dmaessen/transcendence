@@ -18,6 +18,13 @@ from rest_framework.decorators import api_view, permission_classes
 from authentication.models import CustomTOTPDevice
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.exceptions import InvalidToken
+# from google.oauth2 import id_token as google_id_token
+# from google.auth.transport import requests as google_requests
+from django.views.decorators.csrf import csrf_exempt
+import google.oauth2.id_token
+import google.auth.transport.requests
+# import google.oauth2 
+import requests
 import qrcode
 import io
 import base64
@@ -25,6 +32,7 @@ import pyotp
 # from passlib.totp import TOTP
 import sys
 from django.core.cache import cache
+from django.conf import settings
 
 
 # @otp_required
@@ -185,19 +193,6 @@ class DeleteAccountView(APIView):
 			print(f"Error deleting account: {str(e)}")  # Debugging line
 			return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 	
-	# def delete(self, request):
-	# 	user = request.user
-	# 	print(f"Auth Header: {request.headers.get('Authorization')}")
-	# 	print(f"Deleting user: {request.user}")
-	# 	try:
-	# 		print(f"Deleting user: {user.email}")
-			
-	# 		CustomTOTPDevice.objects.filter(customUser=user).delete()
-	# 		user.delete()
-	# 		return Response({"message": "Account deleted sucessfully"}, status=status.HTTP_204_NO_CONTENT)
-	# 	except Exception as e:
-	# 		print(f"Error deleting account: {str(e)}")  # Debugging line
-	# 		return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -260,4 +255,115 @@ def refresh_token(request):
 
 def home(request):
 	return render(request, 'base.html')
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@csrf_exempt
+def google_login(request):
+	# from google.auth.transport import requests as google_requests
+	# from google.oauth2 import id_token as google_id_token
+	client_id = settings.GOOGLE_CLIENT_ID
+	print(f"google client id: [", client_id, "]", file=sys.stderr)
+	if not client_id:
+		return JsonResponse({'error': 'no client id'}, status=status.HTTP_403_FORBIDDEN)
+	if client_id != "517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com":
+		print(f"[WARNING] Unrecognized client ID received: {client_id}")
+	
+	body = json.loads(request.body)
+	token = body.get("id_token")
+	if not token:
+		return Response({"error": "Missing id_token"}, status=400)
+	
+	try:
+		request_adapter = google.auth.transport.requests.Request()
+		idinfo = google_id_token.verify_oauth2_token(token, request_adapter, client_id)
+		email = idinfo.get("email")
+		if not email:
+			return JsonResponse({"error":"no email in response token"}, status=status.HTTP_400_BAD_REQUEST)
+		username = idinfo.get("name", email.split("@")[0])
+		if not username:
+			return JsonResponse({"error":"no name in response token"}, status=status.HTTP_400_BAD_REQUEST)
+		print("response from google, email: ", email, " ,name: ", username)
+		
+		user, created = CustomUser.objects.get_or_create(email=email, defaults={"username": username})
+		if created:
+			user.set_unusable_password()
+			user.save()
+
+		refresh = RefreshToken.for_user(user)
+		return Response({
+			"refresh": str(refresh),
+			"access": str(refresh.access_token),
+			"message": "Google login successful"
+		})
+	except ValueError as e:
+		return Response({"error": "Invalid ID token", "details": str(e)}, status=400)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def me(request):
+    user = request.user
+    return Response({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "two_factor_enabled": hasattr(user, 'totp_device') and user.totp_device.confirmed,
+    })
+
+def login_42_redirect(request):
+    base_url = "https://api.intra.42.fr/oauth/authorize"
+    return redirect(
+        f"{base_url}?client_id={settings.FT_CLIENT_ID}"
+        f"&redirect_uri={settings.FT_REDIRECT_URI}"
+        f"&response_type=code"
+    )
+
+def login_42_callback(request):
+	code = request.GET.get("code")
+	if not code:
+		return JsonResponse({"error": "No code provided"}, status=400)
+
+	# Exchange code for token
+	token_response = requests.post("https://api.intra.42.fr/oauth/token", data={
+		"grant_type": "authorization_code",
+		"client_id": settings.FT_CLIENT_ID,
+		"client_secret": settings.FT_CLIENT_SECRET,
+		"code": code,
+		"redirect_uri": settings.FT_REDIRECT_URI,
+	})
+
+	if token_response:
+		return JsonResponse({"data returned from 42 api:": token_response}, status=200)
+	else:
+		return JsonResponse({"error": "no token response"})
+
+	token_data = token_response.json()
+	access_token = token_data.get("access_token")
+	if not access_token:
+		return JsonResponse({"error": "Failed to retrieve access token"}, status=400)
+
+    # Use token to get user info
+	user_response = requests.get("https://api.intra.42.fr/v2/me", headers={
+		"Authorization": f"Bearer {access_token}"
+	})
+
+	profile = user_response.json()
+	email = profile.get("email")
+	username = profile.get("login")
+
+	print(f"regestering user with email: ", email, "and username:", username)
+	# Register or log in the user
+	user, created = CustomUser.objects.create(email=email, defaults={"username": username})
+	if created:
+		user.save()
+	else:
+		return JsonResponse({"error": "Failed to create user"})
+
+	# Issue your JWT tokens (or login session)
+	refresh = RefreshToken.for_user(user)
+	return JsonResponse({
+		"access": str(refresh.access_token),
+		"refresh": str(refresh)
+	})
 

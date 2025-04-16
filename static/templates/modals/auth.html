@@ -1,5 +1,6 @@
     <!-- User Registration Menu Modal -->
     <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel">
+        <meta name="google-signin-client_id" content="517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -35,9 +36,12 @@
                     <div id="otpContainer" style="display: none;">
                         <label for="otpToken">Enter OTP Code:</label>
                         <input type="text" id="otpToken" name="otpToken" />
-                        <button type="submitOTP" id="submitOTPButton" class"btn btn-success">Submit OTP token</button>
-                        <button type="returnOTP" id="returnToLogin" class"btn btn-secondary">return</button>    
+                        <button type="submitOTP" id="submitOTPButton" class="btn btn-success">Submit OTP token</button>
+                        <button type="returnOTP" id="returnToLogin" class="btn btn-secondary">return</button>    
                     </div>
+                    <a href="/api/authentication/42/login/">
+                        <button>Login with 42</button>
+                    </a>
                     <button id="backToMain1" class="btn btn-secondary">Back</button>
                 </div>
     
@@ -45,7 +49,7 @@
                 <div id="registerContainer" class="overlay-form">
                     <h2>Register</h2>
                     <form id="registerForm">
-                        <input type="text" id="registerUsername" placeholder="Username" required><br>
+                        <input type="text" id="registerUsername" placeholder="Username/alias" required><br>
                         <input type="text" id="registerName" placeholder="Name" required><br>
                         <input type="email" id="registerEmail" placeholder="Email" required><br>
                         <input type="password" id="registerPassword" placeholder="Password" required><br>
@@ -54,10 +58,16 @@
                         </label><br>
                         <button type="submit">Register</button>
                     </form>
+                    <div id="googleSignInButton">
+                        <script src="https://accounts.google.com/gsi/client" async defer></script>
+                    </div>
+                    <a href="/api/authentication/42/login/">
+                        <button id="42SignInButton">Login with 42</button>
+                    </a>
                     <button id="backToMain2" class="btn btn-secondary">Back</button>
                 </div>
                 <div id="RemoveAccountContainer" class="overlay-form">
-                    <h2>Remove Account</h2>
+                    <h2>Remove  Account</h2>
                     <form id="removeAccountForm">
                         <input type="email" id="loginEmail" placeholder="Email" required><br>
                         <input type="password" id="loginPassword" placeholder="Password" required><br>
@@ -68,6 +78,3 @@
             </div>
         </div>
     </div>
-
-
-    {% comment %} {% include 'modals/enable_2fa.html' %} {% endcomment %}

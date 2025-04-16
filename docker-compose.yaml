@@ -49,20 +49,20 @@ services:
         depends_on:
             - psql
 
-    frontend:
-        build: ./frontend
-        container_name: frontend
-        volumes:
-            - ./frontend/statics/:/usr/share/nginx/html/static/
-            - ./static/:/static/
-            - ./media/:/media/
-        ports:
-            - "8080:80"
-        networks:
-            - transcendence
-        depends_on:
-            - backend
-            - psql
+    # frontend:
+    #     build: ./frontend
+    #     container_name: frontend
+    #     volumes:
+    #         - ./frontend/statics/:/usr/share/nginx/html/static/
+    #         - ./static/:/static/
+    #         - ./media/:/media/
+    #     ports:
+    #         - "8080:80"
+    #     networks:
+    #         - transcendence
+    #     depends_on:
+    #         - backend
+            # - psql
     
     redis:
         build: ./backend/redis
