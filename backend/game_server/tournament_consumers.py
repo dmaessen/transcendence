@@ -55,8 +55,19 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.close()  # Close if no token is provided
         # If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
-            self.player_id = self.scope["user"].id
-            self.username = self.scope["user"].username
+            try:
+                user = self.scope["user"]
+                logger.info(f"user {user}")
+                print(f"user {user}")
+                self.player_id = self.scope["user"].id
+                self.username = self.scope["user"].username
+            except Exception as e:
+                logger.exception("Exception during WebSocket connection:")
+                await self.close()
+                return
+        # if self.scope["user"].is_authenticated:
+        #     self.player_id = self.scope["user"].id
+        #     self.username = self.scope["user"].username
         # else:
         #     session = await sync_to_async(SessionStore)()
         #     await sync_to_async(session.create)()

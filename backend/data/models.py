@@ -75,16 +75,16 @@ class Match(models.Model):
 
 
 class Tournament(models.Model):
-    STATUS_CHOICES = [
-        ('open', 'Open for Registration'),
-        ('ongoing', 'Ongoing'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
-    ]
+    # STATUS_CHOICES = [
+    #     ('open', 'Open for Registration'),
+    #     ('ongoing', 'Ongoing'),
+    #     ('completed', 'Completed'),
+    #     ('cancelled', 'Cancelled'),
+    # ]
 
     max_players = models.IntegerField(default=8)  # 4 or 8 players
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
-    confirmed_ready = models.ManyToManyField(CustomUser, related_name="ready_players", blank=True)
+    # status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    # confirmed_ready = models.ManyToManyField(CustomUser, related_name="ready_players", blank=True)
     
     first_place = models.ForeignKey(CustomUser, related_name="first_place", on_delete=models.SET_NULL, null=True, blank=True)
     second_place = models.ForeignKey(CustomUser, related_name="second_place", on_delete=models.SET_NULL, null=True, blank=True)
