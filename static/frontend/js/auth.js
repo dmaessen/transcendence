@@ -15,7 +15,7 @@ async function loginWebSocket(){
         console.error("No access token found! WebSocket authentication will fail.");
         return;
     }
-    loginsocket.onopen =  async (event) => {
+    loginsocket.onopen =  async(event) => {
         console.log("onlineSocket openned");
         pingInterval = setInterval(() => {
             loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));

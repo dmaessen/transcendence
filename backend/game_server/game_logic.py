@@ -158,6 +158,12 @@ class Game:
             "status": self.status,
             "partOfTournament": self.partOfTournament
         }
+    
+    def get_state_isrunning(self):
+        if self.running == True:
+            return True
+        else:
+            return False
 
     def _check_collision(self, paddle):
         # predictive collision detection based on ball's direction

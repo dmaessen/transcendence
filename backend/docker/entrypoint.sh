@@ -47,6 +47,7 @@ python manage.py migrate
 
 
 echo "Starting Django server..."
+# python manage.py runserver 0.0.0.0:8000 --verbrosity 2
 exec python manage.py runserver 0.0.0.0:8000
 # exec python ./backend/game_server/game_server.py
 
