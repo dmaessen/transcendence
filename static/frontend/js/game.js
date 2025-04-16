@@ -156,7 +156,7 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
 tournamentBanner.addEventListener("click", async(event) => {
     event.preventDefault();
     try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
+        const data = await fetchData("/tournament-status/");
         console.log("Tournament Status:", data);
         if (data.remaining_spots > 0) {
             gameMenuFirst.hide();
