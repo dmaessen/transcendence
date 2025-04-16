@@ -32,11 +32,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(unique=True, max_length=30) # Unique as well
     two_factor_enabled = models.BooleanField(default=False)
     avatar = models.ImageField(upload_to='avatars/', default='default.png')
-    location = models.CharField(max_length=30, blank=True, null=True) # Made for funzies, should we get rid of it ?
+    # location = models.CharField(max_length=30, blank=True, null=True) # Made for funzies, should we get rid of it ?
     oauth_tokens = models.JSONField(null=True, blank=True)
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)
     friends = models.ManyToManyField('self', through='Friendship', symmetrical=False)
-    otp_secret = models.CharField(max_length=32, blank=True, null=True)
+    # otp_secret = models.CharField(max_length=32, blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
