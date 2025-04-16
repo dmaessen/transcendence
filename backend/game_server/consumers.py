@@ -10,8 +10,7 @@ from autobahn.websocket.protocol import Disconnected
 
 from rest_framework_simplejwt.tokens import AccessToken
 from urllib.parse import parse_qs
-
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 #The scope is a set of details about a single incoming connection 
 #scope containing the user's username, chosen name, and user ID.
@@ -36,32 +35,32 @@ player_queue = [] #player_id s int
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
-        # token = query_params.get("token", [None])[0]
-        # logger.info(f"querry: {query_params}\ntoken: {token}")
-        # if token:
-        #     # Validate the JWT token
-        #     access_token = AccessToken(token)
-        #     logger.info(f"----access token: {access_token}\n\n")
-        #     user_id = access_token["user_id"]
-        #     logger.info(f"----userid: {user_id}\n\n")
-        #     # Fetch the user from the database based on the user_id
-        #     try:
-        #         user = await sync_to_async(CustomUser.objects.get)(id=user_id)
-        #         logger.info(f"username: {user.username}")
-        #         self.scope["user"] = user
-        #         logger.info(f"Authenticated user {user.username} connected via WebSocket.")
-        #     except ObjectDoesNotExist:
-        #         logger.warning(f"User with id {user_id} not found.")
-        #         await self.close()
-        #         return
-        #     except Exception as e:
-        #         logger.error(f"Unexpected error while fetching user: {e}")
-        #         await self.close()
-        #         return
-        # else:
-        #     logger.warning("No token provided.")
-        #     await self.close()  # Close if no token is provided
+        query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
+        token = query_params.get("token", [None])[0]
+        logger.info(f"querry: {query_params}\ntoken: {token}")
+        if token:
+            # Validate the JWT token
+            access_token = AccessToken(token)
+            logger.info(f"----access token: {access_token}\n\n")
+            user_id = access_token["user_id"]
+            logger.info(f"----userid: {user_id}\n\n")
+            # Fetch the user from the database based on the user_id
+            try:
+                user = await sync_to_async(CustomUser.objects.get)(id=user_id)
+                logger.info(f"username: {user.username}")
+                self.scope["user"] = user
+                logger.info(f"Authenticated user {user.username} connected via WebSocket.")
+            except ObjectDoesNotExist:
+                logger.warning(f"User with id {user_id} not found.")
+                await self.close()
+                return
+            except Exception as e:
+                logger.error(f"Unexpected error while fetching user: {e}")
+                await self.close()
+                return
+        else:
+            logger.warning("No token provided.")
+            await self.close()  # Close if no token is provided
         #If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
             try:
@@ -74,24 +73,24 @@ class GameConsumer(AsyncWebsocketConsumer):
                 logger.exception("Exception during WebSocket connection:")
                 await self.close()
                 return
-        else:
-            # Use sync_to_async for session creation
-            session = await sync_to_async(SessionStore)()
-            await sync_to_async(session.create)()
+        # else:
+        #     # Use sync_to_async for session creation
+        #     session = await sync_to_async(SessionStore)()
+        #     await sync_to_async(session.create)()
             
-            CustomUser = get_user_model()
-            unique_username = f"Guest_{session.session_key[:12]}"  # Generate a unique username
-            guest_user = await sync_to_async(CustomUser.objects.create)(
-                username=unique_username,  # Set the unique username
-                name=f"Guest_{session.session_key[:12]}",
-                email=f"{session.session_key[:10]}",
-                #is_active=False
-            )
-            print(f"guest user {guest_user.name}")
+        #     CustomUser = get_user_model()
+        #     unique_username = f"Guest_{session.session_key[:12]}"  # Generate a unique username
+        #     guest_user = await sync_to_async(CustomUser.objects.create)(
+        #         username=unique_username,  # Set the unique username
+        #         name=f"Guest_{session.session_key[:12]}",
+        #         email=f"{session.session_key[:10]}",
+        #         #is_active=False
+        #     )
+        #     print(f"guest user {guest_user.name}")
             
-            self.player_id = guest_user.id
-            self.session_key = session.session_key
-            self.username = guest_user.username
+        #     self.player_id = guest_user.id
+        #     self.session_key = session.session_key
+        #     self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
         #player = Player(self.player_id, self.session_key, 'online')
@@ -347,10 +346,11 @@ class GameConsumer(AsyncWebsocketConsumer):
         print(f"Player {self.player_id} entered create_game()", flush=True)
         user = await get_user_by_id(player_id)
         #game = await sync_to_async(Match.objects.create)(player_1=user) #single player in game
-        
+        date_match = datetime.now().replace(hour=14, minute=0, second=0, microsecond=0)
+
         match = await sync_to_async(Match.objects.create)(
-            player_1=user, 
-            match_time=timedelta(minutes=2)
+            player_1=user,
+            match_start = date_match
         )
         await self.send(text_data=json.dumps({
             'action': 'created',

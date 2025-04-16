@@ -27,53 +27,53 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     initiator = None
 
     async def connect(self):
-        # query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
-        # token = query_params.get("token", [None])[0]
-        # logger.info(f"querry: {query_params}\ntoken: {token}")
-        # if token:
-        #     # Validate the JWT token
-        #     access_token = AccessToken(token)
-        #     logger.info(f"----access token: {access_token}\n\n")
-        #     user_id = access_token["user_id"]
-        #     logger.info(f"----userid: {user_id}\n\n")
-        #     # Fetch the user from the database based on the user_id
-        #     try:
-        #         user = await sync_to_async(CustomUser.objects.get)(id=user_id)
-        #         logger.info(f"username: {user.username}")
-        #         self.scope["user"] = user
-        #         logger.info(f"Authenticated user {user.username} connected via WebSocket.")
-        #     except ObjectDoesNotExist:
-        #         logger.warning(f"User with id {user_id} not found.")
-        #         await self.close()
-        #         return
-        #     except Exception as e:
-        #         logger.error(f"Unexpected error while fetching user: {e}")
-        #         await self.close()
-        #         return
-        # else:
-        #     logger.warning("No token provided.")
-        #     await self.close()  # Close if no token is provided
+        query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
+        token = query_params.get("token", [None])[0]
+        logger.info(f"querry: {query_params}\ntoken: {token}")
+        if token:
+            # Validate the JWT token
+            access_token = AccessToken(token)
+            logger.info(f"----access token: {access_token}\n\n")
+            user_id = access_token["user_id"]
+            logger.info(f"----userid: {user_id}\n\n")
+            # Fetch the user from the database based on the user_id
+            try:
+                user = await sync_to_async(CustomUser.objects.get)(id=user_id)
+                logger.info(f"username: {user.username}")
+                self.scope["user"] = user
+                logger.info(f"Authenticated user {user.username} connected via WebSocket.")
+            except ObjectDoesNotExist:
+                logger.warning(f"User with id {user_id} not found.")
+                await self.close()
+                return
+            except Exception as e:
+                logger.error(f"Unexpected error while fetching user: {e}")
+                await self.close()
+                return
+        else:
+            logger.warning("No token provided.")
+            await self.close()  # Close if no token is provided
         # If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username
-        else:
-            session = await sync_to_async(SessionStore)()
-            await sync_to_async(session.create)()
+        # else:
+        #     session = await sync_to_async(SessionStore)()
+        #     await sync_to_async(session.create)()
             
-            CustomUser = get_user_model()
-            unique_username = f"Guest_{uuid.uuid4().hex[:12]}"
-            guest_user = await sync_to_async(CustomUser.objects.create)(
-                username=unique_username,
-                name=f"Guest_{session.session_key[:12]}",
-                email=f"{session.session_key[:10]}",
-                is_active=False
-            )
-            print(f"guest user {guest_user.name}")
+        #     CustomUser = get_user_model()
+        #     unique_username = f"Guest_{uuid.uuid4().hex[:12]}"
+        #     guest_user = await sync_to_async(CustomUser.objects.create)(
+        #         username=unique_username,
+        #         name=f"Guest_{session.session_key[:12]}",
+        #         email=f"{session.session_key[:10]}",
+        #         is_active=False
+        #     )
+        #     print(f"guest user {guest_user.name}")
             
-            self.player_id = guest_user.id
-            self.session_key = session.session_key
-            self.username = guest_user.username
+        #     self.player_id = guest_user.id
+        #     self.session_key = session.session_key
+        #     self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
         player = Player(self.player_id, self.session_key, 'online')
