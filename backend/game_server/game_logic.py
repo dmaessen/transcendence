@@ -218,7 +218,7 @@ class Game:
         # self.score = {"player": 0, "opponent": 0}
         self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
         print(f"Game ended. Winner: {winner}", flush=True)
-        return {"type": "end", "reason": f"Game Over: {winner} wins"}
+        return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": {winner}}
         
     def clear_game(self):
         self.players = {}  # Clear players

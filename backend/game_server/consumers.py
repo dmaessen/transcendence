@@ -303,6 +303,20 @@ class GameConsumer(AsyncWebsocketConsumer):
         elif action == "end":
             if self.game_id in games:
                 game = games[self.game_id]
+                match = await sync_to_async(Match.objects.filter)(player_id=player_id)
+                # Passing winner info
+                print("WINNER NAMEEEEE ", match.player_1.username)
+                if match.player_1.username == data.get("winner"):
+                    match.winner = match.player_1
+                    match.player_1_points = 10
+                    match.player_2_points = game.score["opponent"]
+                else
+                    match.winner = match.player_2
+                    match.player_2_points = 10
+                    match.player_1_points = game.score["player"]
+
+                # match.winner = data.get("winner")
+                await sync_to_async(match.save)()
                 game.clear_game()
 
         elif action == "stop":
