@@ -1,5 +1,3 @@
-// const dataUrl = "http://localhost:8000/data/";
-
 async function addFriend(userID) {
     console.log("addFriend userID: ", userID);
     try {
