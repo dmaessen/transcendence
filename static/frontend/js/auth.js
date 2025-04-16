@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-const baseUrl = "http://localhost:8000/api/authentication/";
+const baseUrl = "/api/authentication/";
 
 function getCSRFToken() {
     const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']");

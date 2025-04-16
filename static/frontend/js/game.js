@@ -197,7 +197,7 @@ window.addEventListener("load", async () => {
     bracketElement.style.display = "none";
 
     try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
+        const data = await fetchData("/tournament-status/");
         console.log("Fetched tournament status:", data);
         if (data.remaining_spots > 0 && data.players_in != 0) {
             showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
