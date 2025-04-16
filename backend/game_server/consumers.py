@@ -306,11 +306,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                 match = await sync_to_async(Match.objects.filter)(player_id=player_id)
                 # Passing winner info
                 print("WINNER NAMEEEEE ", match.player_1.username)
+                logger.info(f"Match id: {match.id} !!!!!!!!!!!!!!!!!")
                 if match.player_1.username == data.get("winner"):
                     match.winner = match.player_1
                     match.player_1_points = 10
                     match.player_2_points = game.score["opponent"]
-                else
+                else:
                     match.winner = match.player_2
                     match.player_2_points = 10
                     match.player_1_points = game.score["player"]
@@ -364,7 +365,8 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         match = await sync_to_async(Match.objects.create)(
             player_1=user,
-            match_start = date_match
+            match_start = date_match,
+            match_time = timedelta(minutes=0)
         )
         await self.send(text_data=json.dumps({
             'action': 'created',
@@ -523,7 +525,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                             self.match_name,
                             {
                                 "type": "end",
-                                "reason": f"Game Over: {winner} wins"
+                                "reason": f"Game Over: {winner} wins",
+                                "winner": {winner}
                             }
                         )
                     else:
