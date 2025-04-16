@@ -303,6 +303,16 @@ class GameConsumer(AsyncWebsocketConsumer):
         elif action == "end":
             if self.game_id in games:
                 game = games[self.game_id]
+                match = await sync_to_async(Match.objects.filter)(player_id=player_id)
+                if match.player_1.username == data.get("winner"):
+                    match.winner = match.player_1
+                else
+                    match.winner = match.player_2
+                # match.winner = data.get("winner")
+                await sync_to_async(match.save)()
+                #match obj from db
+                #data.get("winner") match the username to the match object of player 1 or 2
+                #
                 game.clear_game()
 
         elif action == "stop":
