@@ -20,21 +20,21 @@ function connectWebSocket(mode) {
         return;
     }
     
-    // const token = localStorage.getItem("access_token");
-    // if (!token) {
-    //     console.error("No token no game!");
-    //     return;
-    // }
-    // console.log("token: ", token);
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        console.error("No token no game!");
+        return;
+    }
+    console.log("token: ", token);
 
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
     if (mode == "4" || mode == "8")
-        websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/`);
-        // websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
+        // websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/`);
+        websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
     else
-        websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/`);
-        // websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
+        // websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/`);
+        websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
 
     websocket.onopen = async() => {
         console.log("Connected to the game server.");
@@ -44,7 +44,7 @@ function connectWebSocket(mode) {
             startGameMenu();
         } else if (mode == "4" || mode == "8") {
             try {
-                const data = await fetchData("http://localhost:8080/api/tournament-status/");
+                const data = await fetchData("/tournament-status/");
                 console.log("Fetched tournament status:", data);
                 if (data.players_in == 0) {
                     websocket.send(JSON.stringify({ action: "start_tournament", mode: mode }));

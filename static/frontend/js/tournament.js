@@ -30,7 +30,7 @@ const stopTournamentUpdates = async (mode) => {
 
 async function updateBracketWithData(mode) {
     try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
+        const data = await fetchData("/tournament-status/");
         console.log("Fetched tournament status:", data);
 
         if (data) {
