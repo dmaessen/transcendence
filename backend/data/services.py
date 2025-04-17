@@ -81,14 +81,17 @@ def remove_friend(user_id, friend_id):
     ).delete()
     return f"No longer friends."
 
-def frienship_status(user_id, friend_id):
+def get_frienship(user_id, friend_id):
     user = CustomUser.objects.get(id=user_id)
     friend = CustomUser.objects.get(id=friend_id)
     friendship = Friendship.objects.filter(
         models.Q(sender=user, receiver=friend) | 
         models.Q(sender=friend, receiver=user)
     ).first()
-    return friendship.status if friendship else None 
+    if friendship:
+        return friendship
+    else:
+        return None 
 
 def get_friends(user_id):
     user = CustomUser.objects.get(id=user_id)
@@ -125,17 +128,6 @@ def get_friendship_requests(user_id):
             "friendship_id": req.id
         })
     return fRequests
-
-# def get_sent_friend_requests(user_id):
-#     user = CustomUser.objects.get(user_id)
-#     requests = Friendship.objects.filter(user=user, status='pending')
-#     output = []
-#     for req in requests:
-#         output.append({
-#             "from": req.user.username,
-#             "sent_at": req.created_at,
-#         })
-#     return output
 
 # Manage profile 
 def change_name(req, user_id):

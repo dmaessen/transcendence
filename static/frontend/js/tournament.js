@@ -1,6 +1,6 @@
-let winners4 = [];
-let winners8 = [];
-let winners8_final = [];
+let winners4;
+let winners8;
+let winners8_final;
 let tournamentInterval = null;
 
 async function drawBracket(mode) {
@@ -82,9 +82,9 @@ function updatePlayerFields(mode, players, results = []) {
 
 const clearArrayWinners = async () => {
     await sleep(3000);
-    winners4 = [];
-    winners8 = [];
-    winners8_final = [];
+    winners4 = null;
+    winners8 = null;
+    winners8_final = null;
 }
 
 async function updateBracket(mode, bracket, currentRound, final_winner) {
@@ -234,9 +234,9 @@ function clearPlayerFields(mode) {
     let playerElem;
     let resultElem;
 
-    winners4 = [];
-    winners8 = [];
-    winners8_final = [];
+    winners4 = null;
+    winners8 = null;
+    winners8_final = null;
 
     if (mode == 8) {
         for (let i = 0; i < 14; i++) {

@@ -87,7 +87,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         #     self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
-        player = Player(self.player_id, self.session_key, 'online')
+        # player = Player(self.player_id, self.session_key, 'online')
         
         self.room_name = "tournament_lobby"
         await self.channel_layer.group_add(self.room_name, self.channel_name)
