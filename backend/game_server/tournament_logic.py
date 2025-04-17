@@ -5,17 +5,17 @@ import asyncio
 from channels.layers import get_channel_layer
 
 class Tournament:
-    _instance = None
+    # _instance = None
 
-    def __new__(cls, mode):
-        if cls._instance is None:
-            cls._instance = super(Tournament, cls).__new__(cls)
-            cls._instance._initialized = False  # prevents reinitilizing
-        return cls._instance
+    # def __new__(cls, mode):
+    #     if cls._instance is None:
+    #         cls._instance = super(Tournament, cls).__new__(cls)
+    #         cls._instance._initialized = False  # prevents reinitilizing
+    #     return cls._instance
 
     def __init__(self, mode):
-        if self._initialized:
-            return
+        # if self._initialized:
+        #     return
         self.mode = mode
         self.num_players = int(mode)
         self.players = []  # player IDs and usernames
@@ -25,7 +25,7 @@ class Tournament:
         self.running = False
         self.winners = []  # players who won their matches
         self.final_winner = None
-        self._initialized = True
+        # self._initialized = True
 
     def add_player(self, player_id, username):
         if len(self.players) < self.num_players:

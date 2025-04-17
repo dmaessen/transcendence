@@ -87,7 +87,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         #     self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
-        player = Player(self.player_id, self.session_key, 'online')
+        # player = Player(self.player_id, self.session_key, 'online')
         
         self.room_name = "tournament_lobby"
         await self.channel_layer.group_add(self.room_name, self.channel_name)
@@ -293,7 +293,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def handle_leave_tournament(self, data): # look more into this one, when applicable
         """Player leaves before the tournament starts."""
-        if self.tournament and self.player_id in self.tournament.players:
+        if self.tournament and self.player_id in self.tournament.players and self.tournament.running is False:
             self.tournament.players.remove(self.player_id)
             await self.broadcast_tournament_state()
         print(f"Player {self.player_id} left the tournament.")
@@ -330,6 +330,19 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                             "winner": winner
                         }
                     )
+    
+    async def tournament1v1game_start_game_task(self, game_id, duration=70):
+        print(f"Game {game_id} in tournament1v1game_start_game_task", flush=True)
+        await asyncio.sleep(duration)  # 1min 10sec wait
+        if game_id in games:
+            game = games[game_id]
+
+            if game.get_state_isrunning() == False:
+                print("Both players aren't responding, starting game regardless. Starting game!", flush=True)
+                game.start_game()
+                await self.send_json({"type": "started", "game_id": self.game_id})
+                await self.send_game_state(game)
+                asyncio.create_task(self.broadcast_game_state(self.game_id))
 
     async def game_created(self, event):
         game_id = event["game_id"]
@@ -447,6 +460,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         game.status = "started"
                         await self.send_game_state(game)
                         asyncio.create_task(self.broadcast_game_state(self.game_id))
+                        # start 1min timer for them to start the match else we trigger automatically
+                        asyncio.create_task(self.tournament1v1game_start_game_task(self.game_id))
                     else:
                         print(f"Game for match {match.id} not found.", flush=True)
                     break
