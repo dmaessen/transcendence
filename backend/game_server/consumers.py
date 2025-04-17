@@ -177,14 +177,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         player_id = self.player_id
         user = await get_user_by_id(player_id)
 
-        if data.get("type") == "create.game.tournament":
-            print("IN TYPE", flush=True) # to rm
-            await self.create_game_tournament(data)
-        
-        if action == "create.game.tournament":
-            print("IN ACTION", flush=True) # to rm
-            await self.create_game_tournament(data)
-
         if action == "connect":
             print(f"Player {player_id} trying to connect to game.", flush=True)
 
@@ -443,8 +435,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                     player_username = None
                     opponent_username = None
 
-                    #print(f"Game State: {game.__dict__}", flush=True)
-
                     for player_id, player in game.players.items():
                         if player.get("role") == "player":
                             player_username = player.get("username")
@@ -455,7 +445,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                         winner = player_username if game.score.get("player", 0) >= points else opponent_username
                         print(f"Winner determined: {winner}", flush=True)
 
-                        await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                        await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": {winner}})
 
                         await self.channel_layer.group_send(
                             self.match_name,
