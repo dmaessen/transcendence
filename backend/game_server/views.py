@@ -27,6 +27,7 @@ def get_tournament_status(request):
         state = json.loads(state)
     else:
         state = {
+            "tournament_db_id": None,
             "tournament_active": False,
             "players_in": 0,
             "remaining_spots": 4,
