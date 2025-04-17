@@ -2,7 +2,7 @@ import json
 import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from game_server.game_logic import Game
-from game_server.tournament_logic import Tournament
+from game_server.tournament_logic import TournamentLogic
 from matchmaking.utils import create_match
 import uuid
 import msgspec
