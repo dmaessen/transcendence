@@ -235,6 +235,15 @@ function showWaitingRoomTournament(mode) {
 }
 
 function updateGameState(data) {
+    // if (typeof data === "string") {
+    //     try {
+    //         data = JSON.parse(data);
+    //     } catch (e) {
+    //         console.error("Failed to parse game state JSON:", e);
+    //         return;
+    //     }
+    // }
+
     const { players, ball, score, net, width, height } = data;
     if (!players || !ball || !score || !net || !width || !height) {
         console.error("Invalid game state received:", data);

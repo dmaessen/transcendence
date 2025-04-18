@@ -215,7 +215,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                                 game.stop_game(winner)
                                 game.reset_game("Two Players (remote)") 
 
-                                await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                                await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
                                 await self.channel_layer.group_send(
                                     self.match_name,
                                     {
@@ -314,7 +314,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     winner = self.username
                     print(f"Winner determined: {winner}", flush=True)
 
-                    await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                    await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
                     await self.channel_layer.group_send(
                         self.match_name,
                         {
@@ -334,15 +334,19 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def tournament1v1game_start_game_task(self, game_id, duration=70):
         print(f"Game {game_id} in tournament1v1game_start_game_task", flush=True)
         await asyncio.sleep(duration)  # 1min 10sec wait
-        if game_id in games:
-            game = games[game_id]
+        if self.game_id in games:
+            game = games[self.game_id]
 
             if game.get_state_isrunning() == False:
                 print("Both players aren't responding, starting game regardless. Starting game!", flush=True)
-                game.start_game()
-                await self.send_json({"type": "started", "game_id": self.game_id})
-                await self.send_game_state(game)
-                asyncio.create_task(self.broadcast_game_state(self.game_id))
+                await self.send_json({"type": "trigger_auto_start", "game_id": self.game_id})
+                print(f"LEN PLAYERS ", len(game.players), len(game.ready_players), flush=True)
+
+                # if someone desconnected in the meantime before starting then this player wins automatically
+                await asyncio.sleep(10)
+                if len(game.players) == 1:
+                    print(f"NB2: Both players aren't responding, starting game regardless. Starting game!", flush=True)
+                    await self.send_json({"type": "end", "reason": f"Game Over: {self.username} wins", "winner": self.username})
 
     async def game_created(self, event):
         game_id = event["game_id"]
@@ -415,6 +419,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 player_2=user2,
                 match_time=timedelta(minutes=2)
             )
+            # CHECK THE BELOW WITH GUL AS THAT MIGHT FIX SOME OF OUR ISSUES 
+            # match, created = await sync_to_async(Match.objects.get_or_create)(
+            #     player_1=user1,
+            #     player_2=user2,
+            #     tournament=tournament_obj,
+            #     defaults={"match_time": timedelta(minutes=2)}
+            # )
 
             # need to: int(self.match_name[6:]) ??? like in connect in consumer.py??
             self.game_id = match.id
@@ -444,13 +455,18 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
             await self.send_game_state(game)
             asyncio.create_task(self.broadcast_game_state(self.game_id))
+            # start 1min timer for them to start the match else we trigger automatically
+            asyncio.create_task(self.tournament1v1game_start_game_task(self.game_id))
         
         elif self.player_id == player2_id:
             retries = 5
             delay = 5  # 5sec
             for attempt in range(retries):
                 try:
-                    match = await sync_to_async(Match.objects.get)(player_1_id=player1_id, player_2_id=player2_id)
+                    match = await sync_to_async(
+                        lambda: Match.objects.filter(player_1_id=player1_id, player_2_id=player2_id).latest('id')
+                    )()
+                    # match = await sync_to_async(Match.objects.get)(player_1_id=player1_id, player_2_id=player2_id)
                     self.game_id = match.id
                     self.match_name = str(f"match_{match.id}")
                     await self.channel_layer.group_add(self.match_name, self.channel_name)
@@ -519,7 +535,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         winner = player_username if game.score.get("player", 0) >= 3 else opponent_username
                         print(f"Winner determined: {winner}", flush=True)
 
-                        await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                        await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
                         await self.channel_layer.group_send(
                             self.match_name,
                             {

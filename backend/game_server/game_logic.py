@@ -2,7 +2,7 @@ import json
 import random
 import math
 
-MAX_BALL_SPEED = 8.0
+MAX_BALL_SPEED = 12.0
 
 class Game:
     def __init__(self, mode):
@@ -171,7 +171,7 @@ class Game:
         self.ball["x"] = self.width // 2
         self.ball["y"] = random.randint(200, self.height // 2)
         angle = random.uniform(0.2, 0.8)
-        self.ball["speed"] *= 1.06
+        self.ball["speed"] *= 1.2
         self.ball["speed"] = min(self.ball["speed"], MAX_BALL_SPEED) # capping the ball speed to a certain limit
         
         self.ball["dir_x"] = direction * (self.ball["speed"]) * angle
@@ -206,7 +206,7 @@ class Game:
         # self.score = {"player": 0, "opponent": 0}
         self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
         print(f"Game ended. Winner: {winner}", flush=True)
-        return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": {winner}}
+        return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner}
         # maybe just having a normal return here??
         
     def clear_game(self):

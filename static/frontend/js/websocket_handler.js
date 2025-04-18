@@ -151,7 +151,21 @@ function handleServerMessage(message) {
             console.log(`Game in reset with ID: ${gameState.gameId}`);
             break;
         case "update":
+            // let state_game = message.data;
+
+            // if (typeof state_game === "string") {
+            //     try {
+            //         state_game = JSON.parse(state_game);
+            //     } catch (e) {
+            //         console.error("Failed to parse game state:", e, state_game);
+            //         return;
+            //     }
+            // }
+            // updateGameState(state_game);
             updateGameState(message.data);
+            break;
+        case "trigger_auto_start":
+            websocket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
             break;
         case "end":
             showEndMenu(`${message.reason}`);
