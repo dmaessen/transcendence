@@ -55,7 +55,8 @@ def get_match_time(match_id):
 def add_new_friend(user_id, friend_id):
     user = CustomUser.objects.filter(id=user_id).first()
     friend = CustomUser.objects.filter(id=friend_id).first()
-    if frienship_status(user_id, friend_id) == "pending":
+    friendship = get_frienship(user_id, friend_id)
+    if friendship and friendship.status == "pending":
         accept_friend(user_id, friend_id)
         return f"Friendship request or connection already exists between {user.username} and {friend.username}."
     

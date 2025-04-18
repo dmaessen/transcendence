@@ -30,6 +30,9 @@ if (saveChangesBtn) {
             });
 
             if (!response.ok) {
+                const responseError = await response.json();
+                if (response.status == 400 && responseError)
+                    alert(`${responseError.error}. Please try again!`);
                 throw new Error(`error, status: ${response.status}`);
             }
 

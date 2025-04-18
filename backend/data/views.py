@@ -128,7 +128,6 @@ def edit_user_data(request):
         if newMail and CustomUser.objects.exclude(id=user.id).filter(email=newMail).exists():
             return JsonResponse({"error": "Email already in use"}, status=400)
 
-        # Update only if values are provided
         if newUsername:
             user.username = newUsername
         if newMail:
