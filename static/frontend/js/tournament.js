@@ -15,7 +15,7 @@ let tournamentInterval = null;
                 joinTournament(data);
             } else if (data.running) {
                 document.getElementById("tournamentBtn").textContent = "Ongoing tournament"
-
+                document.getElementById("tournamentBtn").disabled = true;
                 //ongoing tournament
             } else {
                 document.getElementById("tournamentBtn").textContent = "Start new tournament"
