@@ -9,39 +9,44 @@ async function loginWebSocket(){
         return;
     }
     // console.log("toke: ", token);
-    loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
-    // console.log("socket: ", loginsocket);
-    if (!token) {
-        console.error("No access token found! WebSocket authentication will fail.");
-        return;
-    }
-    loginsocket.onopen =  async(event) => {
-        console.log("onlineSocket openned");
-        pingInterval = setInterval(() => {
-            loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
-        }, 15000);
-    }
-    loginsocket.onmessage = (event) => {
-        console.log("Received message:", event.data);
-    };
-    loginsocket.onclose = (event) => {
-        console.log("onlineSocket closed", event);
-        clearInterval(pingInterval);
+    try {
 
-        // Clear tokens
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        console.log("tokens cleaned");
-
-        //refresh the page 
-        window.location.reload();
-        // logOut(); This is dumb as user can logout in any modal 
+        loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
+        // console.log("socket: ", loginsocket);
+        if (!token) {
+            console.error("No access token found! WebSocket authentication will fail.");
+            return;
+        }
+        loginsocket.onopen =  async(event) => {
+            console.log("onlineSocket openned");
+            pingInterval = setInterval(() => {
+                loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
+            }, 15000);
+        }
+        loginsocket.onmessage = (event) => {
+            console.log("Received message:", event.data);
+        };
+        loginsocket.onclose = (event) => {
+            console.log("onlineSocket closed", event);
+            clearInterval(pingInterval);
     
-    };
-    loginsocket.onerror = async function(error) {
-        console.error("onlineSocket error:", error);
-    };
-    // console.log("socket: ", loginsocket);
+            // Clear tokens
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            console.log("tokens cleaned");
+    
+            //refresh the page 
+            window.location.reload();
+            // logOut(); This is dumb as user can logout in any modal 
+        
+        };
+        loginsocket.onerror = async function(error) {
+            console.error("onlineSocket error:", error);
+        };
+        // console.log("socket: ", loginsocket);
+    } catch (errror) {
+        console.log("Error: ", errror);
+    }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
