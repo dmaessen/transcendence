@@ -98,6 +98,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
         print(f"Player disconnected from tournament WebSocket: {self.channel_name}")
 
+        # Handle leaving tournament if it hasn't started
+        if self.tournament and self.player_id in self.tournament.players and not self.tournament.running:
+            await self.handle_leave_tournament({"action": "leave_tournament"})
+        await self.close()
+
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
@@ -266,7 +271,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         mode = data.get("mode")
         self.initiator = self.player_id
         self.tournament = Tournament(mode=mode)
-        # self.tournament.add_room_name("tournament_lobby")
         print(f"Starting a {mode}-player tournament. Initiator: {self.initiator}", flush=True)
         await self.broadcast_tournament_state()
 
@@ -291,7 +295,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.tournament_full()
             print(f"Tournament is full. Player {self.player_id} cannot join.")
 
-    async def handle_leave_tournament(self, data): # look more into this one, when applicable
+    async def handle_leave_tournament(self, data):
         """Player leaves before the tournament starts."""
         if self.tournament and self.player_id in self.tournament.players and self.tournament.running is False:
             self.tournament.players.remove(self.player_id)
