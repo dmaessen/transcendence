@@ -1,14 +1,14 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from game_server.game_logic import Game
-from game_server.tournament_logic import Tournament
+from game_server.tournament_logic import TournamentLogic
 from game_server.player import Player
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 from django.core.cache import cache
 import uuid
-from data.models import CustomUser, Match
+from data.models import CustomUser, Match, Tournament
 import msgspec
 import asyncio
 from channels.layers import get_channel_layer
@@ -87,7 +87,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         #     self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
-        # player = Player(self.player_id, self.session_key, 'online')
+        #player = Player(self.player_id, self.session_key, 'online')
         
         self.room_name = "tournament_lobby"
         await self.channel_layer.group_add(self.room_name, self.channel_name)
@@ -271,22 +271,30 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         mode = data.get("mode")
         self.initiator = self.player_id
         self.tournament = Tournament(mode=mode)
+        # self.tournament.add_room_name("tournament_lobby")
         print(f"Starting a {mode}-player tournament. Initiator: {self.initiator}", flush=True)
+        print(f"Created tournament with ID {tournament_db.id} in database", flush=True)
         await self.broadcast_tournament_state()
 
     async def handle_join_tournament(self, data):
         tournament_state = cache.get('tournament_state')
         if tournament_state:
             tournament_state = json.loads(tournament_state)
-            self.tournament = Tournament(mode=tournament_state['mode'])
+            self.tournament = TournamentLogic(mode=tournament_state['mode'])
             self.tournament.players = tournament_state['players']
+
+            # Get the tournament_db id from cache if exists
+            if 'tournament_db_id' in tournament_state:
+                self.tournament_db_id = tournament_state['tournament_db_id']
         else:
-            self.tournament = Tournament(mode=data.get("mode"))
+            self.tournament = TournamentLogic(mode=data.get("mode"))
 
         if len(self.tournament.players) < self.tournament.num_players:
             self.tournament.add_player(self.player_id, self.username)
+
             print(f"Player {self.player_id} joined the tournament.")
             await self.broadcast_tournament_state()
+
             if len(self.tournament.players) == self.tournament.num_players:
                 print(f"Tournament starting from handle_join_tournament")
                 await self.tournament.start_tournament()
@@ -377,6 +385,30 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         # updates the tournament bracket
         await self.tournament.register_match_result(game_id, winner_username)
+        
+        # If tournament is finished, update the database record with the results
+        if self.tournament.final_winner and hasattr(self, 'tournament_db_id'):
+            tournament_db = await sync_to_async(models.Tournament.objects.get)(id=self.tournament_db_id)
+        
+            if self.tournament.final_winner:
+                winner_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.final_winner)
+                tournament_db.first_place = winner_user
+
+            if len(self.tournament.winners) > 1:
+                second_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[1])
+                tournament_db.second_place = second_user
+
+            if len(self.tournament.winners) > 2:
+                third_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[2])
+                tournament_db.third_place = third_user
+
+            if len(self.tournament.winners) > 3:
+                fourth_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[3])
+                tournament_db.fourth_place = fourth_user
+
+            tournament_db.end_date = timezone.now()
+            await sync_to_async(tournament_db.save)()
+
         await self.broadcast_tournament_state()
     
     async def game_end(self, event):
@@ -418,10 +450,14 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             user1 = await get_user_by_id(player1_id)
             user2 = await get_user_by_id(player2_id)
 
+            if hasattr(self, 'tournament_db_id'):
+                tournament_db = await sync_to_async(models.Tournament.objects.get)(id=self.tournament_db_id)
+
             match = await sync_to_async(Match.objects.create)(
                 player_1=user1,
                 player_2=user2,
-                match_time=timedelta(minutes=2)
+                match_time=timedelta(minutes=2),
+                tournament=tournament_db
             )
             # CHECK THE BELOW WITH GUL AS THAT MIGHT FIX SOME OF OUR ISSUES 
             # match, created = await sync_to_async(Match.objects.get_or_create)(
@@ -499,6 +535,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             # state = self.tournament.get_tournament_state()
             # state["action"] = "update_tournament"
             state = self.tournament.get_tournament_state()
+
+            if hasattr(self, 'tournament_db_id'):
+                state['tournament_db_id'] = self.tournament_db_id
 
             print(f"(BACKEND) Sending update: {state}", flush=True)
 

@@ -4,14 +4,14 @@ import math
 import asyncio
 from channels.layers import get_channel_layer
 
-class Tournament:
-    # _instance = None
+class TournamentLogic:
+    _instance = None
 
-    # def __new__(cls, mode):
-    #     if cls._instance is None:
-    #         cls._instance = super(Tournament, cls).__new__(cls)
-    #         cls._instance._initialized = False  # prevents reinitilizing
-    #     return cls._instance
+    def __new__(cls, mode):
+        if cls._instance is None:
+            cls._instance = super(Tournament, cls).__new__(cls)
+            cls._instance._initialized = False  # prevents reinitilizing
+        return cls._instance
 
     def __init__(self, mode):
         # if self._initialized:
