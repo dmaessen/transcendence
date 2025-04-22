@@ -13,7 +13,8 @@ import msgspec
 import asyncio
 from channels.layers import get_channel_layer
 from autobahn.websocket.protocol import Disconnected
-from datetime import timedelta
+from datetime import datetime, timedelta
+from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
 from urllib.parse import parse_qs
 import logging
@@ -200,7 +201,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 if hasattr(self, 'match_name'):
                     await self.channel_layer.group_discard(self.match_name, self.channel_name)
 
-        elif action == "disconnect":
+        elif action == "disconnect": # save the tournament database obj with result or someting??
             if self.game_id in games:
                 game = games[self.game_id]
                 if self.player_id in game.players:
@@ -270,10 +271,17 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def handle_start_tournament(self, data):
         mode = data.get("mode")
         self.initiator = self.player_id
-        self.tournament = Tournament(mode=mode)
+        self.tournament = TournamentLogic(mode=mode)
         # self.tournament.add_room_name("tournament_lobby")
         print(f"Starting a {mode}-player tournament. Initiator: {self.initiator}", flush=True)
-        print(f"Created tournament with ID {tournament_db.id} in database", flush=True)
+
+        tournament_obj = await sync_to_async(Tournament.objects.create)(
+            max_players=mode,
+            start_date=timezone.now() + timedelta(minutes=2),
+        )
+        self.tournament_db_id = tournament_obj.id
+
+        print(f"Created tournament with ID {tournament_obj.id} in database", flush=True)
         await self.broadcast_tournament_state()
 
     async def handle_join_tournament(self, data):
@@ -383,28 +391,43 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         winner = event["winner"]
         winner_username = winner
 
+        match = await sync_to_async(Match.objects.get)(id=self.game_id)
+        logger.info(f"Match id: {match.id} !!!!!!!!!!!!!!!!!")
+        try:
+            if match.player_1.username == winner_username:
+                match.winner = match.player_1
+                match.player_1_points = 3
+                match.player_2_points = 0 # as we can't retreive it
+            else:
+                match.winner = match.player_2
+                match.player_2_points = 3
+                match.player_1_points = 0 # as we can't retreive it
+            await sync_to_async(match.save)()
+        except Exception as e:
+            logger.error(f"Error processing game result: {e}")
+
         # updates the tournament bracket
         await self.tournament.register_match_result(game_id, winner_username)
         
         # If tournament is finished, update the database record with the results
         if self.tournament.final_winner and hasattr(self, 'tournament_db_id'):
-            tournament_db = await sync_to_async(models.Tournament.objects.get)(id=self.tournament_db_id)
+            tournament_db = await sync_to_async(Tournament.objects.get)(id=self.tournament_db_id)
         
             if self.tournament.final_winner:
-                winner_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.final_winner)
+                winner_user = await sync_to_async(CustomUser.objects.get)(username=self.tournament.final_winner)
                 tournament_db.first_place = winner_user
 
-            if len(self.tournament.winners) > 1:
-                second_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[1])
-                tournament_db.second_place = second_user
+            # if len(self.tournament.winners) > 1:
+            #     second_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[1])
+            #     tournament_db.second_place = second_user
 
-            if len(self.tournament.winners) > 2:
-                third_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[2])
-                tournament_db.third_place = third_user
+            # if len(self.tournament.winners) > 2:
+            #     third_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[2])
+            #     tournament_db.third_place = third_user
 
-            if len(self.tournament.winners) > 3:
-                fourth_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[3])
-                tournament_db.fourth_place = fourth_user
+            # if len(self.tournament.winners) > 3:
+            #     fourth_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[3])
+            #     tournament_db.fourth_place = fourth_user
 
             tournament_db.end_date = timezone.now()
             await sync_to_async(tournament_db.save)()
@@ -451,21 +474,21 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             user2 = await get_user_by_id(player2_id)
 
             if hasattr(self, 'tournament_db_id'):
-                tournament_db = await sync_to_async(models.Tournament.objects.get)(id=self.tournament_db_id)
+                tournament_db = await sync_to_async(Tournament.objects.get)(id=self.tournament_db_id)
 
-            match = await sync_to_async(Match.objects.create)(
-                player_1=user1,
-                player_2=user2,
-                match_time=timedelta(minutes=2),
-                tournament=tournament_db
-            )
-            # CHECK THE BELOW WITH GUL AS THAT MIGHT FIX SOME OF OUR ISSUES 
-            # match, created = await sync_to_async(Match.objects.get_or_create)(
+            # match = await sync_to_async(Match.objects.create)(
             #     player_1=user1,
             #     player_2=user2,
-            #     tournament=tournament_obj,
-            #     defaults={"match_time": timedelta(minutes=2)}
+            #     match_time=timedelta(minutes=2),
+            #     tournament=tournament_db
             # )
+            # CHECK THE BELOW WITH GUL AS THAT MIGHT FIX SOME OF OUR ISSUES 
+            match, created = await sync_to_async(Match.objects.get_or_create)(
+                player_1=user1,
+                player_2=user2,
+                tournament=tournament_db,
+                match_time=timedelta(minutes=2),
+            )
 
             # need to: int(self.match_name[6:]) ??? like in connect in consumer.py??
             self.game_id = match.id
@@ -495,6 +518,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
             await self.send_game_state(game)
             asyncio.create_task(self.broadcast_game_state(self.game_id))
+
             # start 1min timer for them to start the match else we trigger automatically
             asyncio.create_task(self.tournament1v1game_start_game_task(self.game_id))
         
@@ -502,9 +526,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             retries = 5
             delay = 5  # 5sec
             for attempt in range(retries):
+                await asyncio.sleep(1)
                 try:
                     match = await sync_to_async(
-                        lambda: Match.objects.filter(player_1_id=player1_id, player_2_id=player2_id).latest('match_start')
+                        lambda: Match.objects.filter(player_1_id=player1_id, player_2_id=player2_id, match_start__isnull=True).latest('match_time')
                     )()
                     # match = await sync_to_async(Match.objects.get)(player_1_id=player1_id, player_2_id=player2_id)
                     self.game_id = match.id
