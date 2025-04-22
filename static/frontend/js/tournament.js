@@ -19,7 +19,7 @@ let tournamentInterval = null;
                 //ongoing tournament
             } else {
                 document.getElementById("tournamentBtn").textContent = "Start new tournament"
-                //start tournament
+                //follow original logic for the button and start tournament
             }
         }
     } catch (error){

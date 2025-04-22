@@ -155,9 +155,9 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
 });
 
 async function joinTournament(data){
-    gameMenuFirst.hide();
-    gameMenu.hide();
-    gameMenuTournament.hide();
+    document.querySelectorAll('.modal.show').forEach(modal => {
+        bootstrap.Modal.getInstance(modal)?.hide();
+    });
 
     gameState.mode = data.players_in + data.remaining_spots; 
     keyboardEnabled = true;
