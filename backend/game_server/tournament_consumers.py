@@ -237,7 +237,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                                     }
                                 )
 
-            if self.tournament.running is False and self.tournament.final_winner is not null:
+            if self.tournament.running is False and self.tournament.final_winner is not None:
                 if self.initiator == self.scope["user"]:
                     TournamentConsumer.tournament = None
                     TournamentConsumer.initiator = None
@@ -468,7 +468,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             for attempt in range(retries):
                 try:
                     match = await sync_to_async(
-                        lambda: Match.objects.filter(player_1_id=player1_id, player_2_id=player2_id).latest('id')
+                        lambda: Match.objects.filter(player_1_id=player1_id, player_2_id=player2_id).latest('match_start')
                     )()
                     # match = await sync_to_async(Match.objects.get)(player_1_id=player1_id, player_2_id=player2_id)
                     self.game_id = match.id
