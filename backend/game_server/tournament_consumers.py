@@ -299,9 +299,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.tournament = TournamentLogic(mode=data.get("mode"))
 
         if len(self.tournament.players) < self.tournament.num_players:
-            self.tournament.add_player(self.player_id, self.username)
-
-            print(f"Player {self.player_id} joined the tournament.")
+            if self.player_id not in [p["id"] for p in self.tournament.players]:
+                self.tournament.add_player(self.player_id, self.username)
+                print(f"Player {self.player_id} joined the tournament.")
+            else:
+                print(f"Player {self.player_id} ALREADY in the tournament.")
+                
             await self.broadcast_tournament_state()
 
             if len(self.tournament.players) == self.tournament.num_players:
@@ -476,26 +479,26 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         user2 = await get_user_by_id(player2_id)
 
         if self.player_id == player1_id:
-            # match = await sync_to_async(Match.objects.create)(
-            #     player_1=user1,
-            #     player_2=user2,
-            #     tournament=tournament_db,
-            #     match_time=timedelta(minutes=2),
-            # )
-            existing_match = await sync_to_async(Match.objects.filter)(
-                Q(player_1=user1, player_2=user2, tournament=tournament_db) |
-                Q(player_1=user2, player_2=user1, tournament=tournament_db)
+            match = await sync_to_async(Match.objects.create)(
+                player_1=user1,
+                player_2=user2,
+                tournament=tournament_db,
+                match_time=timedelta(minutes=2),
             )
+            # existing_match = await sync_to_async(Match.objects.filter)(
+            #     Q(player_1=user1, player_2=user2, tournament=tournament_db) |
+            #     Q(player_1=user2, player_2=user1, tournament=tournament_db)
+            # )
 
-            if not await sync_to_async(existing_match.exists)():
-                match = await sync_to_async(Match.objects.create)(
-                    player_1=user1,
-                    player_2=user2,
-                    tournament=tournament_db,
-                    match_time=timedelta(minutes=2),
-                )
-            else:
-                match = existing_match
+            # if not await sync_to_async(existing_match.exists)():
+            #     match = await sync_to_async(Match.objects.create)(
+            #         player_1=user1,
+            #         player_2=user2,
+            #         tournament=tournament_db,
+            #         match_time=timedelta(minutes=2),
+            #     )
+            # else:
+            #     match = existing_match
 
             # need to: int(self.match_name[6:]) ??? like in connect in consumer.py??
             self.game_id = match.id
