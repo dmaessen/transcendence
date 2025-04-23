@@ -283,7 +283,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         self.tournament_db_id = tournament_obj.id
 
         print(f"Created tournament with ID {tournament_obj.id} in database", flush=True)
-        await self.broadcast_tournament_state()
+        await self.broadcast_added_players_state()
+        # await self.broadcast_tournament_state()
 
     async def handle_join_tournament(self, data):
         tournament_state = cache.get('tournament_state')
@@ -305,7 +306,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             else:
                 print(f"Player {self.player_id} ALREADY in the tournament.")
                 
-            await self.broadcast_tournament_state()
+            await self.broadcast_added_players_state()
+            # await self.broadcast_tournament_state()
 
             if len(self.tournament.players) == self.tournament.num_players:
                 print(f"Tournament starting from handle_join_tournament")
@@ -412,19 +414,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 raise ValueError(f"Winner username {winner_username} not found in match")
             await sync_to_async(match.save)()
             logger.info("Match saved successfully")
-
-        # match = await sync_to_async(Match.objects.get, thread_sensitive=True)(id=self.game_id)
-        # logger.info(f"Match id: {match.id} !!!!!!!!!!!!!!!!!")
-        # try:
-        #     if match.player_1.username == winner_username:
-        #         match.winner = match.player_1
-        #         match.player_1_points = 3
-        #         match.player_2_points = 0 # as we can't retreive it
-        #     else:
-        #         match.winner = match.player_2
-        #         match.player_2_points = 3
-        #         match.player_1_points = 0 # as we can't retreive it
-        #     await sync_to_async(match.save)()
         except Exception as e:
             logger.error(f"Error processing game result: {e}")
 
@@ -436,8 +425,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             tournament_db = await sync_to_async(Tournament.objects.get)(id=self.tournament_db_id)
         
             if self.tournament.final_winner:
-                winner_user = await sync_to_async(CustomUser.objects.get)(username=self.tournament.final_winner)
+                winner_user = await sync_to_async(
+                    lambda: CustomUser.objects.filter(username=self.tournament.final_winner).first()
+                )()
                 tournament_db.first_place = winner_user
+                # winner_user = await sync_to_async(CustomUser.objects.get)(username=self.tournament.final_winner)
 
             # if len(self.tournament.winners) > 1:
             #     second_user = await sync_to_async(models.CustomUser.objects.get)(username=self.tournament.winners[1])
@@ -465,6 +457,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print(f"Game already cleared: {self.game_id}", flush=True)
 
         await self.send_json({"type": "end", "reason": event.get("reason")}) # needed?? might be double when called
+        await self.broadcast_tournament_state()
 
     async def tournament_update(self, event):
         """Receives the tournament state update and sends it to the frontend"""
@@ -503,12 +496,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             #     tournament=tournament_db,
             #     match_time=timedelta(minutes=2),
             # )
-            match = await sync_to_async(Match.objects.filter)(
+            match = await sync_to_async(lambda: Match.objects.filter(
                 Q(player_1=user1, player_2=user2, tournament=tournament_db) |
                 Q(player_1=user2, player_2=user1, tournament=tournament_db)
-            )
+            ).first())()
 
-            if not await sync_to_async(match.exists)():
+            if match is None:
                 match = await sync_to_async(Match.objects.create)(
                     player_1=user1,
                     player_2=user2,
@@ -580,11 +573,37 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         else:
             print(f"Player {self.player_id} is part of this match but will not create the game.", flush=True)
+        
+        await self.broadcast_tournament_state()
 
     async def broadcast_tournament_state(self):
         if self.tournament:
-            # state = self.tournament.get_tournament_state()
-            # state["action"] = "update_tournament"
+            state = self.tournament.get_tournament_state()
+            # once started then we broadcast only the fullest version of the state
+            if not (state.get("players_in") == state.get("num_players")
+                    and state.get("remaining_spots") == 0
+                    and state.get("running")
+                    and state.get("bracket")):
+                print("⏳ Tournament state not ready, skipping broadcast")
+                return
+
+            if hasattr(self, 'tournament_db_id'):
+                state['tournament_db_id'] = self.tournament_db_id
+
+            print(f"(BACKEND) Sending update: {state}", flush=True)
+
+            state_serializable = msgspec.json.encode(state).decode("utf-8")
+            cache.set("tournament_state", state_serializable)
+
+            await self.channel_layer.group_send(
+                "tournament_lobby", {
+                    "type": "tournament_update",
+                    "data": state_serializable,
+                }
+            )
+
+    async def broadcast_added_players_state(self):
+        if self.tournament:
             state = self.tournament.get_tournament_state()
 
             if hasattr(self, 'tournament_db_id'):

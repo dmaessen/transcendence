@@ -204,7 +204,7 @@ class Game:
         self.running = False
         # self.players = {}  # Clear players
         # self.score = {"player": 0, "opponent": 0}
-        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
         print(f"Game ended. Winner: {winner}", flush=True)
         return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner}
         # maybe just having a normal return here??
