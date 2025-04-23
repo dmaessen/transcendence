@@ -19,6 +19,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from urllib.parse import parse_qs
 import logging
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 games = {}
@@ -469,26 +470,32 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print(f"Player {self.player_id} is not part of this match. Ignoring message.", flush=True)
             return
 
+        if hasattr(self, 'tournament_db_id'):
+            tournament_db = await sync_to_async(Tournament.objects.get)(id=self.tournament_db_id)
+        user1 = await get_user_by_id(player1_id)
+        user2 = await get_user_by_id(player2_id)
+
         if self.player_id == player1_id:
-            user1 = await get_user_by_id(player1_id)
-            user2 = await get_user_by_id(player2_id)
-
-            if hasattr(self, 'tournament_db_id'):
-                tournament_db = await sync_to_async(Tournament.objects.get)(id=self.tournament_db_id)
-
             # match = await sync_to_async(Match.objects.create)(
             #     player_1=user1,
             #     player_2=user2,
+            #     tournament=tournament_db,
             #     match_time=timedelta(minutes=2),
-            #     tournament=tournament_db
             # )
-            # CHECK THE BELOW WITH GUL AS THAT MIGHT FIX SOME OF OUR ISSUES 
-            match, created = await sync_to_async(Match.objects.get_or_create)(
-                player_1=user1,
-                player_2=user2,
-                tournament=tournament_db,
-                match_time=timedelta(minutes=2),
+            existing_match = await sync_to_async(Match.objects.filter)(
+                Q(player_1=user1, player_2=user2, tournament=tournament_db) |
+                Q(player_1=user2, player_2=user1, tournament=tournament_db)
             )
+
+            if not await sync_to_async(existing_match.exists)():
+                match = await sync_to_async(Match.objects.create)(
+                    player_1=user1,
+                    player_2=user2,
+                    tournament=tournament_db,
+                    match_time=timedelta(minutes=2),
+                )
+            else:
+                match = existing_match
 
             # need to: int(self.match_name[6:]) ??? like in connect in consumer.py??
             self.game_id = match.id
@@ -529,7 +536,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(1)
                 try:
                     match = await sync_to_async(
-                        lambda: Match.objects.filter(player_1_id=player1_id, player_2_id=player2_id, match_start__isnull=True).latest('match_time')
+                        lambda: Match.objects.filter(player_1=user1, player_2=user2, tournament=tournament_db, match_start__isnull=True).latest('match_time')
                     )()
                     # match = await sync_to_async(Match.objects.get)(player_1_id=player1_id, player_2_id=player2_id)
                     self.game_id = match.id
