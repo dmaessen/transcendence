@@ -74,7 +74,7 @@ class Match(models.Model):
     #     unique_together = ('player_1', 'player_2', 'tournament')
 
     def __str__(self):
-        return f"Match_{self.player_1}.vs.{self.player_2}"
+        return f"Match_{self.player_1}.vs.{self.player_2} Winner: {self.winner}"
 
 
 class Tournament(models.Model):
