@@ -395,18 +395,36 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         winner = event["winner"]
         winner_username = winner
 
-        match = await sync_to_async(Match.objects.get)(id=self.game_id)
-        logger.info(f"Match id: {match.id} !!!!!!!!!!!!!!!!!")
         try:
+            match = await sync_to_async(
+                lambda: Match.objects.select_related("player_1", "player_2").get(id=game_id)
+            )()
+            logger.info(f"Match id: {match.id}, players: {match.player_1.username} vs {match.player_2.username}")
             if match.player_1.username == winner_username:
                 match.winner = match.player_1
                 match.player_1_points = 3
-                match.player_2_points = 0 # as we can't retreive it
-            else:
+                match.player_2_points = 0
+            elif match.player_2.username == winner_username:
                 match.winner = match.player_2
                 match.player_2_points = 3
-                match.player_1_points = 0 # as we can't retreive it
+                match.player_1_points = 0
+            else:
+                raise ValueError(f"Winner username {winner_username} not found in match")
             await sync_to_async(match.save)()
+            logger.info("Match saved successfully")
+
+        # match = await sync_to_async(Match.objects.get, thread_sensitive=True)(id=self.game_id)
+        # logger.info(f"Match id: {match.id} !!!!!!!!!!!!!!!!!")
+        # try:
+        #     if match.player_1.username == winner_username:
+        #         match.winner = match.player_1
+        #         match.player_1_points = 3
+        #         match.player_2_points = 0 # as we can't retreive it
+        #     else:
+        #         match.winner = match.player_2
+        #         match.player_2_points = 3
+        #         match.player_1_points = 0 # as we can't retreive it
+        #     await sync_to_async(match.save)()
         except Exception as e:
             logger.error(f"Error processing game result: {e}")
 
@@ -479,26 +497,24 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         user2 = await get_user_by_id(player2_id)
 
         if self.player_id == player1_id:
-            match = await sync_to_async(Match.objects.create)(
-                player_1=user1,
-                player_2=user2,
-                tournament=tournament_db,
-                match_time=timedelta(minutes=2),
-            )
-            # existing_match = await sync_to_async(Match.objects.filter)(
-            #     Q(player_1=user1, player_2=user2, tournament=tournament_db) |
-            #     Q(player_1=user2, player_2=user1, tournament=tournament_db)
+            # match = await sync_to_async(Match.objects.create)(
+            #     player_1=user1,
+            #     player_2=user2,
+            #     tournament=tournament_db,
+            #     match_time=timedelta(minutes=2),
             # )
+            match = await sync_to_async(Match.objects.filter)(
+                Q(player_1=user1, player_2=user2, tournament=tournament_db) |
+                Q(player_1=user2, player_2=user1, tournament=tournament_db)
+            )
 
-            # if not await sync_to_async(existing_match.exists)():
-            #     match = await sync_to_async(Match.objects.create)(
-            #         player_1=user1,
-            #         player_2=user2,
-            #         tournament=tournament_db,
-            #         match_time=timedelta(minutes=2),
-            #     )
-            # else:
-            #     match = existing_match
+            if not await sync_to_async(match.exists)():
+                match = await sync_to_async(Match.objects.create)(
+                    player_1=user1,
+                    player_2=user2,
+                    tournament=tournament_db,
+                    match_time=timedelta(minutes=2),
+                )
 
             # need to: int(self.match_name[6:]) ??? like in connect in consumer.py??
             self.game_id = match.id
