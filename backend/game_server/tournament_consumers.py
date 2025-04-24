@@ -483,12 +483,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         # If tournament is finished, update the database record with the results
         if self.tournament.final_winner and hasattr(self, 'tournament_db_id'):
             tournament_db = await sync_to_async(Tournament.objects.get)(id=self.tournament_db_id)
-        
+            print("tournament_db object is fetched")
+
             if self.tournament.final_winner:
                 winner_user = await sync_to_async(
-                    lambda: CustomUser.objects.filter(username=self.tournament.final_winner).first()
+                    lambda: CustomUser.objects.filter(username=self.tournament.final_winner["username"]).first()
                 )()
                 tournament_db.first_place = winner_user
+                print(f"TOURNAMENTWINNERMII = {self.tournament.final_winner}")
+                print(f"TOURNAMENTWINNER = {winner_user}")
                 # winner_user = await sync_to_async(CustomUser.objects.get)(username=self.tournament.final_winner)
 
             # if len(self.tournament.winners) > 1:
@@ -504,6 +507,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             #     tournament_db.fourth_place = fourth_user
 
             tournament_db.end_date = timezone.now()
+            print(f"TOURNAMENTENDDD = {tournament_db.end_date}")
             await sync_to_async(tournament_db.save)()
 
         await self.broadcast_tournament_state()
