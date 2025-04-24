@@ -566,6 +566,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     player_1=user1,
                     player_2=user2,
                     tournament=tournament_db,
+                    match_start=datetime.now().replace(hour=14, minute=0, second=0, microsecond=0),
                     match_time=timedelta(minutes=2),
                 )
 
@@ -608,7 +609,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(1)
                 try:
                     match = await sync_to_async(
-                        lambda: Match.objects.filter(player_1=user1, player_2=user2, tournament=tournament_db, match_start__isnull=True).latest('match_time')
+                        lambda: Match.objects.filter(player_1=user1, player_2=user2, tournament=tournament_db).latest('match_time')
                     )()
                     # match = await sync_to_async(Match.objects.get)(player_1_id=player1_id, player_2_id=player2_id)
                     self.game_id = match.id

@@ -341,7 +341,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         match = await sync_to_async(Match.objects.create)(
             player_1=user,
             match_start = date_match,
-            match_time = timedelta(minutes=0)
+            match_time = timedelta(minutes=0),
         )
         await self.send(text_data=json.dumps({
             'action': 'created',
