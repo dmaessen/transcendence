@@ -36,7 +36,8 @@ async function updateBracketWithData(mode) {
         if (data) {
             // if (data.running == false && (data.players_in == 0 || data.players_in == 1))
             //     clearPlayerFields(mode);
-            if (data.current_round < 2)
+            // if (data.current_round < 2)
+            if (data.remaining_spots == 0)
                 updatePlayerFields(mode, data.players, data.results);
             updateBracket(mode, data.bracket, data.current_round, data.final_winner);
             if (data.running == false && data.final_winner != null) {
@@ -52,7 +53,7 @@ async function updateBracketWithData(mode) {
     }
 }
 
-function updatePlayerFields(mode, players, results = []) {
+function updatePlayerFields(mode, players) {
     let playerElem;
     let resultElem;
 

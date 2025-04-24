@@ -292,25 +292,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                     asyncio.create_task(self.broadcast_game_state(self.game_id))
                     # game.ready_players.clear()
         
-        elif action == "end":
-            if self.game_id in games:
-                game = games[self.game_id]
-                match = await sync_to_async(Match.objects.filter)(player_id=player_id)
-                # Passing winner info
-                print("WINNER NAMEEEEE ", match.player_1.username)
-                logger.info(f"Match id: {match.id} !!!!!!!!!!!!!!!!!")
-                if match.player_1.username == data.get("winner"):
-                    match.winner = match.player_1
-                    match.player_1_points = 10
-                    match.player_2_points = game.score["opponent"]
-                else:
-                    match.winner = match.player_2
-                    match.player_2_points = 10
-                    match.player_1_points = game.score["player"]
-
-                # match.winner = data.get("winner")
-                await sync_to_async(match.save)()
-                game.clear_game()
+        # elif action == "end":
+        #     await self.end()
 
         elif action == "stop":
             if self.game_id in games:
@@ -403,6 +386,46 @@ class GameConsumer(AsyncWebsocketConsumer):
         #await self.send_game_state(game)
 
         return self.match_name
+    
+    async def end(self, event):
+        if self.game_id in games:
+            game = games[self.game_id]
+            try:
+                match = await sync_to_async(
+                    lambda: Match.objects.select_related("player_1", "player_2").get(id=self.game_id)
+                )()
+                logger.info(f"Match id: {match.id}, players: {match.player_1.username} vs {match.player_2.username}")
+                if match.player_1.username == event.get("winner"):
+                    match.winner = match.player_1
+                    match.player_1_points = 10
+                    match.player_2_points = game.score["opponent"]
+                elif match.player_2.username == event.get("winner"):
+                    match.winner = match.player_2
+                    match.player_2_points = 10
+                    match.player_1_points = game.score["player"]
+                else:
+                    raise ValueError(f"Winner username not found in match")
+                await sync_to_async(match.save)()
+                logger.info("Match saved successfully")
+            except Exception as e:
+                logger.error(f"Error processing game result: {e}")
+
+                # match = await sync_to_async(Match.objects.filter)(player_id=player_id)
+                # # Passing winner info
+                # print("WINNER NAMEEEEE ", match.player_1.username)
+                # logger.info(f"Match id: {match.id} !!!!!!!!!!!!!!!!!")
+                # if match.player_1.username == data.get("winner"):
+                #     match.winner = match.player_1
+                #     match.player_1_points = 10
+                #     match.player_2_points = game.score["opponent"]
+                # else:
+                #     match.winner = match.player_2
+                #     match.player_2_points = 10
+                #     match.player_1_points = game.score["player"]
+
+                # # match.winner = data.get("winner")
+                # await sync_to_async(match.save)()
+            game.clear_game()
 
     async def trigger_start_game_auto_task(self, duration=70):
         print(f"Game {self.game_id} in trigger_start_game_auto_task", flush=True)
