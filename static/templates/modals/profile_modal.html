@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
-                <button id="previous1Btn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button id="profileCloseButton" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
                 <div class="avatar" id="uAvatar">
@@ -18,7 +18,8 @@
                 </div>
                 <button id="btnType" class="btn btn-outline-dark w-100 mb-2"></button>
                 <div class="matches">
-                    <div class="divider">Matches</div>
+                    <div class="divider">Matches</div> 
+                    {% comment %} <a href="#allMatchesModal" id="AllMatchesModal" class="divider link-style" data-user-id="">Matches</a> {% endcomment %}
                     <table id="matchesTable" class="table">
                         <tbody>
                             <!-- Filled dynamically -->

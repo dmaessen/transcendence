@@ -105,6 +105,9 @@ CORS_ALLOW_HEADERS = [
     "content-type",
 ]
 
+#TODO remove this for production  
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
 CORS_ALLOW_CREDENTIALS = True
 # CORS_ALLOW_ALL_ORIGINS = True
 

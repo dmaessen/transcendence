@@ -14,7 +14,12 @@ import asyncio
 from channels.layers import get_channel_layer
 from autobahn.websocket.protocol import Disconnected
 from datetime import timedelta
+from rest_framework_simplejwt.tokens import AccessToken
+from urllib.parse import parse_qs
+import logging
+from django.core.exceptions import ObjectDoesNotExist
 
+logger = logging.getLogger(__name__)
 games = {}
 
 class TournamentConsumer(AsyncWebsocketConsumer):
@@ -22,30 +27,67 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     initiator = None
 
     async def connect(self):
-        self.game_id = None
-        if self.scope["user"].is_authenticated:
-            self.player_id = self.scope["user"].id
-            self.username = self.scope["user"].username
+        query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
+        token = query_params.get("token", [None])[0]
+        logger.info(f"querry: {query_params}\ntoken: {token}")
+        if token:
+            # Validate the JWT token
+            access_token = AccessToken(token)
+            logger.info(f"----access token: {access_token}\n\n")
+            user_id = access_token["user_id"]
+            logger.info(f"----userid: {user_id}\n\n")
+            # Fetch the user from the database based on the user_id
+            try:
+                user = await sync_to_async(CustomUser.objects.get)(id=user_id)
+                logger.info(f"username: {user.username}")
+                self.scope["user"] = user
+                logger.info(f"Authenticated user {user.username} connected via WebSocket.")
+            except ObjectDoesNotExist:
+                logger.warning(f"User with id {user_id} not found.")
+                await self.close()
+                return
+            except Exception as e:
+                logger.error(f"Unexpected error while fetching user: {e}")
+                await self.close()
+                return
         else:
-            session = await sync_to_async(SessionStore)()
-            await sync_to_async(session.create)()
+            logger.warning("No token provided.")
+            await self.close()  # Close if no token is provided
+        # If the user is authenticated, mark them as online
+        if self.scope["user"].is_authenticated:
+            try:
+                user = self.scope["user"]
+                logger.info(f"user {user}")
+                print(f"user {user}")
+                self.player_id = self.scope["user"].id
+                self.username = self.scope["user"].username
+            except Exception as e:
+                logger.exception("Exception during WebSocket connection:")
+                await self.close()
+                return
+        # if self.scope["user"].is_authenticated:
+        #     self.player_id = self.scope["user"].id
+        #     self.username = self.scope["user"].username
+        # else:
+        #     session = await sync_to_async(SessionStore)()
+        #     await sync_to_async(session.create)()
             
-            CustomUser = get_user_model()
-            unique_username = f"Guest_{uuid.uuid4().hex[:12]}"
-            guest_user = await sync_to_async(CustomUser.objects.create)(
-                username=unique_username,
-                name=f"Guest_{session.session_key[:12]}",
-                email=f"{session.session_key[:10]}",
-                is_active=False
-            )
-            print(f"guest user {guest_user.name}")
+        #     CustomUser = get_user_model()
+        #     unique_username = f"Guest_{uuid.uuid4().hex[:12]}"
+        #     guest_user = await sync_to_async(CustomUser.objects.create)(
+        #         username=unique_username,
+        #         name=f"Guest_{session.session_key[:12]}",
+        #         email=f"{session.session_key[:10]}",
+        #         is_active=False
+        #     )
+        #     print(f"guest user {guest_user.name}")
             
-            self.player_id = guest_user.id
-            self.session_key = session.session_key
-            self.username = guest_user.username
+        #     self.player_id = guest_user.id
+        #     self.session_key = session.session_key
+        #     self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
-        player = Player(self.player_id, self.session_key, 'online')
+        # player = Player(self.player_id, self.session_key, 'online')
         
         self.room_name = "tournament_lobby"
         await self.channel_layer.group_add(self.room_name, self.channel_name)
@@ -112,14 +154,18 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 game.ready_players.add(self.player_id)
                 print(f"Player {self.player_id} is ready! Ready count: {len(game.ready_players)}", flush=True)
 
-            if len(game.ready_players) == 2:
-                print("Both players are ready. Starting game!", flush=True)
-                game.start_game()
-                await self.send_json({"type": "started", "game_id": self.game_id})
-                await self.send_game_state(game)
-                asyncio.create_task(self.broadcast_game_state(self.game_id))
+                # if timer done then this player is winner, game ends
+                if len(game.ready_players) == 1:
+                    asyncio.create_task(self.tournament1v1game_timeout_task(self.game_id, self.player_id))
+
+                if len(game.ready_players) == 2:
+                    print("Both players are ready. Starting game!", flush=True)
+                    game.start_game()
+                    await self.send_json({"type": "started", "game_id": self.game_id})
+                    await self.send_game_state(game)
+                    asyncio.create_task(self.broadcast_game_state(self.game_id))
         
-        elif action == "end": #this one aint needed i guess??
+        elif action == "end":
             if self.game_id in games:
                 game = games.pop(self.game_id, None)
                 if game:
@@ -146,24 +192,65 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         game.stop_game("No players")
                         del games[game_id]
                         print(f"Game {game_id} ended. Winner: No players", flush=True)
-            if hasattr(self, 'match_name'):
-                await self.channel_layer.group_discard(self.match_name, self.channel_name)
+                if hasattr(self, 'match_name'):
+                    await self.channel_layer.group_discard(self.match_name, self.channel_name)
 
-        elif action == "disconnect": # SEE WHAT WE USE THIS ONE FOR, HAVE ONE FOR THE WHOLE TOURNAMENT WS
-            for game_id in list(games.keys()):
-                game = games[game_id]
+        elif action == "disconnect":
+            if self.game_id in games:
+                game = games[self.game_id]
                 if self.player_id in game.players:
                     game.remove_player(self.player_id)
                     if not game.players:
                         game.stop_game("No players")
-                        del games[game_id]
+                        del games[self.game_id]
                         print(f"Game {game_id} ended. Winner: No players", flush=True)
+                    else: # DECLARE THE OTHER ONE THE WINNER DIRECTLY
+                        player_username = None
+                        for player_id, player in game.players.items():
+                            player_username = player.get("username")
+                            if player_username:
+                                winner = player_username
+                                print(f"Winner determined: {winner}", flush=True)
 
-            await self.close() # not sure about this one...
+                                game.stop_game(winner)
+                                game.reset_game("Two Players (remote)") 
+
+                                await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                                await self.channel_layer.group_send(
+                                    self.match_name,
+                                    {
+                                        "type": "game.end",
+                                        "reason": f"Game Over: {winner} wins"
+                                    }
+                                )
+                                await self.channel_layer.group_send(
+                                    "tournament_lobby",
+                                    {
+                                        "type": "game.result",
+                                        "game_id": self.game_id,
+                                        "winner": winner
+                                    }
+                                )
+
+            if self.tournament.running is False and self.tournament.final_winner is not null:
+                if self.initiator == self.scope["user"]:
+                    TournamentConsumer.tournament = None
+                    TournamentConsumer.initiator = None
+                
+                await self.send_json({"type": "end_tournament"})
+
+                # WORK ON THIS - to test
+                # reset tournament_state for the next tournament
+                state = default_tournament_state.copy()
+                state_serializable = msgspec.json.encode(state).decode("utf-8")
+                cache.set("tournament_state", state_serializable)
+
+                if hasattr(self, 'match_name'):
+                    await self.channel_layer.group_discard(self.match_name, self.channel_name)
+                await self.channel_layer.group_discard(self.room_name, self.channel_name)
+
             print(f"WebSocket disconnected for player {self.player_id}", flush=True)
-
-            if hasattr(self, 'match_name'):
-                await self.channel_layer.group_discard(self.match_name, self.channel_name)
+            await self.close()
     
         else:
             print(f"Unknown action: {action}")
@@ -180,7 +267,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         self.initiator = self.player_id
         self.tournament = Tournament(mode=mode)
         # self.tournament.add_room_name("tournament_lobby")
-        print(f"Starting a {mode}-player tournament. Initiator: {self.initiator}")
+        print(f"Starting a {mode}-player tournament. Initiator: {self.initiator}", flush=True)
         await self.broadcast_tournament_state()
 
     async def handle_join_tournament(self, data):
@@ -216,6 +303,34 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             "type": "tournament_full"
         })
     
+    async def tournament1v1game_timeout_task(self, game_id, player_id, duration=30):
+        print(f"Game {game_id} in tournament1v1game_timeout_task", flush=True)
+        await asyncio.sleep(duration)  # 30sec
+        if game_id in games:
+            game = games[game_id]
+            if game.get_state_isrunning() == False:
+                print(f"Game {game_id} in tournament timed out. Declaring a winner {player_id}.", flush=True)
+                if self.username:
+                    winner = self.username
+                    print(f"Winner determined: {winner}", flush=True)
+
+                    await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins"})
+                    await self.channel_layer.group_send(
+                        self.match_name,
+                        {
+                            "type": "game.end",
+                            "reason": f"Game Over: {winner} wins"
+                        }
+                    )
+                    await self.channel_layer.group_send(
+                        "tournament_lobby",
+                        {
+                            "type": "game.result",
+                            "game_id": game_id,
+                            "winner": winner
+                        }
+                    )
+
     async def game_created(self, event):
         game_id = event["game_id"]
         player1 = event["player1"]
@@ -235,44 +350,23 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         await self.broadcast_tournament_state()
 
     async def game_result(self, event):
-        print(f"HERE IN GAME-RESULT FINALLY", flush=True)
         game_id = event["game_id"]
         winner = event["winner"]
         winner_username = winner
-        
-        # if isinstance(winner, str):
-        #     winner_username = winner
-        # elif isinstance(winner, dict) and "player" in winner:
-        #     winner_username = winner["player"]["username"]
-        # else:
-        #     print(f"inccorect winner format: {winner}", flush=True)
-        #     return
 
-        print(f"WINNER HERE IN GAME-RESULT IS: {winner_username}", flush=True)
         # updates the tournament bracket
         await self.tournament.register_match_result(game_id, winner_username)
         await self.broadcast_tournament_state()
     
     async def game_end(self, event):
-        # await asyncio.sleep(0.2) # checking if this works
         if self.game_id in games:
-            game = games.pop(self.game_id, None)
+            game = games[self.game_id]
             if game:
                 game.clear_game()
         else:
             print(f"Game already cleared: {self.game_id}", flush=True)
 
-        await self.channel_layer.group_send(
-            self.match_name,
-            {
-                "type": "game.end",
-                "reason": reason
-            }
-        )
-
-    async def game_end(self, event):
-        reason = event.get("reason")
-        await self.send_json({"type": "end", "reason": reason})
+        await self.send_json({"type": "end", "reason": event.get("reason")}) # needed?? might be double when called
 
     async def tournament_update(self, event):
         """Receives the tournament state update and sends it to the frontend"""
@@ -442,3 +536,16 @@ async  def get_user_by_id(user_id):
 
 async def get_user_matches(user_id):
     return await sync_to_async(Match.objects.filter)(player_id=user_id)
+
+default_tournament_state = {
+    "tournament_active": False,
+    "players_in": 0,
+    "remaining_spots": 4,
+    "players": [],
+    "bracket": {},
+    "current_round": 1,
+    "running": False,
+    "final_winner": None,
+    "matches": [],
+    "winners": []
+}  # Default state

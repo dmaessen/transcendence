@@ -21,17 +21,22 @@ def get_user_data(request):
     logger.info(f"Request: {request.user.id}")
     
     profileID = request.GET.get("userID")
+    friendshipID = None
     
     if profileID == "self" or request.user.id == int(profileID):
         user = request.user
         btnType = "Edit profile"
-    else: #make a get_friendship status instead, to add pending to the button
+    else:
         user = CustomUser.objects.filter(id = profileID).first()
-        fStatus = frienship_status(profileID, request.user.id)
-        if fStatus == "approved":
-            btnType = "Delete friend"
-        elif fStatus == "pending":
-            btnType = "Friend request sent"
+        friendship = get_frienship(profileID, request.user.id)
+        if friendship:
+            friendshipID =  friendship.id
+            if friendship.status == "approved":
+                btnType = "Delete friend"
+            elif friendship.status == "pending" and friendship.sender == request.user:
+                btnType = "Friend request sent"
+            else:
+                btnType = "Accept request"
         else:
             btnType = "Add friend"
         
@@ -50,7 +55,9 @@ def get_user_data(request):
         "btnType": btnType,
         "matches_played": matches_played,
         "matches_won": matches_won,
-        "matches_lost": matches_lost
+        "matches_lost": matches_lost,
+        "user_id": user.id,
+        "friendshipID": friendshipID
     }
     logging.info(f"userdata: {user_data}")
 
@@ -121,7 +128,6 @@ def edit_user_data(request):
         if newMail and CustomUser.objects.exclude(id=user.id).filter(email=newMail).exists():
             return JsonResponse({"error": "Email already in use"}, status=400)
 
-        # Update only if values are provided
         if newUsername:
             user.username = newUsername
         if newMail:
@@ -199,4 +205,9 @@ def cancel_friendship(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def search_user(request):
-    pass
+    username = request.GET.get("friendUsername")
+    try:
+        user = CustomUser.objects.get(username=username)
+        return JsonResponse({"user_id": user.id})
+    except CustomUser.DoesNotExist:
+        return JsonResponse({"user_id": None})

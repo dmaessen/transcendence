@@ -8,27 +8,45 @@ async function loginWebSocket(){
         console.error("No token no game!");
         return;
     }
-    console.log("toke: ", token);
-    loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
-    console.log("socket: ", loginsocket);
-    if (!token) {
-        console.error("No access token found! WebSocket authentication will fail.");
-        return;
+    // console.log("toke: ", token);
+    try {
+
+        loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/?token=${token}`)
+        // console.log("socket: ", loginsocket);
+        if (!token) {
+            console.error("No access token found! WebSocket authentication will fail.");
+            return;
+        }
+        loginsocket.onopen =  async(event) => {
+            console.log("onlineSocket openned");
+            pingInterval = setInterval(() => {
+                loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
+            }, 15000);
+        }
+        loginsocket.onmessage = (event) => {
+            console.log("Received message:", event.data);
+        };
+        loginsocket.onclose = (event) => {
+            console.log("onlineSocket closed", event);
+            clearInterval(pingInterval);
+    
+            // Clear tokens
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            console.log("tokens cleaned");
+    
+            //refresh the page 
+            window.location.reload();
+            // logOut(); This is dumb as user can logout in any modal 
+        
+        };
+        loginsocket.onerror = async function(error) {
+            console.error("onlineSocket error:", error);
+        };
+        // console.log("socket: ", loginsocket);
+    } catch (errror) {
+        console.log("Error: ", errror);
     }
-    loginsocket.onopen =  async (event) => {
-        console.log("onlineSocket openned");
-        setInterval(() => {
-            // loginsocket.send(JSON.stringify({ type: "ping" }));
-            loginsocket.send(JSON.stringify({ type: "ping", message: "Haroooooooo!" }));
-        }, 15000); // every 15s
-    }
-    loginsocket.onclose = (event) => {
-        console.log("onlineSocket closed");
-    }
-    loginsocket.onerror = async function(error) {
-        console.error("onlineSocket error:", error);
-    };
-    console.log("socket: ", loginsocket);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -104,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-const baseUrl = "http://localhost:8000/api/authentication/";
+const baseUrl = "/api/authentication/";
 
 function getCSRFToken() {
     const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']");
@@ -310,8 +328,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-
     async function loginRequest(email, password, otp_token = null) {
         try {
             const requestBody = {email, password};
@@ -334,9 +350,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 localStorage.setItem("refresh_token", data.refresh);
                 
                 alert("Login successful!");
-                window.location.href = "/game_server";
                 console.log("login done");
+
+                //connect heartbeat socket 
                 await loginWebSocket();
+
+                //handle the modals closing/oppening
+                const loginModalElement = document.getElementById("SignInMenu");
+                const mainMenuModalElement = document.getElementById("gameMenuFirst");
+                console.log("loginModalElement:", loginModalElement);
+                console.log("mainMenuModalElement:", mainMenuModalElement);
+                const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalElement);
+                loginModal.hide();
+                const mainMenuModal = bootstrap.Modal.getOrCreateInstance(mainMenuModalElement);
+                mainMenuModal.show();
+
             } else if(response.status === 403){
                 otpInputContainer.style.display = "block";
                 loginForm.style.display = "none"; // should the login form be hidden?
@@ -401,19 +429,84 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+// document.getElementById("logoutBtn").click = () => alert("clicked!");
+// function logOut () {
+//     console.log("Logout button clicked");
+
+//     // Clear tokens
+//     localStorage.removeItem("access_token");
+//     localStorage.removeItem("refresh_token");
+//     alert("Logged out successfully!");
+
+//     // Handle modal switching
+//     const loginModalElement = document.getElementById("SignInMenu");
+//     const mainMenuModalElement = document.getElementById("gameMenuFirst");
+
+//     const mainMenuModal = bootstrap.Modal.getOrCreateInstance(mainMenuModalElement);
+//     const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalElement);
+
+//     mainMenuModal.hide();
+
+//     // Optionally delay showing login modal to let the previous one close
+//     setTimeout(() => {
+//         loginModal.show();
+//     }, 200);
+// }
+
+
 document.addEventListener("DOMContentLoaded", function () {
-    const logoutButton = document.getElementById("Logout");
-    console.log("logout button clicked");
+    const logoutButton = document.getElementById("logoutBtn");
 
     if (logoutButton) {
+        // logoutButton.addEventListener("click", logOut);
         logoutButton.addEventListener("click", function () {
+            console.log("Logout button clicked");
+
+            // Clear tokens
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
             alert("Logged out successfully!");
-            window.location.href = "/game_server/";
+
+            // Handle modal switching
+            const loginModalElement = document.getElementById("SignInMenu");
+            const mainMenuModalElement = document.getElementById("gameMenuFirst");
+
+            const mainMenuModal = bootstrap.Modal.getOrCreateInstance(mainMenuModalElement);
+            const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalElement);
+
+            mainMenuModal.hide();
+
+            // Optionally delay showing login modal to let the previous one close
+            setTimeout(() => {
+                loginModal.show();
+            }, 200);
         });
     }
-});
+    })
+
+
+// document.addEventListener("DOMContentLoaded", function () {
+//     const logoutButton = document.getElementById("Logout");
+//     console.log("logout button clicked");
+
+//     if (logoutButton) {
+//         logoutButton.addEventListener("click", function () {
+            
+//             localStorage.removeItem("access_token");
+//             localStorage.removeItem("refresh_token");
+//             alert("Logged out successfully!");
+//             //handle the modals closing/oppening
+//             const loginModalElement = document.getElementById("SignInMenu");
+//             const mainMenuModalElement = document.getElementById("gameMenuFirst");
+//             console.log("loginModalElement:", loginModalElement);
+//             console.log("mainMenuModalElement:", mainMenuModalElement);
+//             const mainMenuModal = bootstrap.Modal.getOrCreateInstance(mainMenuModalElement);
+//             mainMenuModal.hide();
+//             const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalElement);
+//             loginModal.show();
+//         });
+//     }
+// });
 
 document.addEventListener("DOMContentLoaded", function () {
     const deleteAccountBtn = document.getElementById("deleteAccount");

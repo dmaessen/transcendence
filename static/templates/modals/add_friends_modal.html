@@ -2,14 +2,17 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addFriendsModalLabel">Add Friends</h5>
-                <button id="previous1Btn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="addFriendsModalLabel">Manage friends requests</h5>
+                <button id="addFriendCloseBtn" type="button" class="btn-close" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <form id="searchForm" autocomplete="off">
-                    <input type="search" id="searchInput" class="form-control" placeholder="Search username">
+                <form>
+                    <div class="form-group">
+                        <label for="searchFriend"></label>
+                        <input type="friendUsername" class="form-control" id="newFriendUsername" placeholder="Username" maxlength="30">
+                    </div>
+                    <button id="searchFriendBtn" type="button" class="btn btn-outline-dark w-100 mb-2">Search</button>
                 </form>
-                <div id="searchResults" class="list-group mt-2"></div>
                 <table id="frienshipRequestTable" class="table">
                     <tbody>
                         <!-- Filled dynamically -->

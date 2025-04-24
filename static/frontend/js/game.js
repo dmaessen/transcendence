@@ -101,19 +101,20 @@ function startGame(mode) {
 
 
 document.getElementById("playBtn").addEventListener("click", async() => {
-    gameMenuFirst.hide();
-    gameMenu.show();
-
-    try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
-        console.log("Fetched tournament status:", data);
-        if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
-                tournamentMenuBtn.style.display = "none";
-            else // check on this
-                tournamentMenuBtn.style.display = "block";
-    } catch (error) {
-        console.error("Error fetching tournament status:", error);
-    }
+    // gameMenuFirst.hide();
+    // gameMenu.show();
+    console.log("calling select btn!");
+    selectTournamentBtn();
+    // try {
+    //     const data = await fetchData("/tournament-status/");
+    //     console.log("Fetched tournament status:", data);
+    //     if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
+    //             tournamentMenuBtn.style.display = "none";
+    //         else // check on this
+    //             tournamentMenuBtn.style.display = "block";
+    // } catch (error) {
+    //     console.error("Error fetching tournament status:", error);
+    // }
 });
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
@@ -147,33 +148,52 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     gameTitle.style.display = "none";
     document.getElementById("tournamentBracket").style.display = "none"; // this working??
     document.getElementById("tournamentBracket4").style.display = "none"; // this working??
-    socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-    socket.close()
+    websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+    websocket.close()
     gameMenuFirst.show();
     // also needs to be pulled out of games/tournament and declare opponent as the winner
 });
 
+async function joinTournament(data){
+    document.querySelectorAll('.modal.show').forEach(modal => {
+        bootstrap.Modal.getInstance(modal)?.hide();
+    });
+
+    gameState.mode = data.players_in + data.remaining_spots; 
+    keyboardEnabled = true;
+    gameState.running = false;
+    gameTitle.style.display = "block";
+    gameCanvas.style.display = "block";
+    gameCanvas.width = 1400;
+    gameCanvas.height = 1000;
+    gameCanvas.style.width = gameCanvas.width / 2 + "px";
+    gameCanvas.style.height = gameCanvas.height / 2 + "px";
+
+    connectWebSocket(data.players_in + data.remaining_spots);
+}
+
 tournamentBanner.addEventListener("click", async(event) => {
     event.preventDefault();
     try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
+        const data = await fetchData("/tournament-status/");
         console.log("Tournament Status:", data);
         if (data.remaining_spots > 0) {
-            gameMenuFirst.hide();
-            gameMenu.hide();
-            gameMenuTournament.hide();
+            joinTournament(data);
+            // gameMenuFirst.hide();
+            // gameMenu.hide();
+            // gameMenuTournament.hide();
 
-            gameState.mode = data.players_in + data.remaining_spots; 
-            keyboardEnabled = true;
-            gameState.running = false;
-            gameTitle.style.display = "block";
-            gameCanvas.style.display = "block";
-            gameCanvas.width = 1400;
-            gameCanvas.height = 1000;
-            gameCanvas.style.width = gameCanvas.width / 2 + "px";
-            gameCanvas.style.height = gameCanvas.height / 2 + "px";
+            // gameState.mode = data.players_in + data.remaining_spots; 
+            // keyboardEnabled = true;
+            // gameState.running = false;
+            // gameTitle.style.display = "block";
+            // gameCanvas.style.display = "block";
+            // gameCanvas.width = 1400;
+            // gameCanvas.height = 1000;
+            // gameCanvas.style.width = gameCanvas.width / 2 + "px";
+            // gameCanvas.style.height = gameCanvas.height / 2 + "px";
 
-            connectWebSocket(data.players_in + data.remaining_spots);
+            // connectWebSocket(data.players_in + data.remaining_spots);
         }
     } catch (error) {
         console.error("Error fetching tournament status:", error);
@@ -181,12 +201,23 @@ tournamentBanner.addEventListener("click", async(event) => {
 });
 
 window.addEventListener("load", async () => {
-    gameMenuFirst.show();
+    //get token to check if user is logged, if it is, open main menu if not login modal
+    const accessToken = localStorage.getItem("access_token");
+    console.log("access_token on game: ", accessToken);
+    if (accessToken) {
+        // Ensure the onlineWebSocket is open if it wasn't already
+        if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
+            await loginWebSocket();
+        }
+        gameMenuFirst.show();
+    } else {
+        SignInMenu.show();
+    }
     const bracketElement = document.getElementById("tournamentBracket");
     bracketElement.style.display = "none";
 
     try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
+        const data = await fetchData("/tournament-status/");
         console.log("Fetched tournament status:", data);
         if (data.remaining_spots > 0 && data.players_in != 0) {
             showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
@@ -225,13 +256,6 @@ function showWaitingRoomTournament(mode) {
     // console.log("Bracket element:", bracketElement);
     // bracketElement.style.display = "grid";
     drawBracket(mode);
-
-    // gameContext.font = "50px Courier New";
-    // gameContext.fillStyle = "#000000";
-    // gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
-    // gameContext.fillStyle = "#ffffff";
-    // gameContext.textAlign = "center";
-    // gameContext.fillText("Waiting for players to join...", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
 }
 
 function updateGameState(data) {
@@ -341,17 +365,17 @@ document.addEventListener("keydown", (event) => {
     //     startTimer();
     // }
     if (gameState.mode != "One Player" && gameState.mode != "Two Players (hot seat)") {
-        if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+        if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed, 'ready' state, waiting for the other player to start the game...");
-            socket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
+            websocket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
             // startTimer();
         }
     }
     else {
-        if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+        if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed. Starting the game...");
             gameState.running = true;
-            socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+            websocket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
             startTimer();
         }
     }
@@ -393,7 +417,7 @@ function sendMovements() {
 
     if (directions.length > 0) {
         console.log("keys pressed: ", [...pressedKeys]); // to rm
-        socket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
+        websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
 }
 
@@ -410,7 +434,7 @@ function sendMovements() {
 // });
 
 window.addEventListener("beforeunload", () => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (socket && socket.readyState === WebSocket.OPEN && socket !== loginsocket) {
         console.log("Closing WebSocket before page unload.");
         gameState.running = false;
         stopTimer();
@@ -420,6 +444,12 @@ window.addEventListener("beforeunload", () => {
         gameTitle.style.display = "none";
         socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
         socket.close()
+        // SignInMenu.show();
+    }
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        SignInMenu.show();
+    } else {
         gameMenuFirst.show();
     }
 });

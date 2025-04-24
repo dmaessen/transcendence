@@ -39,4 +39,3 @@ def get_tournament_status(request):
             "winners": []
         }  # Default state
     return JsonResponse(state)
-

@@ -30,6 +30,9 @@ if (saveChangesBtn) {
             });
 
             if (!response.ok) {
+                const responseError = await response.json();
+                if (response.status == 400 && responseError)
+                    alert(`${responseError.error}. Please try again!`);
                 throw new Error(`error, status: ${response.status}`);
             }
 
@@ -58,5 +61,18 @@ if (saveChangesBtn) {
         } catch (error) {
             console.error("Error updating profile:", error);
         }
+    });
+}
+
+const editCloseBtn = document.getElementById("editCloseBtn")
+if(editCloseBtn){
+    editCloseBtn.addEventListener("click", function (){
+        console.log("profile close clicked");
+        const editProfileModalElement = document.getElementById("editProfileModal");
+        const editProfileModal = bootstrap.Modal.getInstance(editProfileModalElement);
+        editProfileModal.hide();
+        const profileModalElement = document.getElementById("profileModal");
+        const profileModal = bootstrap.Modal.getInstance(profileModalElement);
+        profileModal.show();
     });
 }
