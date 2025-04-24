@@ -1,4 +1,4 @@
-#this can be created by another container before all elk setup???
+# this can be created by another container before all elk setup???
 secrets:
   elasticsearch.keystore:
     file: ./monitoring/secrets/keystore/elasticsearch.keystore
@@ -49,20 +49,19 @@ services:
         depends_on:
             - psql
 
-    # frontend:
-    #     build: ./frontend
-    #     container_name: frontend
-    #     volumes:
-    #         - ./frontend/statics/:/usr/share/nginx/html/static/
-    #         - ./static/:/static/
-    #         - ./media/:/media/
-    #     ports:
-    #         - "8080:80"
-    #     networks:
-    #         - transcendence
-    #     depends_on:
-    #         - backend
-            # - psql
+    frontend:
+        build: ./frontend
+        container_name: frontend
+        volumes:
+            - ./static/:/usr/share/nginx/html/static/
+            - ./media/:/media/
+        ports:
+            - "8080:80"
+        networks:
+            - transcendence
+        depends_on:
+            - backend
+            - psql
     
     redis:
         build: ./backend/redis
@@ -199,21 +198,21 @@ services:
       networks:
         - transcendence
 
-    # ilm:
-    #   image: debian:bullseye
-    #   container_name: ilm
-    #   command: bash /setup/ilm_setup.sh
-    #   volumes:
-    #       - ./monitoring/setup:/setup
-    #   environment:
-    #     - ELASTIC_HOSTS=https://elasticsearch:9200
-    #     - ELASTIC_USERNAME=${ELASTIC_USERNAME}
-    #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-    #   depends_on:
-    #     - elasticsearch
-    #     - kibana
-    #   networks:
-    #     - transcendence
+    # # ilm:
+    # #   image: debian:bullseye
+    # #   container_name: ilm
+    # #   command: bash /setup/ilm_setup.sh
+    # #   volumes:
+    # #       - ./monitoring/setup:/setup
+    # #   environment:
+    # #     - ELASTIC_HOSTS=https://elasticsearch:9200
+    # #     - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+    # #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    # #   depends_on:
+    # #     - elasticsearch
+    # #     - kibana
+    # #   networks:
+    # #     - transcendence
 
 networks:
   transcendence:

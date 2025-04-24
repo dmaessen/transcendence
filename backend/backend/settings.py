@@ -10,14 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-import os
 from pathlib import Path
 from datetime import timedelta
 
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+print(f"base_dir: {BASE_DIR}", flush= True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -134,13 +134,29 @@ CHANNEL_LAYERS = {
 
 ROOT_URLCONF = 'backend.urls'
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+
 STATIC_URL = '/static/'
-STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
+
+# Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # Where collectstatic will store files
+
+MEDIA_URL = '/media/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# # # No need to set STATICFILES_DIRS if frontend is handling static files
+# STATICFILES_DIRS = [
+#     'static',  # Ensure Django knows where to find them
+# ]
+
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(STATIC_ROOT, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'static',  'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -202,26 +218,21 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
+#google api settings
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
-
-# Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-# STATIC_ROOT = os.path.join(Path(__file__).resolve().parent.parent.parent, 'frontend/statics')  # Where collectstatic will store files
-
-# # No need to set STATICFILES_DIRS if frontend is handling static files
-STATICFILES_DIRS = [
-    os.path.join(STATIC_ROOT, 'frontend'),  # Ensure Django knows where to find them
-]
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
 # 42 api settings
-FT_CLIENT_ID='u-s4t2ud-bbad87ac8d63ec2d044050f726b210a6e4856caad9cad7d284c0ea9bdcb4fd97'
-FT_CLIENT_SECRET='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'
-FT_REDIRECT_URI='https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-bbad87ac8d63ec2d044050f726b210a6e4856caad9cad7d284c0ea9bdcb4fd97&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fgame_server%2F&response_type=code'
+FT_CLIENT_ID = os.getenv("FT_CLIENT_ID")
+FT_CLIENT_SECRET = os.getenv("FT_CLIENT_SECRET")
+FT_REDIRECT_URI = os.getenv("FT_REDIRECT_URI", "http://localhost:8000/api/authentication/42/callback/")
 
-MEDIA_URL = '/media/'
+print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 
-MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

@@ -1,5 +1,7 @@
     <!-- User Registration Menu Modal -->
+    {% load static %}
     <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel">
+        <script src="https://accounts.google.com/gsi/client" referrerpolicy="strict-origin-when-cross-origin" async defer></script>
         <meta name="google-signin-client_id" content="517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -39,9 +41,18 @@
                         <button type="submitOTP" id="submitOTPButton" class="btn btn-success">Submit OTP token</button>
                         <button type="returnOTP" id="returnToLogin" class="btn btn-secondary">return</button>    
                     </div>
-                    <a href="/api/authentication/42/login/">
-                        <button>Login with 42</button>
-                    </a>
+                    <div id="googleSignInButtonLogin">
+                        <button id="googleRegisterBtn" class="btn btn-outline-dark w-100 mb-2">
+                            <img src="{% static 'images/google.256x256.png' %}" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
+                            Login with Google
+                        </button>
+                    </div>
+                    <div id="FtSignInButtonLogin">
+                        <a href="/api/authentication/42/login/" class="btn btn-outline-dark w-100 mb-2">
+                            <img src="{% static 'images/42_Logo.png' %}" alt="42 Logo" style="height: 20px; margin-right: 8px;">
+                            Login with 42
+                        </a>
+                    </div>
                     <button id="backToMain1" class="btn btn-secondary">Back</button>
                 </div>
     
@@ -58,12 +69,23 @@
                         </label><br>
                         <button type="submit">Register</button>
                     </form>
-                    <div id="googleSignInButton">
-                        <script src="https://accounts.google.com/gsi/client" async defer></script>
+                    {% comment %} <div id="googleSignInButtonRegister">
+                        <script src="https://accounts.google.com/gsi/client" referrerpolicy="strict-origin-when-cross-origin" async defer></script>
+                    </div> {% endcomment %}
+                    <div id="googleSignInButtonRegister">
+                        <button id="googleRegisterBtn" class="btn btn-outline-dark w-100 mb-2">
+                            <img src="{% static 'images/google.256x256.png' %}" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
+                            Register with Google
+                        </button>
                     </div>
-                    <a href="/api/authentication/42/login/">
-                        <button id="42SignInButton">Login with 42</button>
-                    </a>
+                    <div id="FtSignInButtonRegister">
+                        <a href="/api/authentication/42/login/" class="btn btn-outline-dark w-100 mb-2">
+                            <img src="{% static 'images/42_Logo.png' %}" alt="42 Logo" style="height: 20px; margin-right: 8px;">
+                            Register with 42
+                        </a>
+                            {% comment %} <span>Login with 42</span> {% endcomment %}
+                        {% comment %} </a> {% endcomment %}
+                    </div>
                     <button id="backToMain2" class="btn btn-secondary">Back</button>
                 </div>
                 <div id="RemoveAccountContainer" class="overlay-form">

@@ -22,6 +22,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     initiator = None
 
     async def connect(self):
+        self.game_id = None
         if self.scope["user"].is_authenticated:
             self.player_id = self.scope["user"].id
             self.username = self.scope["user"].username
@@ -90,7 +91,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         elif action == "start":
             mode = data.get("mode")
             print("STAAAAART 1V1 TOURNAMENT GAME", self.player_id)
-            if self.game_id in games:
+            if hasattr(self, "game_id") and self.game_id in games:
                 game = games[self.game_id]
                 game.start_game()
                 await self.send(text_data=json.dumps({

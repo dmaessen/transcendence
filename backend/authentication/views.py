@@ -21,9 +21,10 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 # from google.oauth2 import id_token as google_id_token
 # from google.auth.transport import requests as google_requests
 from django.views.decorators.csrf import csrf_exempt
-import google.oauth2.id_token
+import google.oauth2.id_token as google_id_token
 import google.auth.transport.requests
 # import google.oauth2 
+import json
 import requests
 import qrcode
 import io
@@ -123,7 +124,7 @@ class LoginView(APIView):
 		if not email or not password:
 			return JsonResponse({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-		print(f"login data received: {request.data}", file=sys.stderr)
+		print(f"login data received: {request.data}", flush=True)
 		try:
 			user = CustomUser.objects.get(email=email)
 		except CustomUser.DoesNotExist:
@@ -257,20 +258,20 @@ def home(request):
 	return render(request, 'base.html')
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
 @csrf_exempt
 def google_login(request):
-	# from google.auth.transport import requests as google_requests
-	# from google.oauth2 import id_token as google_id_token
 	client_id = settings.GOOGLE_CLIENT_ID
-	print(f"google client id: [", client_id, "]", file=sys.stderr)
+	print(f"google client id: [", client_id, "]", flush=True)
 	if not client_id:
 		return JsonResponse({'error': 'no client id'}, status=status.HTTP_403_FORBIDDEN)
-	if client_id != "517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com":
-		print(f"[WARNING] Unrecognized client ID received: {client_id}")
+	# if client_id != "517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com":
+	# 	print(f"[WARNING] Unrecognized client ID received: {client_id}")
 	
-	body = json.loads(request.body)
-	token = body.get("id_token")
+	try:
+		body = json.loads(request.body)
+		token = body.get("id_token")
+	except json.JSONDecodeError:
+		return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
 	if not token:
 		return Response({"error": "Missing id_token"}, status=400)
 	
@@ -279,11 +280,13 @@ def google_login(request):
 		idinfo = google_id_token.verify_oauth2_token(token, request_adapter, client_id)
 		email = idinfo.get("email")
 		if not email:
+			print("no email", flush=True)
 			return JsonResponse({"error":"no email in response token"}, status=status.HTTP_400_BAD_REQUEST)
 		username = idinfo.get("name", email.split("@")[0])
 		if not username:
+			print("no username", flush=True)
 			return JsonResponse({"error":"no name in response token"}, status=status.HTTP_400_BAD_REQUEST)
-		print("response from google, email: ", email, " ,name: ", username)
+		print("response from google, email: ", email, " ,name: ", username, flush=True)
 		
 		user, created = CustomUser.objects.get_or_create(email=email, defaults={"username": username})
 		if created:
@@ -319,12 +322,25 @@ def login_42_redirect(request):
         f"&response_type=code"
     )
 
+@csrf_exempt
 def login_42_callback(request):
-	code = request.GET.get("code")
+	if request.method == "POST":
+		body = json.loads(request.body)
+		code = body.get("code")
+	else:
+		code = request.GET.get("code")
+	
 	if not code:
 		return JsonResponse({"error": "No code provided"}, status=400)
 
-	# Exchange code for token
+	# print("Sending to 42 token endpoint:", {
+    # "client_id": settings.FT_CLIENT_ID,
+    # "client_secret": settings.FT_CLIENT_SECRET,
+    # "code": code,
+    # "redirect_uri": settings.FT_REDIRECT_URI,
+	# }, file=sys.stderr)
+
+
 	token_response = requests.post("https://api.intra.42.fr/oauth/token", data={
 		"grant_type": "authorization_code",
 		"client_id": settings.FT_CLIENT_ID,
@@ -333,13 +349,16 @@ def login_42_callback(request):
 		"redirect_uri": settings.FT_REDIRECT_URI,
 	})
 
-	if token_response:
-		return JsonResponse({"data returned from 42 api:": token_response}, status=200)
-	else:
-		return JsonResponse({"error": "no token response"})
+	
+	# if token_response:
+	# 	return JsonResponse({"data returned from 42 api:": token_response}, status=200)
+	# else:
+	# 	return JsonResponse({"error": "no token response"})
 
-	token_data = token_response.json()
+	token_data = token_response.json() 
 	access_token = token_data.get("access_token")
+	print(f"42 receive access token: ", access_token)
+
 	if not access_token:
 		return JsonResponse({"error": "Failed to retrieve access token"}, status=400)
 
@@ -354,11 +373,10 @@ def login_42_callback(request):
 
 	print(f"regestering user with email: ", email, "and username:", username)
 	# Register or log in the user
-	user, created = CustomUser.objects.create(email=email, defaults={"username": username})
+	user, created = CustomUser.objects.get_or_create(email=email, defaults={"username": username})
 	if created:
+		user.set_unusable_password()
 		user.save()
-	else:
-		return JsonResponse({"error": "Failed to create user"})
 
 	# Issue your JWT tokens (or login session)
 	refresh = RefreshToken.for_user(user)

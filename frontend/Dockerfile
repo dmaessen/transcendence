@@ -1,7 +1,6 @@
 FROM nginx:alpine
 
 # Copy static files to Nginx HTML directory
-#COPY ./statics/* /usr/share/nginx/html/static
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf

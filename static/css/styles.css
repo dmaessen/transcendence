@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+* {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#timer {
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    color: #000000;
+    margin-bottom: 30px;
+}
+
+#game-instruction1 {
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    color: #000000;
+    margin-top: 20px;
+}
+
+#game-instruction2 {
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    color: #000000;
+    margin-top: 20px;
+}
+
+#tournamentBanner {
+    z-index: 1051;
+}
+
+body {
+    text-align: center;
+    background-color: rgb(245, 245, 248);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Prevent scrollbars when the modal is shown */
+    flex-direction: column;
+    padding: 0;
+}
+
+canvas {
+    display: none;
+    border: 1px solid #ccc; /* Optional border for the game canvas */
+    margin: auto;
+    background-color: #040202;
+}
+
+h1 {
+    /* margin-bottom: 20px; */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: calc(0.5rem + 0.8vw);
+    font-weight: bold;
+}
+
+p {
+    margin-top: 10px;
+    color: grey;
+}
+.modal {
+    z-index: 1050;
+}
+
+/* Optional: Customize backdrop if needed */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent backdrop */
+}
+
+/* Optional: Rounded corners for the modal content */
+.modal-content {
+    border-radius: 8px;
+}
+
+/* Optional: Limit the modal width */
+.modal-dialog {
+    max-width: 400px;
+}
+
+/* Optional: Customize the header and button styles */
+.modal-header h5 {
+    font-size: 1.5rem;
+    text-align: center;
+}
+.modal-body {
+    text-align: center;
+}
+
+/* Center buttons and make them full width */
+.modal-body .btn {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+#profileModal .modal-dialog {
+    max-width: 1200px; /* Adjust this size as needed */
+}
+
+#profileModal .avatar img {
+    width: 200px;
+    height: auto;
+    float: left;
+    /* border-radius: */
+    border-radius: 15px 50px 30px;
+}
+
+#profileModal .playerInfo {
+    float:  left;
+}
+
+#profileModal .matches {
+    text-align: left;
+    /* float: left; */
+    /* width: 300px; */
+    /* border: 3px solid #73AD21; */
+    /* padding: 10px; */
+}
+
+.divider {
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+  }
+  
+.divider::before, .divider::after {
+    flex: 1;
+    content: '';
+    padding: 1px;
+    background-color: black;
+    margin: 1px;
+  }
+
+#profileThead {
+    display: table-header-group !important;
+}
+
+#profileTh {
+    width: 25%;
+    text-align: left; /* Or center if needed */
+    font-weight: bold;
+}
+
+.overlay-form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    display: none; /* Initially hidden */
+    width: 90%;
+    max-width: 400px;
+    z-index: 1050; /* Higher than modal */
+}
