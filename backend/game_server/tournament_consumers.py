@@ -20,6 +20,7 @@ from urllib.parse import parse_qs
 import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 games = {}
@@ -151,9 +152,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
             # WORK ON THIS - to test
             # reset tournament_state for the next tournament
-            state = default_tournament_state.copy()
-            state_serializable = msgspec.json.encode(state).decode("utf-8")
-            cache.set("tournament_state", state_serializable)
+            with cache.lock("tournament_lock", timeout=5):
+                state = default_tournament_state.copy()
+                state_serializable = msgspec.json.encode(state).decode("utf-8")
+                cache.set("tournament_state", state_serializable)
 
             if hasattr(self, 'match_name'):
                 await self.channel_layer.group_discard(self.match_name, self.channel_name)
@@ -343,39 +345,100 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         self.tournament_db_id = tournament_obj.id
 
         print(f"Created tournament with ID {tournament_obj.id} in database", flush=True)
-        await self.broadcast_added_players_state()
-        # await self.broadcast_tournament_state()
+        # await self.broadcast_added_players_state()
+        await self.broadcast_tournament_state()
+
+    # async def handle_join_tournament(self, data):
+    #     with cache.lock("tournament_lock", timeout=5):
+    #         raw = cache.get('tournament_state')
+    #         if raw:
+    #             #tournament_state = json.loads(tournament_state)
+    #             tournament_state = msgspec.json.decode(raw.encode("utf-8"))
+    #             self.tournament = TournamentLogic(mode=tournament_state['mode'])
+    #             self.tournament.players = tournament_state['players']
+    #             self.tournament.winners = tournament_state.get("winners", [])
+    #             self.tournament.current_round = tournament_state.get("current_round", 1)
+
+    #             # Get the tournament_db id from cache if exists
+    #             if 'tournament_db_id' in tournament_state:
+    #                 self.tournament_db_id = tournament_state['tournament_db_id']
+    #         else:
+    #             self.tournament = TournamentLogic(mode=data.get("mode"))
+
+    #         if len(self.tournament.players) < self.tournament.num_players:
+    #             if self.player_id not in [p["id"] for p in self.tournament.players]:
+    #                 self.tournament.add_player(self.player_id, self.username)
+    #                 print(f"Player {self.player_id} joined the tournament.")
+    #             else:
+    #                 print(f"Player {self.player_id} ALREADY in the tournament.")
+    #         elif len(self.tournament.players) > self.tournament.num_players:
+    #             await self.tournament_full()
+    #             print(f"Tournament is full. Player {self.player_id} cannot join.")
+
+    #         state = self.tournament.get_tournament_state()
+    #         if hasattr(self, 'tournament_db_id'):
+    #             state['tournament_db_id'] = self.tournament_db_id
+
+    #         state_serializable = msgspec.json.encode(state).decode("utf-8")
+    #         cache.set("tournament_state", state_serializable)
+
+    #     # await self.broadcast_added_players_state()
+    #     await self.broadcast_tournament_state()
+
+    #     if len(self.tournament.players) == self.tournament.num_players:
+    #         print(f"Tournament starting from handle_join_tournament")
+    #         await self.tournament.start_tournament()
+    #         await self.broadcast_tournament_state()
+
 
     async def handle_join_tournament(self, data):
-        tournament_state = cache.get('tournament_state')
-        if tournament_state:
-            tournament_state = json.loads(tournament_state)
-            self.tournament = TournamentLogic(mode=tournament_state['mode'])
-            self.tournament.players = tournament_state['players']
+        lock = cache.lock("tournament_lock", timeout=5)
+        have_lock = lock.acquire(blocking=True, blocking_timeout=5)
+        try:
+            if have_lock:
+                raw = cache.get('tournament_state')
+                if raw:
+                    tournament_state = msgspec.json.decode(raw.encode("utf-8"))
+                    self.tournament = TournamentLogic(mode=tournament_state['mode'])
+                    self.tournament.players = tournament_state['players']
+                    self.tournament.winners = tournament_state.get("winners", [])
+                    self.tournament.current_round = tournament_state.get("current_round", 1)
 
-            # Get the tournament_db id from cache if exists
-            if 'tournament_db_id' in tournament_state:
-                self.tournament_db_id = tournament_state['tournament_db_id']
-        else:
-            self.tournament = TournamentLogic(mode=data.get("mode"))
+                    if 'tournament_db_id' in tournament_state:
+                        self.tournament_db_id = tournament_state['tournament_db_id']
+                else:
+                    self.tournament = TournamentLogic(mode=data.get("mode"))
 
-        if len(self.tournament.players) < self.tournament.num_players:
-            if self.player_id not in [p["id"] for p in self.tournament.players]:
-                self.tournament.add_player(self.player_id, self.username)
-                print(f"Player {self.player_id} joined the tournament.")
-            else:
-                print(f"Player {self.player_id} ALREADY in the tournament.")
-                
-            await self.broadcast_added_players_state()
-            # await self.broadcast_tournament_state()
+                if len(self.tournament.players) < self.tournament.num_players:
+                    if self.player_id not in [p["id"] for p in self.tournament.players]:
+                        self.tournament.add_player(self.player_id, self.username)
+                        print(f"Player {self.player_id} joined the tournament.")
+                    else:
+                        print(f"Player {self.player_id} ALREADY in the tournament.")
+                elif len(self.tournament.players) > self.tournament.num_players:
+                    # we release the lock *before* await
+                    raise Exception("Too many players in tournament")  # optionally handle this
 
-            if len(self.tournament.players) == self.tournament.num_players:
-                print(f"Tournament starting from handle_join_tournament")
-                await self.tournament.start_tournament()
-                await self.broadcast_tournament_state()
-        else:
-            await self.tournament_full()
-            print(f"Tournament is full. Player {self.player_id} cannot join.")
+                state = self.tournament.get_tournament_state()
+                if hasattr(self, 'tournament_db_id'):
+                    state['tournament_db_id'] = self.tournament_db_id
+
+                state_serializable = msgspec.json.encode(state).decode("utf-8")
+                cache.set("tournament_state", state_serializable)
+        finally:
+            if have_lock:
+                try:
+                    lock.release()
+                except redis.exceptions.LockNotOwnedError:
+                    pass
+
+        await self.broadcast_tournament_state()
+
+        if len(self.tournament.players) == self.tournament.num_players:
+            print(f"Tournament starting from handle_join_tournament")
+            await self.tournament.start_tournament()
+            await self.broadcast_tournament_state()
+
 
     # async def handle_leave_tournament(self, data):
     #     """Player leaves before the tournament starts."""
@@ -641,49 +704,65 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         
         await self.broadcast_tournament_state()
 
+    # async def broadcast_tournament_state(self):
+    #     if self.tournament:
+    #         state = self.tournament.get_tournament_state()
+    #         # once started then we broadcast only the fullest version of the state
+    #         # if not (state.get("players_in") == state.get("num_players")
+    #         #         and state.get("remaining_spots") == 0
+    #         #         and state.get("running")
+    #         #         and state.get("bracket")):
+    #         #     print("⏳ Tournament state not ready, skipping broadcast")
+    #         #     return
+
+    #         if hasattr(self, 'tournament_db_id'):
+    #             state['tournament_db_id'] = self.tournament_db_id
+
+    #         print(f"(BACKEND) Sending update: {state}", flush=True)
+
+    #         with cache.lock("tournament_lock", timeout=5):
+    #             state_serializable = msgspec.json.encode(state).decode("utf-8")
+    #             cache.set("tournament_state", state_serializable)
+
+    #             await self.channel_layer.group_send(
+    #                 "tournament_lobby", {
+    #                     "type": "tournament_update",
+    #                     "data": state_serializable,
+    #                 }
+    #             )
+
     async def broadcast_tournament_state(self):
-        if self.tournament:
-            state = self.tournament.get_tournament_state()
-            # once started then we broadcast only the fullest version of the state
-            # if not (state.get("players_in") == state.get("num_players")
-            #         and state.get("remaining_spots") == 0
-            #         and state.get("running")
-            #         and state.get("bracket")):
-            #     print("⏳ Tournament state not ready, skipping broadcast")
-            #     return
+        if not self.tournament:
+            return
 
-            if hasattr(self, 'tournament_db_id'):
-                state['tournament_db_id'] = self.tournament_db_id
+        state = self.tournament.get_tournament_state()
 
-            print(f"(BACKEND) Sending update: {state}", flush=True)
+        if hasattr(self, 'tournament_db_id'):
+            state['tournament_db_id'] = self.tournament_db_id
 
-            state_serializable = msgspec.json.encode(state).decode("utf-8")
-            cache.set("tournament_state", state_serializable)
+        print(f"(BACKEND) Sending update: {state}", flush=True)
 
-            await self.channel_layer.group_send(
-                "tournament_lobby", {
-                    "type": "tournament_update",
-                    "data": state_serializable,
-                }
-            )
+        # Do all Redis stuff inside a lock, no await
+        lock = cache.lock("tournament_lock", timeout=5)
+        have_lock = lock.acquire(blocking=True, blocking_timeout=5)
+        try:
+            if have_lock:
+                state_serializable = msgspec.json.encode(state).decode("utf-8")
+                cache.set("tournament_state", state_serializable)
+        finally:
+            if have_lock:
+                try:
+                    lock.release()
+                except redis.exceptions.LockNotOwnedError:
+                    pass
 
-    async def broadcast_added_players_state(self):
-        if self.tournament:
-            state = self.tournament.get_tournament_state()
-
-            if hasattr(self, 'tournament_db_id'):
-                state['tournament_db_id'] = self.tournament_db_id
-
-            print(f"(BACKEND) Sending update: {state}", flush=True)
-
-            state_serializable = msgspec.json.encode(state).decode("utf-8")
-            cache.set("tournament_state", state_serializable)
-            await self.channel_layer.group_send(
-                "tournament_lobby", {
-                    "type": "tournament_update",
-                    "data": state_serializable,
-                }
-            )
+        # Do async operations *after* releasing the lock
+        await self.channel_layer.group_send(
+            "tournament_lobby", {
+                "type": "tournament_update",
+                "data": state_serializable,
+            }
+        )
 
     async def broadcast_game_state(self, game_id):
         if game_id in games:
