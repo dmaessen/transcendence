@@ -106,7 +106,7 @@ const returnToStartMenu = async () => {
     gameMenuFirst.show();
 }
 
-const returnToTournamentWaitingRoom = async () => {
+const returnToTournamentWaitingRoom = async (message) => {
     instructions1.style.display = "none";
     instructions2.style.display = "none";
     instructions3.style.display = "none";
@@ -115,6 +115,58 @@ const returnToTournamentWaitingRoom = async () => {
     if (websocket && websocket.readyState === WebSocket.OPEN)
         websocket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
     showWaitingRoomTournament(gameState.mode);
+}
+
+function addWinnersTournament(message) {
+    console.log(`MADE IT HERE TO ADD_WINNERS ----- V2`); // to rm
+    if (gameState.mode == "4") {
+        if (message.winners.length === 2) {
+            winners4 = JSON.parse(localStorage.getItem("winners4")) || [];
+            for (let i = 0; i < 2; i++) {
+                let username = message.winners[i];
+                if (!winners4.includes(username)) {
+                    winners4.push(username);
+                }
+            }
+            localStorage.setItem("winners4", JSON.stringify(winners4));
+        }
+        else if (message.winners.length === 1) {
+            winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
+            let username = message.winners[0];
+            if (!winner_final.includes(username)) {
+                winner_final.push(username);
+                localStorage.setItem("winner_final", JSON.stringify(winner_final));
+            }
+        }
+    } 
+    else {
+        if (message.round == 1) {
+            winners8 = JSON.parse(localStorage.getItem("winners8")) || [];
+            for (let i = 0; i < 4; i++) {
+                let username = message.winners[i];
+                if (!winners8.includes(username)) {
+                    winners8.push(username);
+                }
+            }
+            localStorage.setItem("winners8", JSON.stringify(winners8));
+        } else if (message.round == 2) {
+            winners8_final = JSON.parse(localStorage.getItem("winners8_final")) || [];
+            for (let i = 0; i < 4; i++) {
+                let username = message.winners[i];
+                if (!winners8_final.includes(username)) {
+                    winners8_final.push(username);
+                }
+            }
+            localStorage.setItem("winners8_final", JSON.stringify(winners8_final));
+        } else if (message.round === 1) {
+            winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
+            let username = message.winners[0];
+            if (!winner_final.includes(username)) {
+                winner_final.push(username);
+                localStorage.setItem("winner_final", JSON.stringify(winner_final));
+            }
+        }
+    }
 }
 
 const returnToStartMenuAfterTournament = async () => {
@@ -172,7 +224,7 @@ function handleServerMessage(message) {
             if (gameState.mode != "8" && gameState.mode != "4")
                 returnToStartMenu();
             else
-                returnToTournamentWaitingRoom();
+                returnToTournamentWaitingRoom(message);
             break;
         case "game_end":
             showEndMenu(`${message.reason}`);
@@ -202,6 +254,10 @@ function handleServerMessage(message) {
             break;
         case "end_tournament":
             returnToStartMenuAfterTournament();
+            break;
+        case "add_winners":
+            console.log(`MADE IT HERE TO ADD_WINNERS`); // to rm
+            addWinnersTournament(message);
             break;
         // default:
         //     console.warn("Unknown message type received:", message.type);

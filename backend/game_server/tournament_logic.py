@@ -5,17 +5,7 @@ import asyncio
 from channels.layers import get_channel_layer
 
 class TournamentLogic:
-    # _instance = None
-
-    # def __new__(cls, mode):
-    #     if cls._instance is None:
-    #         cls._instance = super(Tournament, cls).__new__(cls)
-    #         cls._instance._initialized = False  # prevents reinitilizing
-    #     return cls._instance
-
     def __init__(self, mode):
-        # if self._initialized:
-        #     return
         self.mode = mode
         self.num_players = int(mode)
         self.players = []  # player IDs and usernames
@@ -25,7 +15,6 @@ class TournamentLogic:
         self.running = False
         self.winners = []  # players who won their matches
         self.final_winner = None
-        # self._initialized = True
 
     def add_player(self, player_id, username):
         if len(self.players) < self.num_players:
@@ -134,16 +123,22 @@ class TournamentLogic:
 
     async def _advance_to_next_round(self):
         print(f"WINNERS BEFORE ADVANCE: {self.winners}", flush=True)
+
+        # share with frontend 
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            "tournament_lobby",
+            {
+                "type": "tournament.winners",
+                "winners": self.winners,
+                "round": self.current_round
+            }
+        )
+
         if len(self.winners) == 1:
             self.final_winner = self.winners[0]
             self.running = False
             print(f"Tournament ended. Winner: {self.final_winner['username']}", flush=True)
-            # await channel_layer.group_send(
-            #         "tournament_lobby",
-            #         {
-            #             "type": "disconnect",
-            #         }
-            #     )
             return
 
         if len(self.matches) == 0 and len(self.winners) >= 2:
