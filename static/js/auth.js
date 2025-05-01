@@ -1,3 +1,4 @@
+// Helper functions
 function loadGoogleScript(callback) {
     const script = document.createElement('script');
     script.src = "https://accounts.google.com/gsi/client";
@@ -55,6 +56,7 @@ async function refreshAccessToken() {
     }
 }
 
+// DOM management function
 document.addEventListener("DOMContentLoaded", async function () {
     try {
         // 1. Check access_token, show/hide modal accordingly
