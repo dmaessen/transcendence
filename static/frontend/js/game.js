@@ -90,42 +90,46 @@ document.getElementById("playBtn").addEventListener("click", async() => {
 });
 
 
-        document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
-        document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
-        document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
-        document.getElementById("tournamentBtn").addEventListener("click", () => {
-                gameMenuTournament.show();
-                gameMenu.hide();});
-        document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
-            startGame("Tournament - 4 Players");
-            disableTournamentButtons();});
-        document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
-            startGame("Tournament - 8 Players");
-            disableTournamentButtons();});
+document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
+document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
+document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
+document.getElementById("tournamentBtn").addEventListener("click", () => {
+    gameMenuTournament.show();
+    gameMenu.hide();});
+document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
+    startGame("Tournament - 4 Players");
+    disableTournamentButtons();});
+document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
+    startGame("Tournament - 8 Players");
+    disableTournamentButtons();});
 
-        document.getElementById("previousBtn").addEventListener("click", () => {
-            gameMenuFirst.show();
-            gameMenu.hide();});
-        document.getElementById("previous2Btn").addEventListener("click", () => {
-            gameMenuTournament.hide();
-            gameMenu.show();});
+document.getElementById("previousBtn").addEventListener("click", () => {
+    gameMenuFirst.show();
+    gameMenu.hide();});
+document.getElementById("previous2Btn").addEventListener("click", () => {
+    gameMenuTournament.hide();
+    gameMenu.show();});
 
-        document.getElementById("exitButton").addEventListener("click", () =>  {
-            keyboardEnabled = false;
-            gameState.running = false;
-            stopTimer();
-            document.getElementById("timer").innerHTML = " ";
-            instructions1.style.display = "none";
-            instructions2.style.display = "none";
-            gameCanvas.style.display = "none";
-            gameTitle.style.display = "none";
-            document.getElementById("tournamentBracket").style.display = "none"; // this working??
-            document.getElementById("tournamentBracket4").style.display = "none"; // this working??
+document.getElementById("exitButton").addEventListener("click", () =>  {
+    keyboardEnabled = false;
+    gameState.running = false;
+    stopTimer();
+    document.getElementById("timer").innerHTML = " ";
+    instructions1.style.display = "none";
+    instructions2.style.display = "none";
+    gameCanvas.style.display = "none";
+    gameTitle.style.display = "none";
+    document.getElementById("tournamentBracket").style.display = "none"; // this working??
+    document.getElementById("tournamentBracket4").style.display = "none"; // this working??
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        if (gameState.mode != "Tournament - 4 Players" && gameState.mode != "Tournament - 8 Players" && gameState.mode != "4" && gameState.mode != "8")
             websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-            websocket.close()
-            gameMenuFirst.show();
-        });
-
+        else 
+            websocket.send(JSON.stringify({ action: "disconnect"}));
+        websocket.close();
+    }
+    gameMenuFirst.show();
+});
 
 async function joinTournament(data){
     document.querySelectorAll('.modal.show').forEach(modal => {
