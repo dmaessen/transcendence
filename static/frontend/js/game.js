@@ -73,19 +73,20 @@ function startGame(mode) {
 }
 
 document.getElementById("playBtn").addEventListener("click", async() => {
-    gameMenuFirst.hide();
-    gameMenu.show();
-
-    try {
-        const data = await fetchData("/tournament-status/");
-        console.log("Fetched tournament status:", data);
-        if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
-                tournamentMenuBtn.style.display = "none";
-            else // check on this
-                tournamentMenuBtn.style.display = "block";
-    } catch (error) {
-        console.error("Error fetching tournament status:", error);
-    }
+    // gameMenuFirst.hide();
+    // gameMenu.show();
+    console.log("calling select btn!");
+    selectTournamentBtn();
+    // try {
+    //     const data = await fetchData("/tournament-status/");
+    //     console.log("Fetched tournament status:", data);
+    //     if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
+    //             tournamentMenuBtn.style.display = "none";
+    //         else // check on this
+    //             tournamentMenuBtn.style.display = "block";
+    // } catch (error) {
+    //     console.error("Error fetching tournament status:", error);
+    // }
 });
 
 // document.addEventListener("DOMContentLoaded", () => {
@@ -126,27 +127,46 @@ document.getElementById("playBtn").addEventListener("click", async() => {
     });
 // });
 
+async function joinTournament(data){
+    document.querySelectorAll('.modal.show').forEach(modal => {
+        bootstrap.Modal.getInstance(modal)?.hide();
+    });
+
+    gameState.mode = data.players_in + data.remaining_spots; 
+    keyboardEnabled = true;
+    gameState.running = false;
+    gameTitle.style.display = "block";
+    gameCanvas.style.display = "block";
+    gameCanvas.width = 1400;
+    gameCanvas.height = 1000;
+    gameCanvas.style.width = gameCanvas.width / 2 + "px";
+    gameCanvas.style.height = gameCanvas.height / 2 + "px";
+
+    connectWebSocket(data.players_in + data.remaining_spots);
+}
+
 tournamentBanner.addEventListener("click", async(event) => {
     event.preventDefault();
     try {
         const data = await fetchData("/tournament-status/");
         console.log("Tournament Status:", data);
         if (data.remaining_spots > 0) {
-            gameMenuFirst.hide();
-            gameMenu.hide();
-            gameMenuTournament.hide();
+            joinTournament(data);
+            // gameMenuFirst.hide();
+            // gameMenu.hide();
+            // gameMenuTournament.hide();
 
-            gameState.mode = data.players_in + data.remaining_spots; 
-            keyboardEnabled = true;
-            gameState.running = false;
-            gameTitle.style.display = "block";
-            gameCanvas.style.display = "block";
-            gameCanvas.width = 1400;
-            gameCanvas.height = 1000;
-            gameCanvas.style.width = gameCanvas.width / 2 + "px";
-            gameCanvas.style.height = gameCanvas.height / 2 + "px";
+            // gameState.mode = data.players_in + data.remaining_spots; 
+            // keyboardEnabled = true;
+            // gameState.running = false;
+            // gameTitle.style.display = "block";
+            // gameCanvas.style.display = "block";
+            // gameCanvas.width = 1400;
+            // gameCanvas.height = 1000;
+            // gameCanvas.style.width = gameCanvas.width / 2 + "px";
+            // gameCanvas.style.height = gameCanvas.height / 2 + "px";
 
-            connectWebSocket(data.players_in + data.remaining_spots);
+            // connectWebSocket(data.players_in + data.remaining_spots);
         }
     } catch (error) {
         console.error("Error fetching tournament status:", error);

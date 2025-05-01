@@ -144,23 +144,43 @@ if(addFriendBtn) {
     addFriendBtn.addEventListener("click", loadFriendsRequests);
 }
 
-// const searchInput = document.getElementById("searchInput")
-// const searchResults = document.getElementById("searchResults")
+const searchFriendBtn = document.getElementById("searchFriendBtn");
+if (searchFriendBtn) {
+    searchFriendBtn.addEventListener("click", async function (event) {
+        try{
+            event.preventDefault();
 
-// searchInput.addEventListener("input", async function(){
-//     const query = searchInput.value.trim() // trim to remove unsesired spaces before or after
-
-//     if (query.lenght == 0) 
-//         return;
-
-//     const response = await fetch(`/data/api/searchUser/?usename=${encodeURIComponent(query)}`, {
-//         method: POST,
-//         headers: {
-//             "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-//         },
-        
-//     });
-// })
+            const newFriendUsername = document.getElementById("newFriendUsername").value.trim();
+            if (!username) {
+                alert("Please enter a username.");
+                return;
+            }
+            
+            const response = await fetch(`/data/api/searchUser/?friendUsername=${newFriendUsername}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
+                },
+            });
+            if (!response.ok) {
+                throw new Error(`Error, status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            const userID = data.user_id;
+            if (userID) {
+                const addFriendsModalElement = document.getElementById("addFriendsModal");
+                const addFriendsModal = bootstrap.Modal.getInstance(addFriendsModalElement);
+                addFriendsModal.hide();
+                loadProfile(userID);
+            } else {
+                alert("User not found");
+            }
+        } catch (error) {
+            console.log("Error on finding friend: ", error);
+        }
+    });
+}
 
 const addFriendCloseBtn = document.getElementById("addFriendCloseBtn");
 if(addFriendCloseBtn){

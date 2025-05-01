@@ -29,57 +29,61 @@ function connectWebSocket(mode) {
 
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
-    if (mode == "4" || mode == "8")
-        // websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/`);
-        websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
-    else
-        // websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/`);
-        websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
-
-    websocket.onopen = async() => {
-        console.log("Connected to the game server.");
-        websocket.send(JSON.stringify({ action: "connect", mode: mode }));
-        reconnecting = false;
-        if (mode != "4" && mode != "8") {
-            startGameMenu();
-        } else if (mode == "4" || mode == "8") {
-            try {
-                const data = await fetchData("/tournament-status/");
-                console.log("Fetched tournament status:", data);
-                if (data.players_in == 0) {
-                    websocket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+    try {
+        if (mode == "4" || mode == "8")
+            // websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/`);
+            websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
+        else
+            // websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/`);
+            websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
+    
+        websocket.onopen = async() => {
+            console.log("Connected to the game server.");
+            websocket.send(JSON.stringify({ action: "connect", mode: mode }));
+            reconnecting = false;
+            if (mode != "4" && mode != "8") {
+                startGameMenu();
+            } else if (mode == "4" || mode == "8") {
+                try {
+                    const data = await fetchData("/tournament-status/");
+                    console.log("Fetched tournament status:", data);
+                    if (data.players_in == 0) {
+                        websocket.send(JSON.stringify({ action: "start_tournament", mode: mode }));
+                        gameState.mode = mode;
+                        console.log("start_tounrment from connectWebsocket undergoing");
+                    }
+                    websocket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
                     gameState.mode = mode;
-                    console.log("start_tounrment from connectWebsocket undergoing");
+                    showWaitingRoomTournament(mode);
+                } catch (error) {
+                    console.error("Error fetching tournament status:", error);
                 }
-                websocket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
-                gameState.mode = mode;
-                showWaitingRoomTournament(mode);
-            } catch (error) {
-                console.error("Error fetching tournament status:", error);
             }
-        }
-    };
-
-    websocket.onmessage = (event) => {
-        try {
-            const message = JSON.parse(event.data);
-            handleServerMessage(message);
-        } catch (error) {
-            console.error("Error parsing WebSocket message:", error, event.data);
-        }
-    };
-
-    websocket.onclose = () => {
-        console.log(`Disconnected from the game server: ${gameState.playerId}`);
-        reconnecting = false;
-        //setTimeout(() => connectWebwebSocket(mode), 2000); // reconnects after 2 seconds
-    };
-
-    websocket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        alert(`WebSocket error: ${error.message}`);
-        reconnecting = false;
-    };
+        };
+    
+        websocket.onmessage = (event) => {
+            try {
+                const message = JSON.parse(event.data);
+                handleServerMessage(message);
+            } catch (error) {
+                console.error("Error parsing WebSocket message:", error, event.data);
+            }
+        };
+    
+        websocket.onclose = () => {
+            console.log(`Disconnected from the game server: ${gameState.playerId}`);
+            reconnecting = false;
+            //setTimeout(() => connectWebwebSocket(mode), 2000); // reconnects after 2 seconds
+        };
+    
+        websocket.onerror = (error) => {
+            console.error("WebSocket error:", error);
+            alert(`WebSocket error: ${error.message}`);
+            reconnecting = false;
+        };
+    } catch(error){
+        console.error("Failed to create WebSocket:", error);
+    }
 }
 
 function resetGame(mode) {
@@ -245,6 +249,13 @@ function handleServerMessage(message) {
         case "add_winners":
             addWinnersTournament(message);
             break;
+        case "join_tournament":
+            document.getElementById("tournamentBtn").textContent = "Join tournament";
+            joinTournament(data);
+        case "ongoing_tournament":
+            btn = document.getElementById("tournamentBtn");
+            btn.textContent = "Ongoing tournament"
+            btn.disable() = true;
         // default:
         //     console.warn("Unknown message type received:", message.type);
     }

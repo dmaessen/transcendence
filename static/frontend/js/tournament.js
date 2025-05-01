@@ -7,6 +7,31 @@ let tournamentInterval = null;
 
 
 
+async function selectTournamentBtn() {
+    console.log("selecting button");
+    try{ 
+        const data = await fetchData(`/tournament-status/`, {
+        });
+        if (data) {
+            console.log("data: ", data);
+            if (!data.running && data.remaining_spots > 0) {
+                document.getElementById("tournamentBtn").textContent = "Join tournament";
+                joinTournament(data);
+            } else if (data.running) {
+                btn = document.getElementById("tournamentBtn");
+                btn.textContent = "Ongoing tournament"
+                btn.disable() = true;
+                //ongoing tournament
+            } else {
+                document.getElementById("tournamentBtn").textContent = "Start new tournament"
+                //start tournament
+            }
+        }
+    } catch (error){
+        console.log("Error while fetching tournament data: ", error);
+    }    
+}
+
 async function drawBracket(mode) {
     console.log("drawBracket called with mode:", mode);
     if (mode == 4) {

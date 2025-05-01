@@ -293,6 +293,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if len(self.tournament.players) < self.tournament.num_players:
             if self.player_id not in [p["id"] for p in self.tournament.players]:
                 self.tournament.add_player(self.player_id, self.username)
+                pID = self.player_id
+                tID = self.tournament_db_id
+                user = await sync_to_async(CustomUser.objects.get)(id=pID)
+                atournament = await sync_to_async(Tournament.objects.get)(id=tID)
+                sync_to_async(user.tournaments.add)(atournament)
                 print(f"Player {self.player_id} joined the tournament.")
             else:
                 print(f"Player {self.player_id} ALREADY in the tournament.")
