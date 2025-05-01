@@ -89,16 +89,12 @@ function startGame(mode) {
         connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
         gameMenuTournament.hide();
-        //alert(`${mode} mode is not yet implemented.`);
-        // gameTitle.textContent = `${mode}`;
-        // instructions1.style.display = "block";
         if (mode === "Tournament - 4 Players")
             connectWebSocket(4);
         else
             connectWebSocket(8);
     }
 }
-
 
 document.getElementById("playBtn").addEventListener("click", async() => {
     // gameMenuFirst.hide();
@@ -259,6 +255,15 @@ function showWaitingRoomTournament(mode) {
 }
 
 function updateGameState(data) {
+    // if (typeof data === "string") {
+    //     try {
+    //         data = JSON.parse(data);
+    //     } catch (e) {
+    //         console.error("Failed to parse game state JSON:", e);
+    //         return;
+    //     }
+    // }
+
     const { players, ball, score, net, width, height } = data;
     if (!players || !ball || !score || !net || !width || !height) {
         console.error("Invalid game state received:", data);
@@ -288,8 +293,6 @@ function updateGameState(data) {
 
     // draw scores
     gameContext.font = "30px Courier New";
-    // gameContext.fillText(score.player, gameCanvas.width / 4, 80);
-    // gameContext.fillText(score.opponent, (gameCanvas.width * 3) / 4, 80);
     const playerIds = Object.keys(players);
     if (playerIds.length >= 1) {
         const player1 = players[playerIds[0]];
@@ -368,6 +371,7 @@ document.addEventListener("keydown", (event) => {
         if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed, 'ready' state, waiting for the other player to start the game...");
             websocket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
+            // gameContext.fillText("30sec to press any key to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
             // startTimer();
         }
     }
@@ -385,7 +389,7 @@ const pressedKeys = new Set();
 document.addEventListener("keydown", (event) => { 
     if (gameState.running) {
         pressedKeys.add(event.key);
-        sendMovements();
+        // sendMovements();
     }
 });
 document.addEventListener("keyup", (event) => { 
@@ -393,7 +397,8 @@ document.addEventListener("keyup", (event) => {
         pressedKeys.delete(event.key);
     }
 });
-function sendMovements() {
+// function sendMovements() {
+setInterval(() => {
     if (!gameState.running)
         return;
 
@@ -419,7 +424,7 @@ function sendMovements() {
         console.log("keys pressed: ", [...pressedKeys]); // to rm
         websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
-}
+}, 1000 / 60);
 
 // document.addEventListener("keydown", (event) => {
 //     let direction = null;

@@ -4,18 +4,8 @@ import math
 import asyncio
 from channels.layers import get_channel_layer
 
-class Tournament:
-    _instance = None
-
-    def __new__(cls, mode):
-        if cls._instance is None:
-            cls._instance = super(Tournament, cls).__new__(cls)
-            cls._instance._initialized = False  # prevents reinitilizing
-        return cls._instance
-
+class TournamentLogic:
     def __init__(self, mode):
-        if self._initialized:
-            return
         self.mode = mode
         self.num_players = int(mode)
         self.players = []  # player IDs and usernames
@@ -25,7 +15,6 @@ class Tournament:
         self.running = False
         self.winners = []  # players who won their matches
         self.final_winner = None
-        self._initialized = True
 
     def add_player(self, player_id, username):
         if len(self.players) < self.num_players:
@@ -71,12 +60,6 @@ class Tournament:
 
         for player1, player2 in self.bracket[self.current_round]:
             match_exists = any(match["player1"] == player1["player"]["id"] and match["player2"] == player2["player"]["id"] for match in self.matches)
-            
-            # WORK ON THIS
-            # if player1["player"]["username"] == "wildcard":
-            #     # then no need to start match as then other player is the winner directly
-            # if player2["player"]["username"] == "wildcard":
-            #     # then no need to start match as then other player is the winner directly
             
             if not match_exists:
                 await channel_layer.group_send(
@@ -140,16 +123,22 @@ class Tournament:
 
     async def _advance_to_next_round(self):
         print(f"WINNERS BEFORE ADVANCE: {self.winners}", flush=True)
+
+        # share with frontend 
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            "tournament_lobby",
+            {
+                "type": "tournament.winners",
+                "winners": self.winners,
+                "round": self.current_round
+            }
+        )
+
         if len(self.winners) == 1:
             self.final_winner = self.winners[0]
             self.running = False
             print(f"Tournament ended. Winner: {self.final_winner['username']}", flush=True)
-            # await channel_layer.group_send(
-            #         "tournament_lobby",
-            #         {
-            #             "type": "disconnect",
-            #         }
-            #     )
             return
 
         if len(self.matches) == 0 and len(self.winners) >= 2:
