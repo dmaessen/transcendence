@@ -16,7 +16,7 @@ from datetime import timedelta
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 print(f"base_dir: {BASE_DIR}", flush= True)
 
 # Quick-start development settings - unsuitable for production
@@ -150,10 +150,10 @@ MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-# # # No need to set STATICFILES_DIRS if frontend is handling static files
-# STATICFILES_DIRS = [
-#     'static',  # Ensure Django knows where to find them
-# ]
+# # No need to set STATICFILES_DIRS if frontend is handling static files
+STATICFILES_DIRS = [
+   BASE_DIR / 'static',  # Ensure Django knows where to find them
+]
 
 
 TEMPLATES = [

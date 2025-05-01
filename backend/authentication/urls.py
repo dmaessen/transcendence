@@ -2,7 +2,7 @@ from django.urls import path, include
 # from dj_rest_auth import get_refresh_view
 # from django.contrib.auth import views as auth_views
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import RegisterView, LoginView, login_42_redirect, login_42_callback, me, google_login, register_2fa ,disable_2fa, refresh_token ,enable_2fa, login_2fa_required, sign_out, DeleteAccountView
+from .views import RegisterView, LoginView, google_callback,  login_42_redirect, login_42_callback, me, google_login, register_2fa ,disable_2fa, refresh_token ,enable_2fa, login_2fa_required, sign_out, DeleteAccountView
 from django.http import JsonResponse
 
 urlpatterns = [
@@ -16,6 +16,7 @@ urlpatterns = [
     path('register-2fa/', register_2fa, name="register_2FA"),
     path('disable-2fa/', disable_2fa, name ="disable_2fa"),
     path("google-login/", google_login, name="google_login"),
+    path("google/callback/", google_callback, name="google_callback"),
     path('me/', me, name="me"),
     path("42/login/", login_42_redirect, name="login_42"),
     path("42/callback/", login_42_callback, name="callback_42"),

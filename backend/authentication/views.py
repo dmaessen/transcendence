@@ -21,8 +21,10 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 # from google.oauth2 import id_token as google_id_token
 # from google.auth.transport import requests as google_requests
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 import google.oauth2.id_token as google_id_token
 import google.auth.transport.requests
+from urllib.parse import urlencode
 # import google.oauth2 
 import json
 import requests
@@ -306,21 +308,21 @@ def google_login(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me(request):
-    user = request.user
-    return Response({
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "two_factor_enabled": hasattr(user, 'totp_device') and user.totp_device.confirmed,
-    })
+	user = request.user
+	return Response({
+		"id": user.id,
+		"username": user.username,
+		"email": user.email,
+		"two_factor_enabled": hasattr(user, 'totp_device') and user.totp_device.confirmed,
+	})
 
 def login_42_redirect(request):
-    base_url = "https://api.intra.42.fr/oauth/authorize"
-    return redirect(
-        f"{base_url}?client_id={settings.FT_CLIENT_ID}"
-        f"&redirect_uri={settings.FT_REDIRECT_URI}"
-        f"&response_type=code"
-    )
+	base_url = "https://api.intra.42.fr/oauth/authorize"
+	return redirect(
+		f"{base_url}?client_id={settings.FT_CLIENT_ID}"
+		f"&redirect_uri={settings.FT_REDIRECT_URI}"
+		f"&response_type=code"
+	)
 
 @csrf_exempt
 def login_42_callback(request):
@@ -382,6 +384,65 @@ def login_42_callback(request):
 	refresh = RefreshToken.for_user(user)
 	return JsonResponse({
 		"access": str(refresh.access_token),
-		"refresh": str(refresh)
+		"refresh": str(refresh),
+		"message": "42 login succesful"
 	})
 
+def google_callback(request):
+	code = request.GET.get('code')
+	if not code:
+		return JsonResponse({"error": "Missing authorization code"}, status=400)
+
+	token_url = "https://oauth2.googleapis.com/token"
+	redirect_uri = "http://localhost:8000/api/authentication/google/callback/"  # Must match your registered redirect URI
+	client_id = settings.GOOGLE_CLIENT_ID
+	client_secret = settings.GOOGLE_CLIENT_SECRET
+
+	try:
+		# Exchange authorization code for access and ID tokens
+		token_response = requests.post(token_url, data={
+			"code": code,
+			"client_id": client_id,
+			"client_secret": client_secret,
+			"redirect_uri": redirect_uri,
+			"grant_type": "authorization_code",
+		})
+
+		token_response.raise_for_status()
+		token_data = token_response.json()
+		id_token = token_data.get("id_token")
+		access_token = token_data.get("access_token")
+
+		if not id_token:
+			return JsonResponse({"error": "Failed to retrieve ID token"}, status=400)
+
+		request_adapter = google.auth.transport.requests.Request()
+		idinfo = google_id_token.verify_oauth2_token(id_token, request_adapter, client_id)
+
+		email = idinfo.get("email")
+		username = idinfo.get("name", email.split("@")[0])
+
+		if not email:
+			return JsonResponse({"error": "No email found in ID token"}, status=400)
+
+		# Register or log in the user
+		user, created = CustomUser.objects.get_or_create(email=email, defaults={"username": username})
+		if created:
+			user.set_unusable_password()
+			user.save()
+
+		refresh = RefreshToken.for_user(user)
+
+		params = urlencode({
+			"refresh": str(refresh),
+			"access": str(refresh.access_token),
+			"message": "Google login successful"
+		})
+		return redirect(f"http://localhost:8000?{params}")
+
+	except Exception as e:
+		return JsonResponse({"error": "Failed to authenticate with Google", "details": str(e)}, status=500)
+
+
+def index(request):
+    return render(request, 'index.html', {"user_is_authenticated": request.user.is_authenticated})

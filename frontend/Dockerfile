@@ -3,11 +3,13 @@ FROM nginx:alpine
 # Copy static files to Nginx HTML directory
 
 RUN rm /etc/nginx/conf.d/default.conf
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 
-COPY . /usr/share/nginx/html
+COPY ../static /usr/share/nginx/html/static
 # COPY ../js/* /usr/share/nginx/html
+
+RUN chmod -R 755 /usr/share/nginx/html
 
 # Expose Nginx port
 EXPOSE 80

@@ -36,7 +36,7 @@ services:
         container_name: backend
         volumes:
             - ./backend/:/app/
-            - ./static/:/static/
+            - ./static/:/app/static/
             - ./media/:/media/
             - ./monitoring/logs/django_logs:/var/log/django
         ports:
@@ -50,7 +50,9 @@ services:
             - psql
 
     frontend:
-        build: ./frontend
+        build:
+          context: .
+          dockerfile: frontend/Dockerfile
         container_name: frontend
         volumes:
             - ./static/:/usr/share/nginx/html/static/

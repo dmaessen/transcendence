@@ -1,16 +1,18 @@
     <!-- User Registration Menu Modal -->
     {% load static %}
-    <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel">
+    <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel" aria-hidden="true">
         <script src="https://accounts.google.com/gsi/client" referrerpolicy="strict-origin-when-cross-origin" async defer></script>
         <meta name="google-signin-client_id" content="517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="SignInMenuLabel">What now, hmm..?</h5>
-                </div>
-                <div class="modal-body">
-                    <button id="showRegister" class="btn btn-outline-dark w-100 mb-2">Register</button>
-                    <button id="showLogin" class="btn btn-outline-dark w-100 mb-2">Log in</button>
+                <div id="mainMenuContainer">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="SignInMenuLabel">Please register or login</h5>
+                    </div>
+                    <div class="modal-body">
+                            <button id="showRegister" class="btn btn-outline-dark w-100 mb-2">Register</button>
+                            <button id="showLogin" class="btn btn-outline-dark w-100 mb-2">Log in</button>
+                    </div>
                 </div>
                 <!-- Login Form (Initially Hidden) -->
                 <div id="loginContainer" class="overlay-form">
@@ -26,12 +28,10 @@
                         <button type="submitOTP" id="submitOTPButton" class="btn btn-success">Submit OTP token</button>
                         <button type="returnOTP" id="returnToLogin" class="btn btn-secondary">return</button>    
                     </div>
-                    <div id="googleSignInButtonLogin">
-                        <button id="googleRegisterBtn" class="btn btn-outline-dark w-100 mb-2">
-                            <img src="{% static 'images/google.256x256.png' %}" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
-                            Login with Google
-                        </button>
-                    </div>
+                    <button id="googleButtonLogin" class="btn btn-outline-dark w-100 mb-2">
+                        <img src="{% static 'images/google.256x256.png' %}" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
+                        Login with Google
+                    </button>
                     <div id="FtSignInButtonLogin">
                         <a href="/api/authentication/42/login/" class="btn btn-outline-dark w-100 mb-2">
                             <img src="{% static 'images/42_Logo.png' %}" alt="42 Logo" style="height: 20px; margin-right: 8px;">
@@ -57,12 +57,10 @@
                     {% comment %} <div id="googleSignInButtonRegister">
                         <script src="https://accounts.google.com/gsi/client" referrerpolicy="strict-origin-when-cross-origin" async defer></script>
                     </div> {% endcomment %}
-                    <div id="googleSignInButtonRegister">
-                        <button id="googleRegisterBtn" class="btn btn-outline-dark w-100 mb-2">
-                            <img src="{% static 'images/google.256x256.png' %}" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
-                            Register with Google
-                        </button>
-                    </div>
+                    <button id="googleButtonRegister" class="btn btn-outline-dark w-100 mb-2">
+                        <img src="{% static 'images/google.256x256.png' %}" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
+                        Register with Google
+                    </button>
                     <div id="FtSignInButtonRegister">
                         <a href="/api/authentication/42/login/" class="btn btn-outline-dark w-100 mb-2">
                             <img src="{% static 'images/42_Logo.png' %}" alt="42 Logo" style="height: 20px; margin-right: 8px;">
@@ -85,3 +83,4 @@
             </div>
         </div>
     </div>
+
