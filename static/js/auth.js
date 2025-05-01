@@ -301,7 +301,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 window.location.href = "/";
             }, 30);
         }
-        // Google/42 login button rendering
+        // Google login button rendering
         const googleClientId = document
             .querySelector('meta[name="google-signin-client_id"]')
             ?.getAttribute("content");
@@ -376,7 +376,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             `;
         }
 
-        // 6. Register form
+        // Register form
         if (registerForm) {
             registerForm.addEventListener("submit", async function (e) {
                 // e.preventDefault();
@@ -418,7 +418,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                     }
                     scheduleTokenRefresh()
                     if (enable2FA) {
-                        // Small improvement: refresh token if needed before sensitive action
                         let refreshedToken = await refreshAccessToken();
                         const tokenToUse = refreshedToken || accessToken;
                         const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
@@ -466,7 +465,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         }
         async function loginRequest(email, password, otp_token = null) {
-            // Small improvement: refresh token before login if present
             if (localStorage.getItem("refresh_token")) {
                 await refreshAccessToken();
             }
@@ -485,7 +483,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (response.ok) {
                     localStorage.setItem("access_token", data.access);
                     localStorage.setItem("refresh_token", data.refresh);
-                    // alert("Login successful!");
                     setTimeout(() => {
                         window.location.href = "/";
                     }, 30);
@@ -572,7 +569,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 });
             });
         }
-
+        // enable 2FA logic
         if (enable2FAButton) {
             enable2FAButton.addEventListener("click", async function () {
                 let accessToken = localStorage.getItem("access_token");
