@@ -72,22 +72,22 @@ function startGame(mode) {
     }
 }
 
-document.getElementById("playBtn").addEventListener("click", async() => {
-    // gameMenuFirst.hide();
-    // gameMenu.show();
-    console.log("calling select btn!");
-    selectTournamentBtn();
-    // try {
-    //     const data = await fetchData("/tournament-status/");
-    //     console.log("Fetched tournament status:", data);
-    //     if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
-    //             tournamentMenuBtn.style.display = "none";
-    //         else // check on this
-    //             tournamentMenuBtn.style.display = "block";
-    // } catch (error) {
-    //     console.error("Error fetching tournament status:", error);
-    // }
-});
+// document.getElementById("playBtn").addEventListener("click", async() => {
+//     // gameMenuFirst.hide();
+//     // gameMenu.show();
+//     console.log("calling select btn!");
+//     selectTournamentBtn();
+//     // try {
+//     //     const data = await fetchData("/tournament-status/");
+//     //     console.log("Fetched tournament status:", data);
+//     //     if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
+//     //             tournamentMenuBtn.style.display = "none";
+//     //         else // check on this
+//     //             tournamentMenuBtn.style.display = "block";
+//     // } catch (error) {
+//     //     console.error("Error fetching tournament status:", error);
+//     // }
+// });
 
 // document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
@@ -103,9 +103,9 @@ document.getElementById("playBtn").addEventListener("click", async() => {
         startGame("Tournament - 8 Players");
         disableTournamentButtons();});
 
-    document.getElementById("previous1Btn").addEventListener("click", () => { // this one doesnt work
-        gameMenu.hide();
-        gameMenuFirst.show();});
+    document.getElementById("previousBtn").addEventListener("click", () => {
+        gameMenuFirst.show();
+        gameMenu.hide();});
     document.getElementById("previous2Btn").addEventListener("click", () => {
         gameMenuTournament.hide();
         gameMenu.show();});

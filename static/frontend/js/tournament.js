@@ -14,7 +14,7 @@ async function selectTournamentBtn() {
         });
         if (data) {
             console.log("data: ", data);
-            if (!data.running && data.remaining_spots > 0) {
+            if (data.remaining_spots > 0) {
                 document.getElementById("tournamentBtn").textContent = "Join tournament";
                 joinTournament(data);
             } else if (data.running) {
@@ -22,10 +22,11 @@ async function selectTournamentBtn() {
                 btn.textContent = "Ongoing tournament"
                 btn.disable() = true;
                 //ongoing tournament
-            } else {
-                document.getElementById("tournamentBtn").textContent = "Start new tournament"
-                //start tournament
-            }
+            } 
+            // else {
+            //     document.getElementById("tournamentBtn").textContent = "Start new tournament"
+            //     //start tournament
+            // }
         }
     } catch (error){
         console.log("Error while fetching tournament data: ", error);
