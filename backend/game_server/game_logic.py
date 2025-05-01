@@ -1,9 +1,8 @@
-# game_logic.py
-# Backend logic for handling game state, including ball and paddle movements
-
 import json
 import random
 import math
+
+MAX_BALL_SPEED = 12.0
 
 class Game:
     def __init__(self, mode):
@@ -18,7 +17,7 @@ class Game:
         self.score = {"player": 0, "opponent": 0}
         self.running = False
         self.partOfTournament = False
-        self.status = None #default can be "waiting", "started"
+        self.status = None # default can be "waiting", "started"
 
     def add_player(self, player_id, username):
         if player_id not in self.players:
@@ -30,12 +29,6 @@ class Game:
                 print(f"Player {player_id} added as Player 2 (opponent). With username: {username}", flush=True)
             else:
                 print(f"Cannot add more players. Maximum supported is 2.", flush=True)
-            
-            # if len(self.players) == 1:
-            #     self.players[player_id]["role"] = "player"
-            # elif len(self.players) == 2:
-            #     self.players[player_id]["role"] = "opponent"
-            #     print(f"Opponent assigned to Player {player_id}", flush=True)
         
         # automatically add a bot if only one player (in One Player mode)
         if self.mode == "One Player" and len(self.players) == 1:
@@ -91,7 +84,6 @@ class Game:
             self.score["player"] += 1
             self._reset_ball(direction=-1)
 
-        # if self.mode == "4" or self.mode == "8":
         if self.partOfTournament == True:
             if self.score["player"] >= 3 or self.score["opponent"] >= 3:
                 winner_id = next(
@@ -117,9 +109,6 @@ class Game:
         if isinstance(directions, str):
             directions = [directions]
         if self.mode == "Two Players (hot seat)" and player_id in self.players:
-            # print(f"Moving player {player_id} with direction {direction[0]}", flush=True)
-            # print("111111")
-            #paddle = self.players[player_id]
             player = self.players[player_id]
             opponent = self.players["opponent"]
             for direction in directions:
@@ -133,8 +122,6 @@ class Game:
                     player["y"] -= 10
 
         elif player_id in self.players:
-            # print(f"Moving player {player_id} with direction {direction[0]}", flush=True)
-            # print("22222")
             paddle = self.players[player_id]
             for direction in directions:
                 if direction == "up" and paddle["y"] > 0:
@@ -184,7 +171,8 @@ class Game:
         self.ball["x"] = self.width // 2
         self.ball["y"] = random.randint(200, self.height // 2)
         angle = random.uniform(0.2, 0.8)
-        self.ball["speed"] = self.ball["speed"] * 1.2
+        self.ball["speed"] *= 1.2
+        self.ball["speed"] = min(self.ball["speed"], MAX_BALL_SPEED) # capping the ball speed to a certain limit
         
         self.ball["dir_x"] = direction * (self.ball["speed"]) * angle
         self.ball["dir_y"] = (self.ball["speed"]) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
@@ -216,9 +204,10 @@ class Game:
         self.running = False
         # self.players = {}  # Clear players
         # self.score = {"player": 0, "opponent": 0}
-        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4}
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
         print(f"Game ended. Winner: {winner}", flush=True)
-        return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": {winner}}
+        return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner}
+        # maybe just having a normal return here??
         
     def clear_game(self):
         self.players = {}  # Clear players

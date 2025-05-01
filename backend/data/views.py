@@ -70,8 +70,8 @@ def get_user_matches(request):
     
     profileID = request.GET.get("userID")
     
-    if profileID == "self":
-        user = request.user
+    if profileID == "self" or request.user.id == int(profileID):
+        user = request.user 
     else:
         user = CustomUser.objects.filter(id = profileID).first()
     if not user:
@@ -99,11 +99,11 @@ def get_user_tournaments(request):
         return JsonResponse({"error": "User not found"}, status=404)
     
     tournaments = get_user_3_tournaments(user.id)
+    logging.info(f"!!!!!!!!tournaments: {tournaments}")
     tournaments_data = {
-        "tournaments": list(TournamentSummarySerializer(tournaments, many=True).data),
+        "tournaments": TournamentSummarySerializer(tournaments, many=True, context={"user": user}).data,
     }
-
-    return JsonResponse(tournaments_data, safe=False)
+    return JsonResponse(tournaments_data)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

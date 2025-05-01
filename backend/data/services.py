@@ -1,6 +1,9 @@
 from .models import *
 from django.db.models import Q
 from django.core.cache import cache
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Get data from tables 
 def get_all_users():
@@ -15,7 +18,10 @@ def get_user_tournaments(user_id):
     user = CustomUser.objects.get(id=user_id)
     return list(user.tournaments.values_list('id', flat=True))
 def get_user_3_tournaments(user_id):
-    return Tournament.objects.filter(players__id=user_id).order_by("-start_date")[:3]
+    user = CustomUser.objects.get(id=user_id)
+    tournaments = user.tournaments.all().order_by('-start_date')[:3]
+    logging.info(f"!!!!!! services: {tournaments}")
+    return tournaments
 
 def get_tournaments():
     return Tournament.objects.all()

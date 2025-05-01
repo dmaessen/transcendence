@@ -11,16 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css">
     <!-- Link CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <meta name="google-signin-client_id" content="517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com">
-  </head>
+</head>
 <body>
-  <div id="signInBlocker" style="
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 1400;
-      display: none;
-    "></div>
     <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">
         🚀 A tournament is about to start!<br><span id="playersInTournament">0/8</span> players in. 
         <a href="" class="alert-link" id="joinTournamentLink">Join now!</a> 
@@ -33,10 +25,8 @@
     <!-- <canvas id="tournamentBracket" width="800" height="600"></canvas> -->
     <p id="game-instruction1">Press the UP and DOWN keys to move your paddle.</p>
     <p id="game-instruction2">Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move.</p>
-    <p id="game-instruction3">Press the UP and DOWN keys to move your paddle.<br>First player with a score of 3 wins.</p>
-    
-
-    
+    <p id="game-instruction3">Press the UP and DOWN keys to move your paddle.<br>First player with a score of 3 wins.<br>The game starts automatically after 1 minute, if no one presses.</p>
+        
     {% comment %} Modals {% endcomment %}
     {% include 'tournament.html' %}
     {% include 'tournament4.html' %}
@@ -66,18 +56,4 @@
     <script src="{% static 'js/websocket_handler.js' %}"></script>
 
 </body>
-<script>
-  const USER_IS_AUTHENTICATED = {{ request.user.is_authenticated|yesno:"true,false" }};
-
-  window.addEventListener('DOMContentLoaded', () => {
-    if (!USER_IS_AUTHENTICATED) {
-      const modalElement = document.getElementById('SignInMenu');
-      if (modalElement) {
-        modalElement.style.zIndex = "7000"
-        const bsModal = new bootstrap.Modal(modalElement);
-        bsModal.show();
-      }
-    }
-  });
-</script>
 </html>
