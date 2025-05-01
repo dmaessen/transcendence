@@ -5,32 +5,31 @@ let winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
 
 let tournamentInterval = null;
 
-
-
 async function selectTournamentBtn() {
     console.log("selecting button");
-    try{ 
+    try{
         const data = await fetchData(`/tournament-status/`, {
         });
         if (data) {
             console.log("data: ", data);
-            if (data.remaining_spots > 0) {
+            if (data.players_in > 0) {
                 document.getElementById("tournamentBtn").textContent = "Join tournament";
                 joinTournament(data);
-            } else if (data.running) {
+            }
+            else if (data.remaining_spots == 0 && data.players_in != 0){
                 btn = document.getElementById("tournamentBtn");
                 btn.textContent = "Ongoing tournament"
                 btn.disable() = true;
                 //ongoing tournament
-            } 
-            // else {
-            //     document.getElementById("tournamentBtn").textContent = "Start new tournament"
-            //     //start tournament
-            // }
+            }
+            else {
+                document.getElementById("tournamentBtn").textContent = "Start new tournament"
+                //start tournament
+            }
         }
     } catch (error){
         console.log("Error while fetching tournament data: ", error);
-    }    
+    }
 }
 
 async function drawBracket(mode) {
