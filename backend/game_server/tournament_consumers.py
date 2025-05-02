@@ -297,7 +297,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 tID = self.tournament_db_id
                 user = await sync_to_async(CustomUser.objects.get)(id=pID)
                 atournament = await sync_to_async(Tournament.objects.get)(id=tID)
-                sync_to_async(user.tournaments.add)(atournament)
+                await sync_to_async(user.tournaments.add)(atournament)
                 print(f"Player {self.player_id} joined the tournament.")
             else:
                 print(f"Player {self.player_id} ALREADY in the tournament.")

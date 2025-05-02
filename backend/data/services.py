@@ -31,8 +31,9 @@ def get_tournament_data(tournament_id):
     return tournament
 
 def get_win_cout(user_id):
-    wins = Match.objects.filter(id=user_id)
+    wins = Match.objects.filter(winner=user_id)
     win_count = wins.count()
+    # logging.info(f">>>>>>>>>>>>>>>>>>win count = {win_count}")
     return win_count
 
 def get_matches_count(user_id):
