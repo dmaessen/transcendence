@@ -181,7 +181,7 @@ tournamentBanner.addEventListener("click", async(event) => {
 });
 
 window.addEventListener("load", async () => {
-    gameMenuFirst.show();
+    // gameMenuFirst.show();
     const bracketElement = document.getElementById("tournamentBracket");
     bracketElement.style.display = "none";
 

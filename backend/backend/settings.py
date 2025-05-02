@@ -111,7 +111,7 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 CORS_ALLOW_CREDENTIALS = True
 # CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 
@@ -143,9 +143,9 @@ ROOT_URLCONF = 'backend.urls'
 STATIC_URL = '/static/'
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # Where collectstatic will store files
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
 
-MEDIA_URL = '/media/'
+# MEDIA_URL = '/media/'
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'media')
 

@@ -87,6 +87,7 @@ def register_2fa(request):
 		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
 
 class RegisterView(APIView):
+	# @csrf_exempt
 	def post(self, request, *args, **kwargs):
 		serializer = UserSerializer(data=request.data)
 		if serializer.is_valid():
@@ -117,7 +118,9 @@ class RegisterView(APIView):
 #             self.user.two_factor_enabled = True
 #             self.user.save(update_fields=["two_factor_enabled"])
 
+
 class LoginView(APIView):
+	# @csrf_exempt
 	def post(self, request):
 		email = request.data.get('email')
 		password = request.data.get('password')
@@ -153,6 +156,7 @@ class LoginView(APIView):
 				print(f"totp current: {totp.now()}", file=sys.stderr)
 				print(f"OTP verification failed. Token: {otp_token}, Secret: {otp_secret}", file=sys.stderr)
 				return JsonResponse({'error': 'Invalid 2FA code'}, status=status.HTTP_401_UNAUTHORIZED)
+			
 		try:
 			refresh = RefreshToken.for_user(user)
 			access_token = str(refresh.access_token)

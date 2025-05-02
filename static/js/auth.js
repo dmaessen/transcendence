@@ -10,9 +10,14 @@ function loadGoogleScript(callback) {
 
 const baseUrl = "http://localhost:8000/api/authentication/";
 
+// function getCSRFToken() {
+//     const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']");
+//     return csrfToken ? csrfToken.value : "";
+// }
+
 function getCSRFToken() {
-    const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']");
-    return csrfToken ? csrfToken.value : "";
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
 }
 
 function scheduleTokenRefresh() {
@@ -89,6 +94,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         console.log("Backdrop count:", document.querySelectorAll('.modal-backdrop').length);
 
+        console.log("csrf token", getCSRFToken());
         if (mainMenu) { 
 
             if (!accessToken) {
