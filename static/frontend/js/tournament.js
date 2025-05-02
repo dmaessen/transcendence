@@ -13,20 +13,20 @@ async function selectTournamentBtn() {
         if (data) {
             console.log("data: ", data);
             if (data.players_in > 0 && !data.running) {
-                // tournamentMenuBtn.style.display = "none"; // to show the button
+                // tournamentMenuBtn.style.display = "block"; // to show the button
                 document.getElementById("tournamentBtn").textContent = "Join tournament";
                 joinTournament(data);
             }
             else if (data.running) {
                 console.log("tournament is running atm");
-                document.getElementById("tournamentBtn").style.display = "block"; // to hide the button
+                document.getElementById("tournamentBtn").style.display = "none"; // to hide the button
                 // btn = document.getElementById("tournamentBtn");
                 // btn.textContent = "Ongoing tournament";
                 // btn.disable() = true;
                 //ongoing tournament
             }
             else {
-                // tournamentMenuBtn.style.display = "none"; // to show the button
+                // tournamentMenuBtn.style.display = "block"; // to show the button
                 document.getElementById("tournamentBtn").textContent = "Start new tournament";
                 //start tournament
             }
@@ -67,6 +67,8 @@ async function updateBracketWithData(mode) {
         console.log("Fetched tournament status:", data);
 
         if (data) {
+            if (!data.running && data.players_in == 0)
+                clearPlayerFields(mode); // to make sure all fields are clean when starting
             if (data.remaining_spots == 0)
                 updatePlayerFields(mode, data.players, data.results);
         }

@@ -296,32 +296,35 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             "type": "tournament_full"
         })
 
-    # async def tournament_timeout(self, event):
-    #     if self.tournament and not self.tournament.running:
-    #         if self.player_id in self.tournament.players:
-    #             self.tournament.players.remove(self.player_id)
-    #             await self.broadcast_tournament_state()
+    async def tournament_timeout(self, event):
+        print(f"Tournament cancelled for {self.player_id}", flush=True)
+        if self.tournament:
+            if any(player["id"] == self.player_id for player in self.tournament.players):
+                matches = event["unresolved_matches"]
+                if matches:
+                    if self.game_id in games:
+                        game = games[self.game_id]
+                        if self.player_id in game.players:
+                            game.remove_player(self.player_id)
+                            if not game.players:
+                                game.stop_game("No players")
+                                del games[self.game_id]
+                                print(f"Game {self.game_id} ended. Winner: No players", flush=True)
 
-    #         if len(self.tournament.players) < self.tournament.num_players:
-    #             print("Tournament cancelled due to timeout.", flush=True)
-    #             self.tournament.running = False
-    #             self.tournament.final_winner = None
-    #             TournamentConsumer.tournament = None
-    #             TournamentConsumer.initiator = None
+                await self.broadcast_tournament_state()
 
-    #             # await self.channel_layer.group_send(
-    #             #     "tournament_lobby",
-    #             #     {
-    #             #         "type": "tournament.cancelled",
-    #             #         "reason": "Player disconnected before tournament start."
-    #             #     }
-    #             # )
-    #             await self.send_json({"type": "end_tournament"})
+                self.tournament.running = False
+                self.tournament.final_winner = None # should we add random name just for frontend to reset properly??
+                TournamentConsumer.tournament = None
+                TournamentConsumer.initiator = None
 
-    #             # Optionally reset state in cache
-    #             state = default_tournament_state.copy()
-    #             state_serializable = msgspec.json.encode(state).decode("utf-8")
-    #             cache.set("tournament_state", state_serializable)
+                await self.send_json({"type": "end_tournament"})
+
+                # Optionally reset state in cache
+                state = default_tournament_state.copy()
+                state_serializable = msgspec.json.encode(state).decode("utf-8")
+                cache.delete("tournament_state")
+                cache.set("tournament_state", state_serializable)
 
     async def handle_player_leave(self):
         if self.tournament and not self.tournament.running:
@@ -544,9 +547,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
             game.add_player_tournament(left_player.id, left_player.username, as_player1=True)
             game.add_player_tournament(right_player.id, right_player.username, as_player1=False)
-
-            # game.add_player_tournament(user1.id, user1.username, as_player1=True)
-            # game.add_player_tournament(user2.id, user2.username, as_player1=False)
             game.status = "started"
             game.is_partOfTournament()
             games[self.game_id] = game
@@ -613,31 +613,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print(f"[TOURNAMENT UPDATE] Sent winners to frontend: {[w['username'] for w in event['winners']]} (Round {event['round']})", flush=True)
 
-    # def convert_keys_to_str(obj):
-    #     if isinstance(obj, dict):
-    #         new_dict = {}
-    #         for k, v in obj.items():
-    #             new_key = str(k)
-    #             new_dict[new_key] = convert_keys_to_str(v)
-    #         return new_dict
-    #     elif isinstance(obj, list):
-    #         return [convert_keys_to_str(i) for i in obj]
-    #     elif isinstance(obj, tuple):
-    #         return tuple(convert_keys_to_str(i) for i in obj)
-    #     else:
-    #         return obj
-
     async def force_cache_update(self, event):
         print(f"PLAYER {self.player_id} MADE IT INTO FORCE_CACHE_UPDATE", flush=True)
         state = event["state"]
 
         self.tournament.set_tournament_state(msgspec.json.decode(state))
 
-        # print(f"(BACKEND) Sending update {self.player_id}: {state}", flush=True)
-
-        # safe_state = convert_keys_to_str(state)
-        # # serialized = msgspec.json.encode(safe_state).decode("utf-8")
-        # serialized = json.dumps((safe_state))
         print(f"(BACKEND FORCE_CACHE_UPDATE) of {self.player_id}: {state}", flush=True)
 
         cache.delete("tournament_state")
