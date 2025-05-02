@@ -98,6 +98,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             # Reset tournament cache
             state = default_tournament_state.copy()
             state_serializable = msgspec.json.encode(state).decode("utf-8")
+            cache.delete("tournament_state")
             cache.set("tournament_state", state_serializable)
 
         print(f"WebSocket fully disconnected for player {self.player_id}", flush=True)
@@ -122,6 +123,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.create_game_tournament(data)
         elif action == "tournament.winners":
             await self.tournament_winners(data)
+        # elif action == "tournament.timeout":
+        #     await self.tournament_timeout(data)
+        elif action == "force.cache.update":
+            await self.force_cache_update(data)
 
         elif action == "move":
             direction = data.get("direction")
@@ -273,6 +278,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             state['tournament_db_id'] = self.tournament_db_id
 
         state_serializable = msgspec.json.encode(state).decode("utf-8")
+        cache.delete("tournament_state")
         cache.set("tournament_state", state_serializable)
 
         await self.broadcast_tournament_state()
@@ -290,36 +296,64 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             "type": "tournament_full"
         })
 
-    async def handle_player_leave(self):
-        if self.tournament and self.player_id in self.tournament.players and not self.tournament.running:
-            self.tournament.players.remove(self.player_id)
-            await self.broadcast_tournament_state()
+    # async def tournament_timeout(self, event):
+    #     if self.tournament and not self.tournament.running:
+    #         if self.player_id in self.tournament.players:
+    #             self.tournament.players.remove(self.player_id)
+    #             await self.broadcast_tournament_state()
 
-        if self.game_id in games:
-            game = games[self.game_id]
-            if self.player_id in game.players:
-                game.remove_player(self.player_id)
-                if not game.players:
-                    game.stop_game("No players")
-                    del games[self.game_id]
-                    print(f"Game {self.game_id} ended. Winner: No players", flush=True)
-                else:
-                    # Declare remaining player as winner
-                    for player_id, player in game.players.items():
-                        winner = player.get("username")
-                        if winner:
-                            print(f"Winner determined: {winner}", flush=True)
-                            game.stop_game(winner)
-                            game.reset_game("Two Players (remote)") 
-                            await self.channel_layer.group_send(
-                                self.match_name,
-                                {"type": "game.end", "reason": f"Game Over: {winner} wins"}
-                            )
-                            await self.channel_layer.group_send(
-                                "tournament_lobby",
-                                {"type": "game.result", "game_id": self.game_id, "winner": winner}
-                            )
-                            break
+    #         if len(self.tournament.players) < self.tournament.num_players:
+    #             print("Tournament cancelled due to timeout.", flush=True)
+    #             self.tournament.running = False
+    #             self.tournament.final_winner = None
+    #             TournamentConsumer.tournament = None
+    #             TournamentConsumer.initiator = None
+
+    #             # await self.channel_layer.group_send(
+    #             #     "tournament_lobby",
+    #             #     {
+    #             #         "type": "tournament.cancelled",
+    #             #         "reason": "Player disconnected before tournament start."
+    #             #     }
+    #             # )
+    #             await self.send_json({"type": "end_tournament"})
+
+    #             # Optionally reset state in cache
+    #             state = default_tournament_state.copy()
+    #             state_serializable = msgspec.json.encode(state).decode("utf-8")
+    #             cache.set("tournament_state", state_serializable)
+
+    async def handle_player_leave(self):
+        if self.tournament and not self.tournament.running:
+            if self.player_id in self.tournament.players:
+                self.tournament.players.remove(self.player_id)
+                await self.broadcast_tournament_state()
+
+            if self.game_id in games:
+                game = games[self.game_id]
+                if self.player_id in game.players:
+                    game.remove_player(self.player_id)
+                    if not game.players:
+                        game.stop_game("No players")
+                        del games[self.game_id]
+                        print(f"Game {self.game_id} ended. Winner: No players", flush=True)
+                    else:
+                        # Declare remaining player as winner
+                        for player_id, player in game.players.items():
+                            winner = player.get("username")
+                            if winner:
+                                print(f"Winner determined: {winner}", flush=True)
+                                game.stop_game(winner)
+                                game.reset_game("Two Players (remote)") 
+                                await self.channel_layer.group_send(
+                                    self.match_name,
+                                    {"type": "game.end", "reason": f"Game Over: {winner} wins"}
+                                )
+                                await self.channel_layer.group_send(
+                                    "tournament_lobby",
+                                    {"type": "game.result", "game_id": self.game_id, "winner": winner}
+                                )
+                                break
     
     async def tournament1v1game_timeout_task(self, game_id, player_id, duration=30):
         print(f"Game {game_id} in tournament1v1game_timeout_task", flush=True)
@@ -371,7 +405,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         player1 = event["player1"]
         player2 = event["player2"]
         # self.tournament.matches.append((player1, player2, game_id))
-        print(f" {self.tournament.matches}", flush=True)
+        # print(f" {self.tournament.matches}", flush=True) 
         if not any(game_id == match[0] for match in self.tournament.matches):
             self.tournament.matches.append((game_id, player1, player2))
 
@@ -579,6 +613,43 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print(f"[TOURNAMENT UPDATE] Sent winners to frontend: {[w['username'] for w in event['winners']]} (Round {event['round']})", flush=True)
 
+    # def convert_keys_to_str(obj):
+    #     if isinstance(obj, dict):
+    #         new_dict = {}
+    #         for k, v in obj.items():
+    #             new_key = str(k)
+    #             new_dict[new_key] = convert_keys_to_str(v)
+    #         return new_dict
+    #     elif isinstance(obj, list):
+    #         return [convert_keys_to_str(i) for i in obj]
+    #     elif isinstance(obj, tuple):
+    #         return tuple(convert_keys_to_str(i) for i in obj)
+    #     else:
+    #         return obj
+
+    async def force_cache_update(self, event):
+        print(f"PLAYER {self.player_id} MADE IT INTO FORCE_CACHE_UPDATE", flush=True)
+        state = event["state"]
+
+        self.tournament.set_tournament_state(msgspec.json.decode(state))
+
+        # print(f"(BACKEND) Sending update {self.player_id}: {state}", flush=True)
+
+        # safe_state = convert_keys_to_str(state)
+        # # serialized = msgspec.json.encode(safe_state).decode("utf-8")
+        # serialized = json.dumps((safe_state))
+        print(f"(BACKEND FORCE_CACHE_UPDATE) of {self.player_id}: {state}", flush=True)
+
+        cache.delete("tournament_state")
+        cache.set("tournament_state", state)
+        await self.channel_layer.group_send(
+            "tournament_lobby",
+            {
+                "type": "tournament_update",
+                "data": state,
+            }
+        )
+
     async def broadcast_tournament_state(self):
         if not self.tournament:
             return
@@ -590,6 +661,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         print(f"(BACKEND) Sending update: {state}", flush=True)
 
         serialized = msgspec.json.encode(state).decode("utf-8")
+        cache.delete("tournament_state")
         cache.set("tournament_state", serialized)
         await self.channel_layer.group_send(
             "tournament_lobby",

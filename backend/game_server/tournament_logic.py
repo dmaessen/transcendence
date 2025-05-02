@@ -3,6 +3,7 @@ import random
 import math
 import asyncio
 from channels.layers import get_channel_layer
+import msgspec
 
 class TournamentLogic:
     def __init__(self, mode):
@@ -30,7 +31,22 @@ class TournamentLogic:
 
         self.running = True
         self._create_bracket()
+        await self.cache_update()
         await self._start_next_round()
+
+    async def cache_update(self):
+        channel_layer = get_channel_layer()
+        state = self.get_tournament_state()
+        serialized = msgspec.json.encode(state).decode("utf-8")
+        await channel_layer.group_send(
+            "tournament_lobby",
+            {
+                "type": "force.cache.update",
+                "state": serialized,
+
+            }
+        )
+        await asyncio.sleep(5)
 
     def _create_bracket(self):
         # random.shuffle(self.players)
@@ -73,8 +89,8 @@ class TournamentLogic:
                 print(f"Sent create.game.tournament message for {player1['player']['username']} vs {player2['player']['username']}", flush=True)
                 # self.matches.append({"player1": player1["id"], "player2": player2["id"]})
 
-        # print(f"Round {self.current_round} started with {len(self.matches)} matches.", flush=True)
         print(f"Round {self.current_round} started.", flush=True)
+        # asyncio.create_task(self._round_timeout_handler(self.current_round, timeout_seconds=300))  # 5 min timeout
 
     async def register_match_result(self, game_id, winner_username):
         print(f"Registering match result: Game {game_id}, Winner {winner_username}", flush=True)
@@ -155,7 +171,30 @@ class TournamentLogic:
                 )
             
             print(f"Round {self.current_round} created with {len(self.bracket[self.current_round])} matches.", flush=True)
+            # await channel_layer.group_send(
+            #     "tournament_lobby",
+            #         {
+            #             "type": "force.cache.update",
+            #         }
+            #     )
             await self._start_next_round()
+
+    # async def _round_timeout_handler(self, round_number, timeout_seconds):
+    #     await asyncio.sleep(timeout_seconds)
+    #     if self.current_round == round_number and self.running:
+    #         print(f"⚠️ Round {round_number} timeout reached.", flush=True)
+    #         if self.matches:
+    #             print(f"Unresolved matches: {self.matches}", flush=True)
+    #             self.running = False
+    #             channel_layer = get_channel_layer()
+    #             await channel_layer.group_send(
+    #                 "tournament_lobby",
+    #                 {
+    #                     "type": "tournament.timeout",
+    #                     "round": round_number,
+    #                     "unresolved_matches": self.matches
+    #                 }
+    #             )
 
     def get_tournament_state(self):
         return {
@@ -172,6 +211,28 @@ class TournamentLogic:
             "players_in": len(self.players),
             "remaining_spots": self.num_players - len(self.players),
         }
+
+    def set_tournament_state(self, state: dict):
+        if "mode" in state:
+            self.mode = state["mode"]
+        if "num_players" in state:
+            self.num_players = state["num_players"]
+        if "players" in state:
+            self.players = state["players"]
+        if "bracket" in state:
+            self.bracket = state["bracket"]
+        if "current_round" in state:
+            self.current_round = state["current_round"]
+        if "running" in state:
+            self.running = state["running"]
+        if "tournament_active" in state:
+            self.running = state["tournament_active"]
+        if "final_winner" in state:
+            self.final_winner = state["final_winner"]
+        if "matches" in state:
+            self.matches = state["matches"]
+        if "winners" in state:
+            self.winners = state["winners"]
 
     # def reset_tournament(self, mode):
     #     self.mode = 4

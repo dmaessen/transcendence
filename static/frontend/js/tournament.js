@@ -12,18 +12,21 @@ async function selectTournamentBtn() {
         });
         if (data) {
             console.log("data: ", data);
-            if (data.players_in > 0) {
+            if (data.players_in > 0 && !data.running) {
+                // tournamentMenuBtn.style.display = "none"; // to show the button
                 document.getElementById("tournamentBtn").textContent = "Join tournament";
                 joinTournament(data);
             }
-            else if (data.remaining_spots == 0 && data.players_in != 0){
-                btn = document.getElementById("tournamentBtn");
-                btn.textContent = "Ongoing tournament"
-                btn.disable() = true;
+            else if (data.running){
+                document.getElementById("tournamentBtn").style.display = "block"; // to hide the button
+                // btn = document.getElementById("tournamentBtn");
+                // btn.textContent = "Ongoing tournament";
+                // btn.disable() = true;
                 //ongoing tournament
             }
             else {
-                document.getElementById("tournamentBtn").textContent = "Start new tournament"
+                // tournamentMenuBtn.style.display = "none"; // to show the button
+                document.getElementById("tournamentBtn").textContent = "Start new tournament";
                 //start tournament
             }
         }
