@@ -17,7 +17,8 @@ async function selectTournamentBtn() {
                 document.getElementById("tournamentBtn").textContent = "Join tournament";
                 joinTournament(data);
             }
-            else if (data.running){
+            else if (data.running) {
+                console.log("tournament is running atm");
                 document.getElementById("tournamentBtn").style.display = "block"; // to hide the button
                 // btn = document.getElementById("tournamentBtn");
                 // btn.textContent = "Ongoing tournament";
