@@ -9,18 +9,18 @@ logger = logging.getLogger(__name__)
 def get_all_users():
     return CustomUser.objects.all()
 
-def get_user_matches(user_id):
-    return Match.objects.filter(player_id=user_id)
 def get_user_3_matches(user_id):
-    return Match.objects.filter(Q(player_1_id=user_id) | Q(player_2_id=user_id)).order_by('-id')[:3]
+    return Match.objects.filter(Q(player_1_id=user_id) | Q(player_2_id=user_id)).order_by('-match_start')[:3]
+def get_all_matches(user_id):
+    return Match.objects.filter(Q(player_1_id=user_id) | Q(player_2_id=user_id)).order_by('-match_start')
 
-def get_user_tournaments(user_id):
+def get_all_tournaments(user_id):
     user = CustomUser.objects.get(id=user_id)
-    return list(user.tournaments.values_list('id', flat=True))
+    tournaments = user.tournaments.all().order_by('-start_date')
+    return tournaments
 def get_user_3_tournaments(user_id):
     user = CustomUser.objects.get(id=user_id)
     tournaments = user.tournaments.all().order_by('-start_date')[:3]
-    logging.info(f"!!!!!! services: {tournaments}")
     return tournaments
 
 def get_tournaments():

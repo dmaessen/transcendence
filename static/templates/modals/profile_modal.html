@@ -1,4 +1,4 @@
- <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" data-bs-backdrop="static" data-prev>
+ <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -18,8 +18,8 @@
                 </div>
                 <button id="btnType" class="btn btn-outline-dark w-100 mb-2"></button>
                 <div class="matches">
-                    <div class="divider">Matches</div> 
-                    {% comment %} <a href="#allMatchesModal" id="AllMatchesModal" class="divider link-style" data-user-id="">Matches</a> {% endcomment %}
+                    {% comment %} <div class="divider">Matches</div>  {% endcomment %}
+                    <a href="#allMatchesModal" id="AllMatchesModal" class="divider link-style" data-user-id="" data-bs-toggle="modal" data-bs-target="#allMatchesModal"> Matches</a>
                     <table id="matchesTable" class="table">
                         <tbody>
                             <!-- Filled dynamically -->
@@ -27,7 +27,8 @@
                     </table>
                 </div>
                 <div class="matches">
-                    <div class="divider">Tournaments</div> 
+                    {% comment %} <div class="divider">Tournaments</div> {% endcomment %}
+                    <a href="#allTournamentsModal" id="AllTournamentsModal" class="divider link-style" data-user-id="" data-bs-toggle="modal" data-bs-target="#allTournamentsModal"> Tournaments</a>
                     <table id="tournamentsTable" class="table">
                         <tbody>
                             <!-- Filled dynamically -->

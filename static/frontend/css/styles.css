@@ -169,3 +169,11 @@ p {
     max-width: 400px;
     z-index: 1050; /* Higher than modal */
 }
+
+#allMatchesModal .modal-dialog {
+    max-width: 1200px; /* Adjust this size as needed */
+}
+
+#allTournamentsModal .modal-dialog {
+    max-width: 1200px; /* Adjust this size as needed */
+}

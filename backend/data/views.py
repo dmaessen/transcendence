@@ -86,9 +86,25 @@ def get_user_matches(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_user_tournaments(request):
-    logger.info(f"Request {request}")
+def get_all_user_matches(request):
+    profileID = request.GET.get("userID")
     
+    if profileID == "self" or request.user.id == int(profileID):
+        user = request.user 
+    else:
+        user = CustomUser.objects.filter(id = profileID).first()
+    if not user:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    matches = get_all_matches(user.id)
+    match_data = {
+        "matches": list(MatchSummarySerializer(matches, many=True, context={"user": user}).data),
+    }
+    return JsonResponse(match_data, safe=False)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_user_tournaments(request):
     profileID = request.GET.get("userID")
     
     if profileID == "self" or request.user.id == int(profileID):
@@ -99,6 +115,25 @@ def get_user_tournaments(request):
         return JsonResponse({"error": "User not found"}, status=404)
     
     tournaments = get_user_3_tournaments(user.id)
+    logging.info(f"!!!!!!!!tournaments: {tournaments}")
+    tournaments_data = {
+        "tournaments": TournamentSummarySerializer(tournaments, many=True, context={"user": user}).data,
+    }
+    return JsonResponse(tournaments_data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_all_user_tournaments(request):
+    profileID = request.GET.get("userID")
+    
+    if profileID == "self" or request.user.id == int(profileID):
+        user = request.user
+    else:
+        user = CustomUser.objects.filter(id=profileID).first()
+    if not user:
+        return JsonResponse({"error": "User not found"}, status=404)
+    
+    tournaments = get_all_tournaments(user.id)
     logging.info(f"!!!!!!!!tournaments: {tournaments}")
     tournaments_data = {
         "tournaments": TournamentSummarySerializer(tournaments, many=True, context={"user": user}).data,
