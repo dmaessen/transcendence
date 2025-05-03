@@ -474,9 +474,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (localStorage.getItem("refresh_token")) {
                 await refreshAccessToken();
             }
+            console.log("!!!1!!!!");
             try {
                 const requestBody = { email, password };
                 if (otp_token) requestBody.otp_token = otp_token;
+                console.log("!!!2!!!!");
                 const response = await fetch(`${baseUrl}login/`, {
                     method: "POST",
                     headers: {
@@ -485,7 +487,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                     },
                     body: JSON.stringify(requestBody),
                 });
-                const data = await response.json();
+                const data = await response.json().catch(() => ({})); // 
+                if (response.status === 403 && data.detail?.includes("CSRF")) {
+                    alert("CSRF token validation failed. Please refresh the page or check your login security settings.");
+                    console.error("CSRF error details:", data);
+                    return;
+                }
+
+                console.log("!!!3!!!!");
+                // const data = await response.json();
                 if (response.ok) {
                     localStorage.setItem("access_token", data.access);
                     localStorage.setItem("refresh_token", data.refresh);

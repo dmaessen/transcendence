@@ -120,7 +120,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-	# @csrf_exempt
+	@csrf_exempt
 	def post(self, request):
 		email = request.data.get('email')
 		password = request.data.get('password')
@@ -151,18 +151,30 @@ class LoginView(APIView):
 			otp_secret = device.key
 			totp = pyotp.TOTP(otp_secret)
 
-			print(f"[DEBUG] Device used for verification: name={device.name}, key={otp_secret}")
+			# print(f"[DEBUG] Device used for verification: name={device.name}, key={otp_secret}")
 			if not totp.verify(otp_token, valid_window=1):
 				print(f"totp current: {totp.now()}", file=sys.stderr)
 				print(f"OTP verification failed. Token: {otp_token}, Secret: {otp_secret}", file=sys.stderr)
 				return JsonResponse({'error': 'Invalid 2FA code'}, status=status.HTTP_401_UNAUTHORIZED)
-			
+		print(f"[DEBUG] make access token ")
+		try:
+			user = CustomUser.objects.get(email=email)
+			print(f"[DEBUG] Found user: {user.email}")
+		except CustomUser.DoesNotExist:
+			print(f"[DEBUG] User not found: {email}")
+			return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+		if not user.check_password(password):
+			print(f"[DEBUG] Password check failed for user: {email}")
+			return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 		try:
 			refresh = RefreshToken.for_user(user)
 			access_token = str(refresh.access_token)
+			print(f"[DEBUG] made access token: ", access_token)
 		except Exception as e:
 			return JsonResponse({'error': f'Token generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+		print(f"[DEBUG] going to return access token: ", access_token)
 		return JsonResponse({
 			'refresh': str(refresh),
 			'access': access_token,
@@ -411,7 +423,7 @@ def google_callback(request):
 			"redirect_uri": redirect_uri,
 			"grant_type": "authorization_code",
 		})
-
+		print("[DEBUG] Raw token response:", token_response.text)  # Log the response content
 		token_response.raise_for_status()
 		token_data = token_response.json()
 		id_token = token_data.get("id_token")
