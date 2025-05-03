@@ -63,8 +63,6 @@ async function refreshAccessToken() {
 
 // DOM management function
 document.addEventListener("DOMContentLoaded", async function () {
-    try {
-        // 1. Check access_token, show/hide modal accordingly
         let accessToken = localStorage.getItem("access_token")
         const mainMenu = document.getElementById("mainMenuContainer")
         const signInMenu = document.getElementById("SignInMenu");
@@ -92,125 +90,18 @@ document.addEventListener("DOMContentLoaded", async function () {
         const registerForm = document.getElementById("registerForm");
         const gameMenu = document.getElementById("gameMenuFirst")
 
-        console.log("Backdrop count:", document.querySelectorAll('.modal-backdrop').length);
-
-        console.log("csrf token", getCSRFToken());
-        if (mainMenu) { 
-
-            if (!accessToken) {
-                console.log("No access token found. Showing SignInMenu...");
-                mainMenu.style.display = "block";
-                const blocker = document.getElementById("signInBlocker");
-                if (blocker) blocker.style.display = "block";
-                if (signInMenu) {
-                    const modalInstance = bootstrap.Modal.getOrCreateInstance(signInMenu);
-                    modalInstance.show();
-                    // Add a persistent, non-interactive backdrop behind the modal
-                    const backdrop = document.createElement('div');
-                    backdrop.className = 'modal-backdrop show';
-                    backdrop.style.zIndex = '1040';  // Ensure it's behind modal
-                    backdrop.style.pointerEvents = 'auto'; // Allow normal interaction for Bootstrap modals
-                    document.body.appendChild(backdrop);
-
-                    // Prevent closing SignInMenu when clicking outside it
-                    signInMenu.addEventListener("hide.bs.modal", function (event) {
-                        const token = localStorage.getItem("access_token");
-                        if (!token) {
-                            event.preventDefault();
-                        }
-                    });
-
-                    // Remove close on ESC
-                    document.addEventListener("keydown", function preventEscape(e) {
-                        if (e.key === "Escape") {
-                            e.stopImmediatePropagation();
-                            e.preventDefault();
-                        }
-                    }, true);
-
-                    // Prevent tabbing out of the modal to background elements
-                    document.body.addEventListener("focus", function trapFocus(e) {
-                        if (!signInMenu.contains(e.target)) {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            const focusable = signInMenu.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
-                            if (focusable) focusable.focus();
-                        }
-                    }, true);
-                }
-                // Force-hide gameMenuFirst modal and prevent interaction
-                const gameMenu = document.getElementById("gameMenuFirst");
-                if (gameMenu) {
-                    gameMenu.style.display = "none";
-                    gameMenu.setAttribute('aria-hidden', 'true');
-                }
-            } else {
-                console.log("User already logged in. Hiding SignInMenu and all related containers.");
-                console.log("found access token: ", accessToken);
-                mainMenu.style.display = "none";
-                const blocker = document.getElementById("signInBlocker");
-                if (blocker) blocker.style.display = "none";
-                if (loginContainer) loginContainer.style.display = 'none';
-                if (registerContainer) registerContainer.style.display = 'none';
-                if (qrContainer) qrContainer.style.display = 'none';
-                if (otpContainer) otpContainer.style.display = 'none';
-                
-                if (signInMenu) {
-                    const modalInstance = bootstrap.Modal.getOrCreateInstance(signInMenu);
-                    modalInstance.hide();
-                    document.body.classList.remove('modal-open');
-                    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-                    signInMenu.classList.remove('show', 'fade');
-                    signInMenu.style.display = 'none';
-                    signInMenu.setAttribute('aria-hidden', 'true');
-                    setTimeout(() => {
-                        if (signInMenu) {
-                            signInMenu.style.display = 'none';
-                        }
-                    }, 15);
-
-                    if (gameMenu) {
-                        gameMenu.style.display = "block";
-                        gameMenu.removeAttribute('aria-hidden');
-                    }
-                }
-            }
+        const SignInModal = bootstrap.Modal.getOrCreateInstance(signInMenu);
+        const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenu);
+        if (!accessToken) {
+            console.log("No access token found. Showing SignInMenu...");
+            SignInModal.show();
+            gameMenuModal.hide();
+        } else {
+            console.log("User already logged in. Hiding SignInMenu");
+            SignInModal.hide();
+            gameMenuModal.show();
         }
-    // if (signInMenu) {
-    //     const signInModal = bootstrap.Modal.getOrCreateInstance(signInMenu);
 
-    //     if (!accessToken) {
-    //         console.log("No access token found. Showing SignInMenu...");
-    //         signInModal.show();
-    //     } else if (accessToken) {
-    //         console.log("User already logged in. Hiding SignInMenu and all related containers.");
-            
-    //         const signInMenu = document.getElementById("SignInMenu");
-    //         const loginContainer = document.getElementById("loginContainer");
-    //         const registerContainer = document.getElementById("registerContainer");
-    //         const qrContainer = document.getElementById("qrContainer");
-    //         const otpContainer = document.getElementById("otpContainer");
-        
-    //         // Hide modal properly
-    //         if (signInMenu) {
-    //             const signInModal = bootstrap.Modal.getOrCreateInstance(signInMenu);
-    //             signInModal.hide();
-    //             document.body.classList.remove('modal-open');
-    //             document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-    //             signInMenu.classList.remove('show');
-    //             signInMenu.style.display = 'none';
-    //             signInMenu.setAttribute('aria-hidden', 'true');
-    //         }
-        
-    //         // ALSO hide inner containers manually
-    //         if (loginContainer) loginContainer.style.display = 'none';
-    //         if (registerContainer) registerContainer.style.display = 'none';
-    //         if (qrContainer) qrContainer.style.display = 'none';
-    //         if (otpContainer) otpContainer.style.display = 'none';
-    //     }
-    // }
-
-        // 3. Login/Register switching
         if (showLogin) {
             showLogin.addEventListener("click", function () {
                 mainMenuContainer.style.display = "none";
@@ -253,7 +144,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
         }
 
-        // 4. Sign-in button opens modal
         if (signInButton && signInMenu) {
             signInButton.addEventListener("click", function () {
                 const signInModal = new bootstrap.Modal(signInMenu);
@@ -261,7 +151,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
         }
 
-        // 5. 42 and Google login button setup
         const urlParams = new URLSearchParams(window.location.search);
         const ftCode = urlParams.get("code");
         if (ftCode) {
@@ -295,7 +184,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 alert("An error occurred during 42 login.");
             }
         }
-        // Google redirect tokens
         const urlAccessToken = urlParams.get("access");
         const urlRefreshToken = urlParams.get("refresh");
         if (urlAccessToken && urlRefreshToken) {
@@ -307,7 +195,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 window.location.href = "/";
             }, 30);
         }
-        // Google login button rendering
         const googleClientId = document
             .querySelector('meta[name="google-signin-client_id"]')
             ?.getAttribute("content");
@@ -335,7 +222,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                                         const signInModal = bootstrap.Modal.getInstance(signInMenu);
                                         if (signInModal) signInModal.hide();
                                     }
-                                    // alert("Google login successful!");
 
                                     window.location.href = "/";
                                 } else {
@@ -362,7 +248,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
             });
         }
-        // 42 button rendering
+
         const FtSignInLogDiv = document.getElementById("FtInButtonLogin");
         if (FtSignInLogDiv) {
             FtSignInLogDiv.innerHTML = `
@@ -382,7 +268,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             `;
         }
 
-        // Register form
         if (registerForm) {
             registerForm.addEventListener("submit", async function (e) {
                 // e.preventDefault();
@@ -459,7 +344,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
         }
 
-        // 7. Login form and 2FA flow
         function saveLoginCredentials(email, password) {
             sessionStorage.setItem("loginEmail", email);
             sessionStorage.setItem("loginPassword", password);
@@ -474,11 +358,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (localStorage.getItem("refresh_token")) {
                 await refreshAccessToken();
             }
-            console.log("!!!1!!!!");
             try {
                 const requestBody = { email, password };
                 if (otp_token) requestBody.otp_token = otp_token;
-                console.log("!!!2!!!!");
                 const response = await fetch(`${baseUrl}login/`, {
                     method: "POST",
                     headers: {
@@ -494,7 +376,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                     return;
                 }
 
-                console.log("!!!3!!!!");
                 // const data = await response.json();
                 if (response.ok) {
                     localStorage.setItem("access_token", data.access);
@@ -585,7 +466,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 });
             });
         }
-        // enable 2FA logic
         if (enable2FAButton) {
             enable2FAButton.addEventListener("click", async function () {
                 let accessToken = localStorage.getItem("access_token");
@@ -672,7 +552,4 @@ document.addEventListener("DOMContentLoaded", async function () {
                 alert("2FA disabled");
             });
         }
-    } catch (error) {
-        console.error("Error during DOMContentLoaded:", error);
-    }
 });

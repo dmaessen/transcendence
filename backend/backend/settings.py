@@ -223,15 +223,15 @@ USE_TZ = True
 
 #google api settings
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_SECRET")
 
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
 # 42 api settings
-FT_CLIENT_ID = os.getenv("FT_CLIENT_ID")
-FT_CLIENT_SECRET = os.getenv("FT_CLIENT_SECRET")
-FT_REDIRECT_URI = os.getenv("FT_REDIRECT_URI", "http://localhost:8000/api/authentication/42/callback/")
+FT_CLIENT_ID = os.getenv("42_UID")
+FT_CLIENT_SECRET = os.getenv("42_secret")
+FT_REDIRECT_URI = os.getenv("42_redirect", "http://localhost:8000/api/authentication/42/callback/")
 
 print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 

@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     if (showLogin) {
-        console.log("Login button clicked");
+        // console.log("Login button clicked");
         showLogin.addEventListener("click", function () {
             loginContainer.style.display = "block";
             registerContainer.style.display = "none";

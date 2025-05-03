@@ -351,14 +351,6 @@ def login_42_callback(request):
 	if not code:
 		return JsonResponse({"error": "No code provided"}, status=400)
 
-	# print("Sending to 42 token endpoint:", {
-    # "client_id": settings.FT_CLIENT_ID,
-    # "client_secret": settings.FT_CLIENT_SECRET,
-    # "code": code,
-    # "redirect_uri": settings.FT_REDIRECT_URI,
-	# }, file=sys.stderr)
-
-
 	token_response = requests.post("https://api.intra.42.fr/oauth/token", data={
 		"grant_type": "authorization_code",
 		"client_id": settings.FT_CLIENT_ID,
@@ -366,12 +358,6 @@ def login_42_callback(request):
 		"code": code,
 		"redirect_uri": settings.FT_REDIRECT_URI,
 	})
-
-	
-	# if token_response:
-	# 	return JsonResponse({"data returned from 42 api:": token_response}, status=200)
-	# else:
-	# 	return JsonResponse({"error": "no token response"})
 
 	token_data = token_response.json() 
 	access_token = token_data.get("access_token")

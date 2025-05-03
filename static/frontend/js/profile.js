@@ -295,15 +295,40 @@ if (profileBtn) {
     });
 }
 
+// const profileCloseButton = document.getElementById("profileCloseButton");
+// if(profileCloseButton){
+//     profileCloseButton.addEventListener("click", function() {
+//         console.log("profile close clicked");
+//         const profileModalElement = document.getElementById("profileModal");
+//         const profileModal = bootstrap.Modal.getInstance(profileModalElement);
+//         profileModal.hide();
+//         const gameMenuFirstElement = document.getElementById("gameMenuFirst");
+//         const gameMenuFirst = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
+//         gameMenuFirst.show();
+//     });
+// }
+
 const profileCloseButton = document.getElementById("profileCloseButton");
-if(profileCloseButton){
-    profileCloseButton.addEventListener("click", function() {
+if (profileCloseButton) {
+    profileCloseButton.addEventListener("click", function () {
         console.log("profile close clicked");
         const profileModalElement = document.getElementById("profileModal");
         const profileModal = bootstrap.Modal.getInstance(profileModalElement);
-        profileModal.hide();
+        if (profileModal) profileModal.hide();
+        else console.warn("No profileModal instance found.");
+
         const gameMenuFirstElement = document.getElementById("gameMenuFirst");
-        const gameMenuFirst = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
-        gameMenuFirst.show();
+        if (!gameMenuFirstElement) {
+            console.warn("gameMenuFirst element not found");
+            return;
+        }
+
+        // const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
+        if (gameMenuModal) {
+            console.log("Showing game menu...");
+            gameMenuModal.show();
+        } else {
+            console.warn("Could not get gameMenuFirst Modal instance");
+        }
     });
 }
