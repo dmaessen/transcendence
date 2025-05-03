@@ -13,6 +13,7 @@ class Game:
         self.players = {}
         self.ready_players = set()
         self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
+        self.bounce_count = 0 # to speed up the ball after x amount of bounces
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
@@ -39,7 +40,16 @@ class Game:
         if self.mode == "Two Players (hot seat)" and len(self.players) == 1:
             opponent_id = "opponent"
             self.players[opponent_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": "Opponent"}
-            print(f"Opponent added as opponent: {opponent_id}. With username: {username}", flush=True) 
+            print(f"Opponent added as opponent: {opponent_id}. With username: {username}", flush=True)
+    
+    def add_player_tournament(self, player_id, username, as_player1=True):
+        if player_id not in self.players:
+            if as_player1: # first player on the left
+                self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "player", "username": username}
+                print(f"Player {player_id} added as Player 1. With username: {username}", flush=True)
+            else: # second player on the right
+                self.players[player_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": username}
+                print(f"Player {player_id} added as Player 2 (opponent). With username: {username}", flush=True)
 
     def remove_player(self, player_id):
         if player_id in self.players:
@@ -75,6 +85,12 @@ class Game:
                     self.ball["dir_x"] = abs(self.ball["dir_x"])
                 else:  # Right paddle
                     self.ball["dir_x"] = -abs(self.ball["dir_x"])
+
+                # increment bounce if part of tournament count and check for speed increase
+                if self.partOfTournament:
+                    self.bounce_count += 1
+                    if self.bounce_count % 7 == 0:
+                        self._increase_ball_speed()
 
         # Ball out of bounds
         if self.ball["x"] < 0:
@@ -167,6 +183,13 @@ class Game:
                 return True
             return False
 
+    def _increase_ball_speed(self):
+        max_speed = 18
+        speedup = 1.2
+
+        self.ball["dir_x"] = max(-max_speed, min(max_speed, self.ball["dir_x"] * speedup))
+        self.ball["dir_y"] = max(-max_speed, min(max_speed, self.ball["dir_y"] * speedup))
+
     def _reset_ball(self, direction):
         self.ball["x"] = self.width // 2
         self.ball["y"] = random.randint(200, self.height // 2)
@@ -200,14 +223,11 @@ class Game:
     def start_game(self):
         self.running = True
 
-    def stop_game(self, winner): # do we miss other things here??
+    def stop_game(self, winner):
         self.running = False
-        # self.players = {}  # Clear players
-        # self.score = {"player": 0, "opponent": 0}
         self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
         print(f"Game ended. Winner: {winner}", flush=True)
         return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner}
-        # maybe just having a normal return here??
         
     def clear_game(self):
         self.players = {}  # Clear players

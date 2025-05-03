@@ -12,7 +12,10 @@ urlpatterns = [
     path("api/friendsRequests/", friends_requests, name="friends_requests"),
     path("api/acceptFriendship/", accept_friendship, name="accept_friendship"),
     path("api/cancelFriendship/", cancel_friendship, name="cancel_friendship"),
-    path("api/getFriends/", get_user_friends, name="get_user_friends")
+    path("api/getFriends/", get_user_friends, name="get_user_friends"),
+    path("api/allUserMatches/", get_all_user_matches, name="get_all_user_matches"),
+    path("api/userAllTournaments/", get_all_user_tournaments, name="get_all_user_tournaments")
+    
 ]
 
 

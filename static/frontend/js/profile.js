@@ -187,7 +187,8 @@ async function loadUserData(userID) {
         document.getElementById("matchesPlayed").textContent = data.matches_played;
         document.getElementById("wins").textContent = data.matches_won;
         document.getElementById("losses").textContent = data.matches_lost;
-        // document.getElementById("AllMatchesModal").setAttribute("data-user-id", data.user_id);
+        document.getElementById("AllMatchesModal").setAttribute("data-user-id", data.user_id);
+        document.getElementById("AllTournamentsModal").setAttribute("data-user-id", data.user_id);
         friendshipID = data.friendshipID;
 
         let btnType = document.getElementById("btnType");
@@ -267,7 +268,8 @@ async function loadTournametsData(userID) {
         }
     } catch (error) {
         console.error("Error fetching tournament data:", error);
-    }}
+    }
+}
 
 async function loadProfile(userID, openModal = true) {
     try {

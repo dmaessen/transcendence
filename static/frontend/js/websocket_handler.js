@@ -207,17 +207,6 @@ function handleServerMessage(message) {
             console.log(`Game in reset with ID: ${gameState.gameId}`);
             break;
         case "update":
-            // let state_game = message.data;
-
-            // if (typeof state_game === "string") {
-            //     try {
-            //         state_game = JSON.parse(state_game);
-            //     } catch (e) {
-            //         console.error("Failed to parse game state:", e, state_game);
-            //         return;
-            //     }
-            // }
-            // updateGameState(state_game);
             updateGameState(message.data);
             break;
         case "trigger_auto_start":
@@ -241,26 +230,23 @@ function handleServerMessage(message) {
             console.log("(FRONTEND) Match found:", message.game_id);
             break;
         case 'match_start':
-            // gameState.gameId = message.game_id;
-            // console.log(`Game initialized with ID: ${gameState.gameId}`);
             document.getElementById("tournamentBracket").style.display = "none";
             document.getElementById("tournamentBracket4").style.display = "none";
             instructions3.style.display = "block";
-            gameState.running = false; // right??
+            gameState.running = false;
             startGameMenu();
             break;
         case "tournament_update":
             console.log(`MESSAGE COMING IN`); // to rm
             break;
         case "update_tournament":
-            console.log(`Players in tournament: ${message.players_in}`); // to rm
-            console.log(`Remaining spots: ${message.remaining_spots}`); // to rm
+            console.log(`Players in tournament: ${message.players_in}`);
+            console.log(`Remaining spots: ${message.remaining_spots}`);
             break;
         case "end_tournament":
             returnToStartMenuAfterTournament();
             break;
         case "add_winners":
-            console.log(`MADE IT HERE TO ADD_WINNERS`); // to rm
             addWinnersTournament(message);
             break;
         case "join_tournament":

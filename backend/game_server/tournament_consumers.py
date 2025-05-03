@@ -268,6 +268,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         self.tournament_db_id = tournament_obj.id
         print(f"Created tournament with ID {tournament_obj.id} in database", flush=True)
 
+        await self.send_json({
+            "type": "join_tournament",
+        })
+
         await self.broadcast_tournament_state()
 
     async def handle_join_tournament(self, data):
@@ -292,7 +296,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 tID = self.tournament_db_id
                 user = await sync_to_async(CustomUser.objects.get)(id=pID)
                 atournament = await sync_to_async(Tournament.objects.get)(id=tID)
-                sync_to_async(user.tournaments.add)(atournament)
+                await sync_to_async(user.tournaments.add)(atournament)
                 print(f"Player {self.player_id} joined the tournament.")
             else:
                 print(f"Player {self.player_id} ALREADY in the tournament.")
@@ -314,6 +318,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if len(self.tournament.players) == self.tournament.num_players:
             print(f"Tournament starting from handle_join_tournament")
             await self.tournament.start_tournament()
+            await self.send_json({
+                "type": "ongoing_tournament",
+            })
             await self.broadcast_tournament_state()
 
             
@@ -485,7 +492,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     player_1=user1,
                     player_2=user2,
                     tournament=tournament_db,
-                    match_start=datetime.now().replace(hour=14, minute=0, second=0, microsecond=0),
+                    match_start=datetime.now().replace(hour=14, minute=0, second=0, microsecond=0), # fix this timing??
                     match_time=timedelta(minutes=2),
                 )
 
@@ -497,8 +504,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
             game = Game("Two Players (remote)")
             game.reset_game("Two Players (remote)") # does this do the trick??
-            game.add_player(user1.id, user1.username)
-            game.add_player(user2.id, user2.username)
+            game.add_player_tournament(user1.id, user1.username, as_player1=True)
+            game.add_player_tournament(user2.id, user2.username, as_player1=False)
             game.status = "started"
             game.is_partOfTournament()
             # self.tournament.add_match(user1, user2, match.id)

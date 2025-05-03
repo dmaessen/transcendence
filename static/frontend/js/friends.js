@@ -55,3 +55,16 @@ const friendsBtn = document.getElementById("friendsBtn");
 if(friendsBtn) {
     friendsBtn.addEventListener("click", loadFriends)
 }
+
+const closeFriendsBtn = document.getElementById("closeFriendsBtn");
+if(closeFriendsBtn){
+    closeFriendsBtn.addEventListener("click", function() {
+        console.log("profile close clicked");
+        const friendsModalElement = document.getElementById("friendsModal");
+        const friendsModal = bootstrap.Modal.getInstance(friendsModalElement);
+        friendsModal.hide();
+        const gameMenuFirstElement = document.getElementById("gameMenuFirst");
+        const gameMenuFirst = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
+        gameMenuFirst.show();
+    });
+}

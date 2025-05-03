@@ -354,4 +354,4 @@ class ModelFromFileTest(TestCase):
 
         #User1
         expected_matches = [self.mat]
-        self.assertEqual(get_user_matches(user1.id))
+        self.assertEqual(get_all_matches(user1.id))
