@@ -35,6 +35,9 @@ function populateAllMatches(data) {
             winnerLink.style.color = "gray"; // Make it look like a link
 
             winnerLink.addEventListener("click", function(){
+                const allMatchesModalElement = document.getElementById("allMatchesModal");
+                const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
+                allMatchesModal.hide();
                 loadProfile(winnerLink.dataset.userID);
             });
             winnerCell.appendChild(winnerLink);
@@ -50,6 +53,9 @@ function populateAllMatches(data) {
         opponentLink.style.cursor = "pointer"; // Make it look clickable
         opponentLink.style.color = "gray"; // Make it look like a link
         opponentLink.addEventListener("click", function(){
+            const allMatchesModalElement = document.getElementById("allMatchesModal");
+            const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
+            allMatchesModal.hide();
             loadProfile(opponentLink.dataset.userID);
         });
         opponentCell.appendChild(opponentLink);
