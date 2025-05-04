@@ -42,12 +42,12 @@ class Game:
             self.players[opponent_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": "Opponent"}
             print(f"Opponent added as opponent: {opponent_id}. With username: {username}", flush=True)
     
-    def add_player_tournament(self, player_id, username, as_player1=True):
+    def add_player_tournament(self, player_id, username, as_player1):
         if player_id not in self.players:
-            if as_player1: # first player on the left
+            if as_player1 is True: # first player on the left
                 self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "player", "username": username}
                 print(f"Player {player_id} added as Player 1. With username: {username}", flush=True)
-            else: # second player on the right
+            elif as_player1 is False: # second player on the right
                 self.players[player_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": username}
                 print(f"Player {player_id} added as Player 2 (opponent). With username: {username}", flush=True)
 
