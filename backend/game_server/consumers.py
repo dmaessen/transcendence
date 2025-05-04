@@ -7,21 +7,13 @@ from matchmaking.utils import create_match
 import uuid
 import msgspec
 from autobahn.websocket.protocol import Disconnected
-
 from rest_framework_simplejwt.tokens import AccessToken
 from urllib.parse import parse_qs
 from datetime import timedelta, datetime
-
-#The scope is a set of details about a single incoming connection 
-#scope containing the user's username, chosen name, and user ID.
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
-# from channels.db import database_sync_to_async
-#from data.services import get_all_matches_count, get_user_by_id
-
 from django.core.exceptions import ObjectDoesNotExist
-
 from game_server.player import Player
 from data.models import CustomUser, Match
 import logging
@@ -29,9 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 games = {}  # games[game.id] = game ----game is Game()
-#player_queue = {} # self.player_queue[user.id] = f"{game.id}"
-player_queue = [] #player_id s int
-# ready_players = set() #stores ids for 1v1 matches
+player_queue = [] # player_id s int
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -73,32 +63,11 @@ class GameConsumer(AsyncWebsocketConsumer):
                 logger.exception("Exception during WebSocket connection:")
                 await self.close()
                 return
-        # else:
-        #     # Use sync_to_async for session creation
-        #     session = await sync_to_async(SessionStore)()
-        #     await sync_to_async(session.create)()
-            
-        #     CustomUser = get_user_model()
-        #     unique_username = f"Guest_{session.session_key[:12]}"  # Generate a unique username
-        #     guest_user = await sync_to_async(CustomUser.objects.create)(
-        #         username=unique_username,  # Set the unique username
-        #         name=f"Guest_{session.session_key[:12]}",
-        #         email=f"{session.session_key[:10]}",
-        #         #is_active=False
-        #     )
-        #     print(f"guest user {guest_user.name}")
-            
-        #     self.player_id = guest_user.id
-        #     self.session_key = session.session_key
-        #     self.username = guest_user.username
 
         print(f"player_id == {self.player_id}", flush=True)
-        #player = Player(self.player_id, self.session_key, 'online')
         print("Before append:", player_queue, flush=True)
         player_queue.append(self.player_id)
         print("After append:", player_queue, flush=True)
-
-        #self.match_data = "waiting"
 
         self.room_name = "game_lobby"
         await self.channel_layer.group_add(self.room_name, self.channel_name)
@@ -224,7 +193,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             print(f"Game mode set to: {mode}, with game_id {self.game_id}", flush=True)
             game = games[self.game_id]
 
-            # what about play with friends for the below
             if len(game.players) == 2 and mode != "One Player" and mode != "Two players (hot seat)": #start game if two players connected  and mode == "Two Players (remote)"
                     #game.start_game() # this makes them start without having to press on a key
                     #await self.send_json({"type": "started", "game_id": self.game_id})
@@ -336,7 +304,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         print(f"Player {self.player_id} entered create_game()", flush=True)
         user = await get_user_by_id(player_id)
         #game = await sync_to_async(Match.objects.create)(player_1=user) #single player in game
-        date_match = datetime.now().replace(hour=14, minute=0, second=0, microsecond=0)
+        # date_match = datetime.now().replace(hour=14, minute=0, second=0, microsecond=0)
+        date_match = datetime.now()
 
         match = await sync_to_async(Match.objects.create)(
             player_1=user,
