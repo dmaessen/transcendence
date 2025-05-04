@@ -1,3 +1,4 @@
+const baseUrl = "http://localhost:8000/api/authentication/";
 // Helper functions
 function loadGoogleScript(callback) {
     const script = document.createElement('script');
@@ -8,7 +9,71 @@ function loadGoogleScript(callback) {
     document.head.appendChild(script);
 }
 
-const baseUrl = "http://localhost:8000/api/authentication/";
+async function checkLoginStatus() {
+    await refreshAccessToken();
+    
+    try {
+        const response = await fetch(`${baseUrl}data/`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log("User is authenticated:", data);
+            return true;
+        } else if (response.status === 401) {
+            console.warn("User is not authenticated (401)");
+            return false;
+        } else {
+            console.warn("Unexpected response while checking login:", response.status);
+            return false;
+        }
+    } catch (err) {
+        console.error("Error checking login status:", err);
+        return false;
+    }
+}
+
+async function fetchUserData() {
+    try {
+        const response = await fetch(`${baseUrl}data/`, {
+            method: "GET",
+            credentials: "include", // This is crucial to include cookies!
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (response.status === 401) {
+            // refresh if token expired
+            await fetch("/api/authentication/refresh/", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+            });
+            return fetchUserData();
+        }
+
+        const data = await response.json();
+        if (data){
+            console.log("Data:", data);
+            return data 
+        } else {
+            return "invalid login"
+        }
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    }
+}
+
 
 // function getCSRFToken() {
 //     const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']");
@@ -31,15 +96,10 @@ function scheduleTokenRefresh() {
 }
 
 async function refreshAccessToken() {
-    const refreshToken = localStorage.getItem("refresh_token");
-    if (!refreshToken) {
-        console.warn("No refresh token found, please login.");
-        return null;
-    }
-
     try {
         const response = await fetch(`${baseUrl}refresh/`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ refresh: refreshToken }),
         });
@@ -47,14 +107,11 @@ async function refreshAccessToken() {
 
         if (!response.ok) {
             console.error("Refresh token invalid:", data);
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
             alert("Session expired. Please log in again.");
             return null;
         }
-        localStorage.setItem("access_token", data.access);
         console.log("Access token refreshed.");
-        return data.access;
+        return true;
     } catch (error) {
         console.error("Error refreshing token", error);
         return null;
@@ -63,8 +120,8 @@ async function refreshAccessToken() {
 
 // DOM management function
 document.addEventListener("DOMContentLoaded", async function () {
-        let accessToken = localStorage.getItem("access_token")
-        const mainMenu = document.getElementById("mainMenuContainer")
+        let user_logged = await checkLoginStatus();
+        const mainMenu = document.getElementById("mainMenuContainer");
         const signInMenu = document.getElementById("SignInMenu");
         const signInButton = document.getElementById("signIn");
         const loginContainer = document.getElementById("loginContainer");
@@ -92,11 +149,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const SignInModal = bootstrap.Modal.getOrCreateInstance(signInMenu);
         const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenu);
-        if (!accessToken) {
+        if (!user_logged) {
             console.log("No access token found. Showing SignInMenu...");
             SignInModal.show();
             gameMenuModal.hide();
         } else {
+            console.log("user data: ", fetchUserData());
             console.log("User already logged in. Hiding SignInMenu");
             SignInModal.hide();
             gameMenuModal.show();
@@ -165,9 +223,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    localStorage.setItem("access_token", data.access);
-                    localStorage.setItem("refresh_token", data.refresh);
-                    scheduleTokenRefresh();
+                    // localStorage.setItem("access_token", data.access);
+                    // localStorage.setItem("refresh_token", data.refresh);
+                    // scheduleTokenRefresh();
                     if (signInMenu) {
                         const signInModal = bootstrap.Modal.getInstance(signInMenu);
                         if (signInModal) signInModal.hide();
@@ -187,10 +245,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         const urlAccessToken = urlParams.get("access");
         const urlRefreshToken = urlParams.get("refresh");
         if (urlAccessToken && urlRefreshToken) {
-            localStorage.setItem("access_token", urlAccessToken);
-            localStorage.setItem("refresh_token", urlRefreshToken);
+            // localStorage.setItem("access_token", urlAccessToken);
+            // localStorage.setItem("refresh_token", urlRefreshToken);
             alert("Google login successful!");
-            window.history.replaceState({}, document.title, "/game_server");
+            window.history.replaceState({}, document.title, "/");
             setTimeout(() => {
                 window.location.href = "/";
             }, 30);
@@ -215,14 +273,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 });
                                 const data = await result.json();
                                 if (result.ok) {
-                                    localStorage.setItem("access_token", data.access);
-                                    localStorage.setItem("refresh_token", data.refresh);
+                                    // localStorage.setItem("access_token", data.access);
+                                    // localStorage.setItem("refresh_token", data.refresh);
                                     scheduleTokenRefresh();
                                     if (signInMenu) {
                                         const signInModal = bootstrap.Modal.getInstance(signInMenu);
                                         if (signInModal) signInModal.hide();
                                     }
-
                                     window.location.href = "/";
                                 } else {
                                     alert("Google login failed: " + (data.error || JSON.stringify(data)));
@@ -286,6 +343,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         body: JSON.stringify({ username, name, email, password }),
                     });
                     const registrationDataResponse = await registerData.json();
+                    alert("1");
                     if (!registerData.ok) {
                         if (registerData.status == 400) {
                             alert("registration failed, user may already exist")
@@ -295,19 +353,19 @@ document.addEventListener("DOMContentLoaded", async function () {
                         return;
                     }
                     alert("Registration successful! You will now be logged in automatically");
-                    const accessToken = registrationDataResponse.access;
-                    const refreshToken = registrationDataResponse.refresh;
-                    if (!accessToken || !refreshToken) {
-                        alert("Registration successful, but failed to retrieve tokens.");
-                        return;
-                    }
-                    localStorage.setItem("access_token", accessToken);
-                    localStorage.setItem("refresh_token", refreshToken);
-                    if (!localStorage.getItem("access_token") || !localStorage.getItem("refresh_token")) {
-                        alert("Login failed somehow");
-                        return;
-                    }
-                    scheduleTokenRefresh()
+                    // const accessToken = registrationDataResponse.access;
+                    // const refreshToken = registrationDataResponse.refresh;
+                    // if (!accessToken || !refreshToken) {
+                    //     alert("Registration successful, but failed to retrieve tokens.");
+                    //     return;
+                    // }
+                    // localStorage.setItem("access_token", accessToken);
+                    // localStorage.setItem("refresh_token", refreshToken);
+                    // if (!localStorage.getItem("access_token") || !localStorage.getItem("refresh_token")) {
+                    //     alert("Login failed somehow");
+                    //     return;
+                    // }
+                    // scheduleTokenRefresh()
                     if (enable2FA) {
                         let refreshedToken = await refreshAccessToken();
                         const tokenToUse = refreshedToken || accessToken;
@@ -333,6 +391,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         qrCodeImage.style.display = "block";
                         otpKey.innerText = twoFAData.otp_secret;
                     }
+                    alert("2");
                     setTimeout(() => {
                         window.location.href = "/";
                     }, 30);
@@ -355,9 +414,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         }
         async function loginRequest(email, password, otp_token = null) {
-            if (localStorage.getItem("refresh_token")) {
-                await refreshAccessToken();
-            }
+            // if (localStorage.getItem("refresh_token")) {
+            //     await refreshAccessToken();
+            // }
             try {
                 const requestBody = { email, password };
                 if (otp_token) requestBody.otp_token = otp_token;
@@ -378,8 +437,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 // const data = await response.json();
                 if (response.ok) {
-                    localStorage.setItem("access_token", data.access);
-                    localStorage.setItem("refresh_token", data.refresh);
+                    // localStorage.setItem("access_token", data.access);
+                    // localStorage.setItem("refresh_token", data.refresh);
+                    alert("logged in succesfully")
                     setTimeout(() => {
                         window.location.href = "/";
                     }, 30);
@@ -440,30 +500,42 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (!confirm("Are you sure you want to delete your account? This is a permanent and definitive!")) {
                     return;
                 }
-                let token = localStorage.getItem("access_token");
-                if (!token) {
-                    token = await refreshAccessToken();
-                    if (!token) {
-                        alert("you are currently not logged in. please log in first");
-                        return;
-                    }
-                }
-                fetch(`${baseUrl}delete/`, {
-                    method: "DELETE",
-                    headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" }
-                })
-                .then(resp => {
-                    if (resp.status === 204) {
-                        alert("Your account is now removed permanently");
-                        localStorage.removeItem("access_token");
-                        localStorage.removeItem("refresh_token");
-                        window.location.href = "/game_server/";
+                // let token = localStorage.getItem("access_token");
+                // if (!token) {
+                //     token = await refreshAccessToken();
+                //     if (!token) {
+                //         alert("you are currently not logged in. please log in first");
+                //         return;
+                //     }
+                // }
+                try { 
+                    fetch(`${baseUrl}delete/`, {
+                        method: "DELETE",
+                        credentials: "include",
+                    });
+                // .then(resp => {
+                //     if (resp.status === 204) {
+                //         alert("Your account is now removed permanently");
+                //         localStorage.removeItem("access_token");
+                //         localStorage.removeItem("refresh_token");
+                //         window.location.href = "/game_server/";
+                //     } else {
+                //         return resp.json().then(data => {
+                //             alert("Error: " + (data.detail || "Account could not be deleted."));
+                //         });
+                //     }
+                // });
+                    if (response.status === 204){
+                        alert("your account has now been permenantly removed")
+                        window.location.href = "/";
                     } else {
-                        return resp.json().then(data => {
-                            alert("Error: " + (data.detail || "Account could not be deleted."));
-                        });
+                        const data = await response.json();
+                        alert("Error: " + (data.detail || "Account could not be deleted."));
                     }
-                });
+                } catch (e) {
+                    console.error("error deleting account: ". e);
+                    alert("An error occured");
+                }
             });
         }
         if (enable2FAButton) {

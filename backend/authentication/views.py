@@ -9,7 +9,7 @@ from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 # from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from .serializers import UserSerializer
 from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
@@ -17,6 +17,7 @@ from rest_framework.decorators import api_view, permission_classes
 # from django_otp.plugins.otp_totp.models import TOTPDevice
 from authentication.models import CustomTOTPDevice
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.exceptions import InvalidToken
 # from google.oauth2 import id_token as google_id_token
 # from google.auth.transport import requests as google_requests
@@ -36,7 +37,6 @@ import pyotp
 import sys
 from django.core.cache import cache
 from django.conf import settings
-
 
 # @otp_required
 def login_2fa_required(request):
@@ -60,11 +60,11 @@ def register_2fa(request):
 		else:
 			otp_secret = device.key
 		
-		print("[DEBUG] All TOTP devices for user(in registration):")
+		# print("[DEBUG] All TOTP devices for user(in registration):")
 		for d in CustomTOTPDevice.objects.filter(customUser=user):
 			print(f"  - name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
-		print(f"[DEBUG] Generated secret: {otp_secret}")
-		print(f"[DEBUG] Device key saved: {device.key}")
+		# print(f"[DEBUG] Generated secret: {otp_secret}")
+		# print(f"[DEBUG] Device key saved: {device.key}")
 		# print(f"Stored OTP Secret: {otp_secret}") 
 
 		if not isinstance(otp_secret, str) or len(otp_secret) < 16:
@@ -83,11 +83,11 @@ def register_2fa(request):
 
 		return JsonResponse({"qr_code": f"data:image/png;base64,{qr_data}", "otp_secret": otp_secret})
 	except Exception as e:
-		print(f"Error in register_2fa: {str(e)}")  # Debugging output
+		# print(f"Error in register_2fa: {str(e)}")  # Debugging output
 		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
 
 class RegisterView(APIView):
-	# @csrf_exempt
+	@csrf_exempt
 	def post(self, request, *args, **kwargs):
 		serializer = UserSerializer(data=request.data)
 		if serializer.is_valid():
@@ -99,14 +99,29 @@ class RegisterView(APIView):
 			
 			#return token
 			refresh = RefreshToken.for_user(user)
-			return Response(
-				{
-				'refresh': str(refresh),
-				'access': str(refresh.access_token),
-				'message': 'user created successfully!'
-				},
-				status=status.HTTP_201_CREATED,
+			access_token = refresh.access_token
+			print(f"[DEBUG] going to return access token: ", access_token)
+			response = JsonResponse({
+				'message': 'Login successful'
+			})
+			response.set_cookie(
+				key="access_token",
+				value=str(access_token),
+				httponly=True,
+				samesite='Lax',
+				secure=False,  # [FLIP]set to True in production
+				max_age=300
 			)
+			response.set_cookie(
+				key="refresh_token",
+				value=str(refresh),
+				httponly=True,
+				samesite='Lax',
+				secure=False, # [FLIP]set to True in production
+				max_age=86400
+			)
+			print("register response: ", response)
+			return response
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # class UserTOTPDevice(TOTPDevice):
@@ -153,10 +168,9 @@ class LoginView(APIView):
 
 			# print(f"[DEBUG] Device used for verification: name={device.name}, key={otp_secret}")
 			if not totp.verify(otp_token, valid_window=1):
-				print(f"totp current: {totp.now()}", file=sys.stderr)
-				print(f"OTP verification failed. Token: {otp_token}, Secret: {otp_secret}", file=sys.stderr)
+				# print(f"totp current: {totp.now()}", file=sys.stderr)
+				# print(f"OTP verification failed. Token: {otp_token}, Secret: {otp_secret}", file=sys.stderr)
 				return JsonResponse({'error': 'Invalid 2FA code'}, status=status.HTTP_401_UNAUTHORIZED)
-		print(f"[DEBUG] make access token ")
 		try:
 			user = CustomUser.objects.get(email=email)
 			print(f"[DEBUG] Found user: {user.email}")
@@ -175,11 +189,29 @@ class LoginView(APIView):
 			return JsonResponse({'error': f'Token generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 		print(f"[DEBUG] going to return access token: ", access_token)
-		return JsonResponse({
-			'refresh': str(refresh),
-			'access': access_token,
+		response = JsonResponse({
+			# 'refresh': str(refresh),
+			# 'access': access_token,
 			'message': 'Login successful'
 		})
+		response.set_cookie(
+			key="access_token",
+			value=str(access_token),
+			httponly=True,
+			samesite='Lax',
+			secure=False,  # [FLIP]set to True in production
+			max_age=300
+		)
+		response.set_cookie(
+			key="refresh_token",
+			value=str(refresh),
+			httponly=True,
+			samesite='Lax',
+			secure=False, # [FLIP]set to True in production
+			max_age=86400
+		)
+		return response
+
 
 User = get_user_model()
 
@@ -203,9 +235,9 @@ class DeleteAccountView(APIView):
 
 				# Optionally, delete the user account
 				user.delete()
-				print(f"[DeleteAccountView] Before deletion: {initial_count} 2FA device(s) found for user {user.email}")
-				print(f"[DeleteAccountView] Deleted {deleted_count} 2FA device(s) for user {user.email}")
-				print(f"[DeleteAccountView] After deletion: {final_count} 2FA device(s) remaining for user {user.email}")
+				# print(f"[DeleteAccountView] Before deletion: {initial_count} 2FA device(s) found for user {user.email}")
+				# print(f"[DeleteAccountView] Deleted {deleted_count} 2FA device(s) for user {user.email}")
+				# print(f"[DeleteAccountView] After deletion: {final_count} 2FA device(s) remaining for user {user.email}")
 
 			return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 		except Exception as e:
@@ -252,25 +284,47 @@ def disable_2fa(request):
 
 	return Response({"message": "2FA has been disabled successfully."}, status=200)
 
-@api_view(["POST"])
-@permission_classes([AllowAny]) 
-def refresh_token(request):
-    re = request.data.get("refresh_token")
+# @api_view(["POST"])
+# @permission_classes([AllowAny]) 
+# def refresh_token(request):
+#     re = request.data.get("refresh_token")
 
-    if not re:
-        return Response({"error": "Refresh token is required"}, status=400)
+#     if not re:
+#         return Response({"error": "Refresh token is required"}, status=400)
 
-    try:
-        refresh = RefreshToken(re)
-        ac_token = str(refresh.access_token)
-        re_token = str(refresh) 
+#     try:
+#         refresh = RefreshToken(re)
+#         ac_token = str(refresh.access_token)
+#         re_token = str(refresh) 
 
-        return Response({
-            "access_token": ac_token,
-            "refresh_token": re_token
-        })
-    except InvalidToken:
-        return Response({"error": "Invalid refresh token"}, status=401)
+#         return Response({
+#             "access_token": ac_token,
+#             "refresh_token": re_token
+#         })
+#     except InvalidToken:
+#         return Response({"error": "Invalid refresh token"}, status=401)
+class RefreshTokenView(APIView):
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            raise AuthenticationFailed("No refresh token in cookies")
+
+        try:
+            token = RefreshToken(refresh_token)
+            access_token = str(token.access_token)
+        except Exception as e:
+            raise AuthenticationFailed("Invalid refresh token")
+
+        response = JsonResponse({"message": "Token refreshed"})
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            samesite="Lax",
+            secure=False,
+            max_age=300
+        )
+        return response
 
 def home(request):
 	return render(request, 'base.html')
@@ -312,11 +366,35 @@ def google_login(request):
 			user.save()
 
 		refresh = RefreshToken.for_user(user)
-		return Response({
-			"refresh": str(refresh),
-			"access": str(refresh.access_token),
-			"message": "Google login successful"
+		access_token = str(refresh.access_token)
+		print(f"[DEBUG] going to return access token: ", access_token)
+		response = JsonResponse({
+			# 'refresh': str(refresh),
+			# 'access': access_token,
+			'message': 'Login successful'
 		})
+		response.set_cookie(
+			key="access_token",
+			value=str(access_token),
+			httponly=True,
+			samesite='Lax',
+			secure=False,  # [FLIP]set to True in production
+			max_age=300
+		)
+		response.set_cookie(
+			key="refresh_token",
+			value=str(refresh),
+			httponly=True,
+			samesite='Lax',
+			secure=False, # [FLIP]set to True in production
+			max_age=86400
+		)
+		return response
+		# return Response({
+		# 	"refresh": str(refresh),
+		# 	"access": str(refresh.access_token),
+		# 	"message": "Google login successful"
+		# })
 	except ValueError as e:
 		return Response({"error": "Invalid ID token", "details": str(e)}, status=400)
 
@@ -382,13 +460,30 @@ def login_42_callback(request):
 		user.set_unusable_password()
 		user.save()
 
-	# Issue your JWT tokens (or login session)
 	refresh = RefreshToken.for_user(user)
-	return JsonResponse({
-		"access": str(refresh.access_token),
-		"refresh": str(refresh),
-		"message": "42 login succesful"
+	print(f"[DEBUG] going to return access token: ", access_token)
+	response = JsonResponse({
+		# 'refresh': str(refresh),
+		# 'access': access_token,
+		'message': 'Login successful'
 	})
+	response.set_cookie(
+		key="access_token",
+		value=str(access_token),
+		httponly=True,
+		samesite='Lax',
+		secure=False,  # [FLIP]set to True in production
+		max_age=300
+	)
+	response.set_cookie(
+		key="refresh_token",
+		value=str(refresh),
+		httponly=True,
+		samesite='Lax',
+		secure=False, # [FLIP]set to True in production
+		max_age=86400
+	)
+	return response
 
 def google_callback(request):
 	code = request.GET.get('code')
@@ -409,7 +504,7 @@ def google_callback(request):
 			"redirect_uri": redirect_uri,
 			"grant_type": "authorization_code",
 		})
-		print("[DEBUG] Raw token response:", token_response.text)  # Log the response content
+		# print("[DEBUG] Raw token response:", token_response.text)  # Log the response content
 		token_response.raise_for_status()
 		token_data = token_response.json()
 		id_token = token_data.get("id_token")
@@ -435,12 +530,27 @@ def google_callback(request):
 
 		refresh = RefreshToken.for_user(user)
 
-		params = urlencode({
-			"refresh": str(refresh),
-			"access": str(refresh.access_token),
-			"message": "Google login successful"
+		print(f"[DEBUG] going to return access token: ", access_token)
+		response = JsonResponse({
+			'message': 'Login successful'
 		})
-		return redirect(f"http://localhost:8000?{params}")
+		response.set_cookie(
+			key="access_token",
+			value=str(access_token),
+			httponly=True,
+			samesite='Lax',
+			secure=False,  # [FLIP]set to True in production
+			max_age=300
+		)
+		response.set_cookie(
+			key="refresh_token",
+			value=str(refresh),
+			httponly=True,
+			samesite='Lax',
+			secure=False, # [FLIP]set to True in production
+			max_age=86400
+		)
+		return redirect(f"http://localhost:8000?{response}")
 
 	except Exception as e:
 		return JsonResponse({"error": "Failed to authenticate with Google", "details": str(e)}, status=500)
@@ -448,3 +558,13 @@ def google_callback(request):
 
 def index(request):
     return render(request, 'index.html', {"user_is_authenticated": request.user.is_authenticated})
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def protected_user_data(request):
+    user = request.user
+    return Response({
+        "username": user.username,
+        "email": user.email,
+        "id": user.id,
+    })

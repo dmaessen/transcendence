@@ -111,6 +111,8 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 CORS_ALLOW_CREDENTIALS = True
 # CORS_ALLOW_ALL_ORIGINS = True
 
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
@@ -145,16 +147,10 @@ STATIC_URL = '/static/'
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
 
-# MEDIA_URL = '/media/'
-
-# STATIC_ROOT = os.path.join(BASE_DIR, 'media')
-
-
 # # No need to set STATICFILES_DIRS if frontend is handling static files
 STATICFILES_DIRS = [
    BASE_DIR / 'static',  # Ensure Django knows where to find them
 ]
-
 
 TEMPLATES = [
     {
@@ -311,6 +307,12 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     "SIGNING_KEY": "complexsigningkey", # generate a key and replace me
     "ALGORITHM": "HS512",
+    "AUTH_COOKIE": "access_token",
+    "AUTH_COOKIE_REFRESH": "refresh_token",
+    "AUTH_COOKIE_SECURE": True,
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_PATH": "/",
+    "AUTH_COOKIE_SAMESITE": "Lax",
 }
 
 SITE_ID = 1
@@ -324,7 +326,7 @@ ACCOUNT_ARAPTER = "allauth_2fa.adapter.OTPAdapter"
 
 REST_AUTH = {
     "USE_JWT": True,
-    "JWT_AUTH_HTTPONLY": False,
+    "JWT_AUTH_HTTPONLY": True,
 }
 
 CACHES = {
@@ -355,32 +357,4 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 #             'key': ''
 #         }
 #     }
-# }
-
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'console': {
-#             'level': 'INFO',
-#             'class': 'logging.StreamHandler',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['console'],
-#             'level': 'INFO',
-#             'propagate': True,
-#         },
-#         'views': {  # Explicitly enable logs for views.py
-#             'handlers': ['console'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#         'serializers': {  # Explicitly enable logs for serializers.py
-#             'handlers': ['console'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#     },
 # }
