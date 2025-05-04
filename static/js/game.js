@@ -22,25 +22,10 @@ instructions1.style.display = "none";
 instructions2.style.display = "none";
 instructions3.style.display = "none";
 
-const gameMenuFirst = new bootstrap.Modal(gameMenuElementFirst, {
-    backdrop: "static",
-    keyboard: false,
-});
-
-const gameMenu = new bootstrap.Modal(gameMenuElement, {
-    backdrop: "static",
-    keyboard: false,
-});
-
-const gameMenuTournament = new bootstrap.Modal(gameMenuElementTournament, {
-    backdrop: "static",
-    keyboard: false,
-});
-
-const SignInMenu = new bootstrap.Modal(signInMenuElement, {
-    backdrop: "static",
-    keyboard: false,
-});
+const gameMenuFirst = new bootstrap.Modal(gameMenuElementFirst, { backdrop: "static", keyboard: false, });
+const gameMenu = new bootstrap.Modal(gameMenuElement, { backdrop: "static", keyboard: false, });
+const gameMenuTournament = new bootstrap.Modal(gameMenuElementTournament, { backdrop: "static", keyboard: false, });
+const SignInMenu = new bootstrap.Modal(signInMenuElement, { backdrop: "static", keyboard: false, });
 
 const gameState = { 
     mode: null,
@@ -49,15 +34,6 @@ const gameState = {
     running: false,
     playerId: null,
 };
-
-async function login(email,password){
-    const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-}
 
 function startGame(mode) {
     keyboardEnabled = true;
@@ -87,11 +63,8 @@ function startGame(mode) {
         gameTitle.textContent = "Two Players (remote)";
         instructions1.style.display = "block";
         connectWebSocket(mode);
-    } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") { // TODO
+    } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") {
         gameMenuTournament.hide();
-        //alert(`${mode} mode is not yet implemented.`);
-        // gameTitle.textContent = `${mode}`;
-        // instructions1.style.display = "block";
         if (mode === "Tournament - 4 Players")
             connectWebSocket(4);
         else
@@ -99,29 +72,30 @@ function startGame(mode) {
     }
 }
 
-
 document.getElementById("playBtn").addEventListener("click", async() => {
-    gameMenuFirst.hide();
-    gameMenu.show();
-
-    try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
-        console.log("Fetched tournament status:", data);
-        if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
-                tournamentMenuBtn.style.display = "none";
-            else // check on this
-                tournamentMenuBtn.style.display = "block";
-    } catch (error) {
-        console.error("Error fetching tournament status:", error);
-    }
+    // gameMenuFirst.hide();
+    // gameMenu.show();
+    console.log("calling select btn!");
+    selectTournamentBtn();
+    // try {
+    //     const data = await fetchData("/tournament-status/");
+    //     console.log("Fetched tournament status:", data);
+    //     if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
+    //             tournamentMenuBtn.style.display = "none";
+    //         else // check on this
+    //             tournamentMenuBtn.style.display = "block";
+    // } catch (error) {
+    //     console.error("Error fetching tournament status:", error);
+    // }
 });
+
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
 document.getElementById("tournamentBtn").addEventListener("click", () => {
-        gameMenuTournament.show();
-        gameMenu.hide();});
+    gameMenuTournament.show();
+    gameMenu.hide();});
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
     disableTournamentButtons();});
@@ -129,9 +103,9 @@ document.getElementById("eightPlayersTournamentBtn").addEventListener("click", (
     startGame("Tournament - 8 Players");
     disableTournamentButtons();});
 
-document.getElementById("previous1Btn").addEventListener("click", () => {
-    gameMenu.hide();
-    gameMenuFirst.show();});
+document.getElementById("previousBtn").addEventListener("click", () => {
+    gameMenuFirst.show();
+    gameMenu.hide();});
 document.getElementById("previous2Btn").addEventListener("click", () => {
     gameMenuTournament.hide();
     gameMenu.show();});
@@ -147,33 +121,56 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     gameTitle.style.display = "none";
     document.getElementById("tournamentBracket").style.display = "none"; // this working??
     document.getElementById("tournamentBracket4").style.display = "none"; // this working??
-    socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-    socket.close()
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        if (gameState.mode != "Tournament - 4 Players" && gameState.mode != "Tournament - 8 Players" && gameState.mode != "4" && gameState.mode != "8")
+            websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+        else 
+            websocket.send(JSON.stringify({ action: "disconnect"}));
+        websocket.close();
+    }
     gameMenuFirst.show();
-    // also needs to be pulled out of games/tournament and declare opponent as the winner
 });
+
+async function joinTournament(data){
+    document.querySelectorAll('.modal.show').forEach(modal => {
+        bootstrap.Modal.getInstance(modal)?.hide();
+    });
+
+    gameState.mode = data.players_in + data.remaining_spots; 
+    keyboardEnabled = true;
+    gameState.running = false;
+    gameTitle.style.display = "block";
+    gameCanvas.style.display = "block";
+    gameCanvas.width = 1400;
+    gameCanvas.height = 1000;
+    gameCanvas.style.width = gameCanvas.width / 2 + "px";
+    gameCanvas.style.height = gameCanvas.height / 2 + "px";
+
+    connectWebSocket(data.players_in + data.remaining_spots);
+}
 
 tournamentBanner.addEventListener("click", async(event) => {
     event.preventDefault();
     try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
+        const data = await fetchData("/tournament-status/");
         console.log("Tournament Status:", data);
         if (data.remaining_spots > 0) {
-            gameMenuFirst.hide();
-            gameMenu.hide();
-            gameMenuTournament.hide();
+            joinTournament(data);
+            // gameMenuFirst.hide();
+            // gameMenu.hide();
+            // gameMenuTournament.hide();
 
-            gameState.mode = data.players_in + data.remaining_spots; 
-            keyboardEnabled = true;
-            gameState.running = false;
-            gameTitle.style.display = "block";
-            gameCanvas.style.display = "block";
-            gameCanvas.width = 1400;
-            gameCanvas.height = 1000;
-            gameCanvas.style.width = gameCanvas.width / 2 + "px";
-            gameCanvas.style.height = gameCanvas.height / 2 + "px";
+            // gameState.mode = data.players_in + data.remaining_spots; 
+            // keyboardEnabled = true;
+            // gameState.running = false;
+            // gameTitle.style.display = "block";
+            // gameCanvas.style.display = "block";
+            // gameCanvas.width = 1400;
+            // gameCanvas.height = 1000;
+            // gameCanvas.style.width = gameCanvas.width / 2 + "px";
+            // gameCanvas.style.height = gameCanvas.height / 2 + "px";
 
-            connectWebSocket(data.players_in + data.remaining_spots);
+            // connectWebSocket(data.players_in + data.remaining_spots);
         }
     } catch (error) {
         console.error("Error fetching tournament status:", error);
@@ -181,12 +178,23 @@ tournamentBanner.addEventListener("click", async(event) => {
 });
 
 window.addEventListener("load", async () => {
-    // gameMenuFirst.show();
+    //get token to check if user is logged, if it is, open main menu if not login modal
+    const accessToken = localStorage.getItem("access_token");
+    console.log("access_token on game: ", accessToken);
+    if (accessToken) {
+        // Ensure the onlineWebSocket is open if it wasn't already
+        if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
+            await loginWebSocket();
+        }
+        gameMenuFirst.show();
+    } else {
+        SignInMenu.show();
+    }
     const bracketElement = document.getElementById("tournamentBracket");
     bracketElement.style.display = "none";
 
     try {
-        const data = await fetchData("http://localhost:8080/api/tournament-status/");
+        const data = await fetchData("/tournament-status/");
         console.log("Fetched tournament status:", data);
         if (data.remaining_spots > 0 && data.players_in != 0) {
             showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
@@ -225,13 +233,6 @@ function showWaitingRoomTournament(mode) {
     // console.log("Bracket element:", bracketElement);
     // bracketElement.style.display = "grid";
     drawBracket(mode);
-
-    // gameContext.font = "50px Courier New";
-    // gameContext.fillStyle = "#000000";
-    // gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
-    // gameContext.fillStyle = "#ffffff";
-    // gameContext.textAlign = "center";
-    // gameContext.fillText("Waiting for players to join...", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
 }
 
 function updateGameState(data) {
@@ -264,8 +265,6 @@ function updateGameState(data) {
 
     // draw scores
     gameContext.font = "30px Courier New";
-    // gameContext.fillText(score.player, gameCanvas.width / 4, 80);
-    // gameContext.fillText(score.opponent, (gameCanvas.width * 3) / 4, 80);
     const playerIds = Object.keys(players);
     if (playerIds.length >= 1) {
         const player1 = players[playerIds[0]];
@@ -334,24 +333,17 @@ function stopTimer() {
 document.addEventListener("keydown", (event) => {
     if (keyboardEnabled === false)
         return;
-    // if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
-    //     console.log("Key pressed. Starting the game...");
-    //     gameState.running = true;
-    //     socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
-    //     startTimer();
-    // }
     if (gameState.mode != "One Player" && gameState.mode != "Two Players (hot seat)") {
-        if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+        if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed, 'ready' state, waiting for the other player to start the game...");
-            socket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
-            // startTimer();
+            websocket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
         }
     }
     else {
-        if (!gameState.running && socket && socket.readyState === WebSocket.OPEN) {
+        if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed. Starting the game...");
             gameState.running = true;
-            socket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+            websocket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
             startTimer();
         }
     }
@@ -361,7 +353,6 @@ const pressedKeys = new Set();
 document.addEventListener("keydown", (event) => { 
     if (gameState.running) {
         pressedKeys.add(event.key);
-        sendMovements();
     }
 });
 document.addEventListener("keyup", (event) => { 
@@ -369,7 +360,7 @@ document.addEventListener("keyup", (event) => {
         pressedKeys.delete(event.key);
     }
 });
-function sendMovements() {
+setInterval(() => {
     if (!gameState.running)
         return;
 
@@ -393,24 +384,12 @@ function sendMovements() {
 
     if (directions.length > 0) {
         console.log("keys pressed: ", [...pressedKeys]); // to rm
-        socket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
+        websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
-}
-
-// document.addEventListener("keydown", (event) => {
-//     let direction = null;
-//     if (gameState.mode != "Two Players (hot seat)" && gameState.running)
-//         direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
-//     else if (gameState.mode === "Two Players (hot seat)" && gameState.running)
-//         direction = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : event.key === "w" ? "w_up" : event.key === "s" ? "s_down" : null;
-//     if (direction) {
-//         console.log("ARROWS PRESSED");
-//         socket.send(JSON.stringify({ action: "move", direction: direction, game_id: gameState.gameId }));
-//     }
-// });
+}, 1000 / 60);
 
 window.addEventListener("beforeunload", () => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (socket && socket.readyState === WebSocket.OPEN && socket !== loginsocket) {
         console.log("Closing WebSocket before page unload.");
         gameState.running = false;
         stopTimer();
@@ -420,6 +399,12 @@ window.addEventListener("beforeunload", () => {
         gameTitle.style.display = "none";
         socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
         socket.close()
+        // SignInMenu.show();
+    }
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        SignInMenu.show();
+    } else {
         gameMenuFirst.show();
     }
 });

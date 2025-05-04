@@ -8,7 +8,7 @@ function loadGoogleScript(callback) {
     document.head.appendChild(script);
 }
 
-const baseUrl = "http://localhost:8000/api/authentication/";
+const baseUrl = `http://${window.location.host}/api/authentication/`;
 
 // function getCSRFToken() {
 //     const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']");
