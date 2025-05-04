@@ -412,7 +412,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                         "data": game.get_state()
                     })
 
-                if len(game.players) == 1 and game.mode == "Two Players (hot seat)":
+                if len(game.players) == 1 and game.mode == "Two Players (remote)":
                     # meaning someone just disconnected/exited
                     if self.player_id in game.players:
                         game.remove_player(self.player_id)

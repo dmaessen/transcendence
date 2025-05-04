@@ -2,7 +2,7 @@ import json
 import random
 import math
 
-MAX_BALL_SPEED = 12.0
+MAX_BALL_SPEED = 15.0
 
 class Game:
     def __init__(self, mode):
@@ -12,7 +12,7 @@ class Game:
         self.height = 1000
         self.players = {}
         self.ready_players = set()
-        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 5}
         self.bounce_count = 0 # to speed up the ball after x amount of bounces
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
@@ -64,7 +64,7 @@ class Game:
         self.mode = mode
         self.players = {}
         self.ready_players.clear()
-        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 5}
         self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
         self.score = {"player": 0, "opponent": 0}
         self.running = False
@@ -191,7 +191,7 @@ class Game:
 
     def _increase_ball_speed(self):
         max_speed = 18
-        speedup = 1.2
+        speedup = 1.3
 
         self.ball["dir_x"] = max(-max_speed, min(max_speed, self.ball["dir_x"] * speedup))
         self.ball["dir_y"] = max(-max_speed, min(max_speed, self.ball["dir_y"] * speedup))
@@ -200,7 +200,7 @@ class Game:
         self.ball["x"] = self.width // 2
         self.ball["y"] = random.randint(200, self.height // 2)
         angle = random.uniform(0.2, 0.8)
-        self.ball["speed"] *= 1.2
+        self.ball["speed"] *= 1.3
         self.ball["speed"] = min(self.ball["speed"], MAX_BALL_SPEED) # capping the ball speed to a certain limit
         
         self.ball["dir_x"] = direction * (self.ball["speed"]) * angle
@@ -231,7 +231,7 @@ class Game:
 
     def stop_game(self, winner):
         self.running = False
-        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
+        self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 5}
         print(f"Game ended. Winner: {winner}", flush=True)
         return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner}
         
