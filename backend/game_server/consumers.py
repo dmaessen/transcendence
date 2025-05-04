@@ -114,7 +114,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(content))
     
     async def update(self, event):
-        # await self.send_json(event["data"])
         await self.send_json(json.loads(event["data"]))
 
     async def send_match_data(self, player_id, match_data):
@@ -132,7 +131,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                 "data": game_state_serializable,
             }
         )
-        # print(f"out of send_game_sate {self.player_id}", flush=True)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -162,7 +160,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 # asyncio.create_task(self.trigger_start_game_auto_task())
 
             else:
-                self.game_id = f"game_{player_id}"
+                # self.game_id = f"game_{player_id}"
+                self.game_id = f"game_{str(uuid.uuid4())[:6]}"
                 self.match_name = self.game_id
                 await self.send(text_data=json.dumps({
                     'action': 'created',
@@ -259,9 +258,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                     await self.send_game_state(game)
                     asyncio.create_task(self.broadcast_game_state(self.game_id))
                     # game.ready_players.clear()
-        
-        # elif action == "end":
-        #     await self.end()
 
         elif action == "stop":
             if self.game_id in games:
@@ -277,7 +273,11 @@ class GameConsumer(AsyncWebsocketConsumer):
                 game = games[game_id]
                 if self.player_id in game.players:
                     game.remove_player(self.player_id)
-                    if not game.players:
+                    # if not game.players or if len(game.players) is 1 and game.mode is "Two Players (hot seat)" or "One Player":
+                    if (
+                        not game.players or
+                        (len(game.players) == 1 and game.mode in ["Two Players (hot seat)", "One Player"])
+                    ):
                         game.stop_game("No players")
                         del games[game_id]
                         print(f"Game {game_id} ended. Winner: No players", flush=True)
@@ -379,21 +379,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             except Exception as e:
                 logger.error(f"Error processing game result: {e}")
 
-                # match = await sync_to_async(Match.objects.filter)(player_id=player_id)
-                # # Passing winner info
-                # print("WINNER NAMEEEEE ", match.player_1.username)
-                # logger.info(f"Match id: {match.id} !!!!!!!!!!!!!!!!!")
-                # if match.player_1.username == data.get("winner"):
-                #     match.winner = match.player_1
-                #     match.player_1_points = 10
-                #     match.player_2_points = game.score["opponent"]
-                # else:
-                #     match.winner = match.player_2
-                #     match.player_2_points = 10
-                #     match.player_1_points = game.score["player"]
-
-                # # match.winner = data.get("winner")
-                # await sync_to_async(match.save)()
             game.clear_game()
 
     async def trigger_start_game_auto_task(self, duration=70):
@@ -426,6 +411,28 @@ class GameConsumer(AsyncWebsocketConsumer):
                         "type": "update",
                         "data": game.get_state()
                     })
+
+                if len(game.players) == 1 and game.mode == "Two Players (hot seat)":
+                    # meaning someone just disconnected/exited
+                    if self.player_id in game.players:
+                        game.remove_player(self.player_id)
+                        if not game.players: # meaning this player was the last one standing
+                            game.stop_game({self.username})
+                            del games[self.game_id]
+
+                    print(f"Winner determined by default (due to disconnection): {self.username}", flush=True)
+                    await self.send_json({"type": "end", "reason": f"Game Over: {self.username} wins", "winner": self.username})
+                    await self.channel_layer.group_send(
+                            self.match_name,
+                            {
+                                "type": "end",
+                                "reason": f"Game Over: {self.username} wins",
+                                "winner": {self.username}
+                            }
+                        )
+                    break
+
+                # if one player/two players hot seat then 
 
                 if not game.running:
                     player_username = None
