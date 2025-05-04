@@ -189,7 +189,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     games[self.game_id] = game
 
                 if self.player_id not in game.players:
-                    game.add_player(player_id, self.username)
+                    game.add_player(player_id, self.username, as_player1=True)
             print(f"Game mode set to: {mode}, with game_id {self.game_id}", flush=True)
             game = games[self.game_id]
 
@@ -332,7 +332,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         if numb_of_players == 1:
             game = games[match.id]
             #game.players[user.id] = user
-            game.add_player(user.id, self.username)
+            game.add_player(user.id, self.username, as_player1=True)
             game.status = "waiting"
         else:
             match.player_2 = user
@@ -342,7 +342,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             print(f"Trying to access game for match.id={match.id}", flush=True)
             game = games[match.id] #this game represents Game(), not Match model
             #game.players[user.id] = user
-            game.add_player(user.id, self.username)
+            game.add_player(user.id, self.username, as_player1=False)
             game.status = "started"
             #self.match_name = str(f"match_{match.id}")
             #await self.channel_layer.group_add(self.match_name, self.channel_name)

@@ -20,16 +20,18 @@ class Game:
         self.partOfTournament = False
         self.status = None # default can be "waiting", "started"
 
-    def add_player(self, player_id, username):
+    def add_player(self, player_id, username, as_player1):
         if player_id not in self.players:
-            if len(self.players) == 0: #first player
+            # if len(self.players) == 0: #first player
+            if as_player1 is True: # first player as left paddle
                 self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "player", "username": username}
                 print(f"Player {player_id} added as Player 1. With username: {username}", flush=True)
-            elif len(self.players) == 1: #second player
+            # elif len(self.players) == 1: #second player
+            elif as_player1 is False: # second player, right paddle
                 self.players[player_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": username}
                 print(f"Player {player_id} added as Player 2 (opponent). With username: {username}", flush=True)
-            else:
-                print(f"Cannot add more players. Maximum supported is 2.", flush=True)
+            # else:
+            #     print(f"Cannot add more players. Maximum supported is 2.", flush=True)
         
         # automatically add a bot if only one player (in One Player mode)
         if self.mode == "One Player" and len(self.players) == 1:
@@ -86,10 +88,14 @@ class Game:
                 else:  # Right paddle
                     self.ball["dir_x"] = -abs(self.ball["dir_x"])
 
-                # increment bounce if part of tournament count and check for speed increase
+                # increment bounce, count and check for speed increase
                 if self.partOfTournament:
                     self.bounce_count += 1
                     if self.bounce_count % 7 == 0:
+                        self._increase_ball_speed()
+                else:
+                    self.bounce_count += 1
+                    if self.bounce_count % 5 == 0:
                         self._increase_ball_speed()
 
         # Ball out of bounds
