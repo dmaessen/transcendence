@@ -56,7 +56,7 @@ class Game:
     def remove_player(self, player_id):
         if player_id in self.players:
             del self.players[player_id]
-            print(f"Player {player_id} removed.", flush=True)
+            print(f"Player {player_id} removed. Len of players:", len(self.players), flush=True)
             if len(self.players) == 0:
                 self.running = False  # Stop game if no players are left
 
