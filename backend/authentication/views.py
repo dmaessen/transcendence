@@ -87,7 +87,7 @@ def register_2fa(request):
 		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
 
 class RegisterView(APIView):
-	# @csrf_exempt
+	@csrf_exempt
 	def post(self, request, *args, **kwargs):
 		serializer = UserSerializer(data=request.data)
 		if serializer.is_valid():
@@ -99,6 +99,7 @@ class RegisterView(APIView):
 			
 			#return token
 			refresh = RefreshToken.for_user(user)
+			print(f"going to send tokens: ", refresh, "and access: ", refresh.access_token, flush= True)
 			return Response(
 				{
 				'refresh': str(refresh),
@@ -107,6 +108,7 @@ class RegisterView(APIView):
 				},
 				status=status.HTTP_201_CREATED,
 			)
+		print("register error somehow", flush= True)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # class UserTOTPDevice(TOTPDevice):

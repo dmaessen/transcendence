@@ -109,7 +109,7 @@ CORS_ALLOW_HEADERS = [
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
@@ -152,7 +152,7 @@ STATIC_URL = '/static/'
 
 # # No need to set STATICFILES_DIRS if frontend is handling static files
 STATICFILES_DIRS = [
-   BASE_DIR / 'static',  # Ensure Django knows where to find them
+   BASE_DIR / 'static/',  # Ensure Django knows where to find them
 ]
 
 
@@ -233,9 +233,7 @@ FT_CLIENT_ID = os.getenv("42_UID")
 FT_CLIENT_SECRET = os.getenv("42_secret")
 FT_REDIRECT_URI = os.getenv("42_redirect", "http://localhost:8000/api/authentication/42/callback/")
 
-print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
-
-
+# print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

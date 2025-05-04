@@ -277,6 +277,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const password = document.getElementById("registerPassword").value;
                 const enable2FA = document.getElementById("enable2FAonRegister")?.checked;
                 try {
+                    alert("0")
+                    // console.log("csrf: ", getCSRFToken())
                     const registerData = await fetch(`${baseUrl}register/`, {
                         method: "POST",
                         headers: {
@@ -285,6 +287,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         },
                         body: JSON.stringify({ username, name, email, password }),
                     });
+                    alert("1")
                     const registrationDataResponse = await registerData.json();
                     if (!registerData.ok) {
                         if (registerData.status == 400) {
@@ -294,6 +297,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         }
                         return;
                     }
+                    alert("2")
                     alert("Registration successful! You will now be logged in automatically");
                     const accessToken = registrationDataResponse.access;
                     const refreshToken = registrationDataResponse.refresh;
@@ -301,6 +305,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         alert("Registration successful, but failed to retrieve tokens.");
                         return;
                     }
+                    alert("3")
                     localStorage.setItem("access_token", accessToken);
                     localStorage.setItem("refresh_token", refreshToken);
                     if (!localStorage.getItem("access_token") || !localStorage.getItem("refresh_token")) {
@@ -335,8 +340,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     }
                     setTimeout(() => {
                         window.location.href = "/";
-                    }, 30);
-                    
+                    }, 30);         
                 } catch (error) {
                     console.error("Error:", error);
                     alert("An error occurred. Check the console.");
