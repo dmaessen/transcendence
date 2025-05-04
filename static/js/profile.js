@@ -273,6 +273,13 @@ async function loadTournametsData(userID) {
 
 async function loadProfile(userID, openModal = true) {
     try {
+        // Close possible already opened modals to avoid the backgroud from getting darker and darker
+        const profileModalElement = document.getElementById("profileModal");
+        const existingModal = bootstrap.Modal.getInstance(profileModalElement);
+        if (existingModal) {
+            existingModal.hide();
+        }
+
         await loadUserData(userID);
         await loadMatchesData(userID);
         await loadTournametsData(userID);

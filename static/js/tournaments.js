@@ -37,6 +37,9 @@ function populateAllTournament(data) {
             winnerLink.style.color = "gray"; // Make it look like a link
 
             winnerLink.addEventListener("click", function(){
+                const allTournamentsModalElement = document.getElementById("allTournamentsModal");
+                const allTournamentsModal = bootstrap.Modal.getInstance(allTournamentsModalElement);
+                allTournamentsModal.hide();
                 loadProfile(winnerLink.dataset.userID);
             });
             winnerCell.appendChild(winnerLink);
