@@ -25,6 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
 class MatchSerializer(serializers.ModelSerializer):
     player_1_name = serializers.ReadOnlyField(source='player_1.name')
     player_2_name = serializers.ReadOnlyField(source='player_2.name')
+    match_start = serializers.DateTimeField(format="%d %b %Y %H:%M")
 
     class Meta:
         model = Match
@@ -47,6 +48,7 @@ class TournamentSerializer(serializers.ModelSerializer):
     third_place = UserSerializer(read_only=True)
     fourth_place = UserSerializer(read_only=True)
     matches = MatchSerializer(many=True, read_only=True)
+    start_date = serializers.DateTimeField(format="%d %b %Y %H:%M")
 
     class Meta:
         model = Tournament
@@ -67,7 +69,8 @@ class MatchSummarySerializer(serializers.ModelSerializer):
     opponent = serializers.SerializerMethodField()
     opponentID = serializers.SerializerMethodField()
     winner_name = serializers.ReadOnlyField(source='winner.username')
-    
+    match_start = serializers.DateTimeField(format="%d %b %Y %H:%M")
+
     class Meta:
         model = Match
         fields = ["match_start", "winner_name", "opponent", "opponentID"]
@@ -91,7 +94,8 @@ class TournamentSummarySerializer(serializers.ModelSerializer):
     winnerID = serializers.ReadOnlyField(source="first_place.id")
     start_date = serializers.DateTimeField()
     userWon = serializers.SerializerMethodField()
-    
+    start_date = serializers.DateTimeField(format="%d %b %Y %H:%M")
+
     class Meta:
         model = Tournament
         fields = ["start_date", "winner", "winnerID", "userWon"]
