@@ -1,0 +1,332 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-05 08:12+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: backend/settings.py:228
+msgid "English"
+msgstr "English"
+
+#: backend/settings.py:229
+msgid "Dutch"
+msgstr "Dutch"
+
+#: backend/settings.py:230
+msgid "French"
+msgstr "French"
+
+#: matchmaking/models.py:75
+msgid "There must be more than 2 participants."
+msgstr "There must be more than 2 participants."
+
+#: matchmaking/models.py:79
+msgid "There must be fewer than 15 participants."
+msgstr "There must be fewer than 15 participants."
+
+#: static/templates/index.html:20
+msgid "A tournament is about to start!"
+msgstr "A tournament is about to start!"
+
+#: static/templates/index.html:21
+msgid "players in."
+msgstr "players in."
+
+#: static/templates/index.html:22
+msgid "Join now!"
+msgstr "Join now!"
+
+#: static/templates/index.html:25
+msgid "Pong Game"
+msgstr "Pong Game"
+
+#: static/templates/index.html:26
+msgid "Exit"
+msgstr "Exit"
+
+#: static/templates/index.html:39
+msgid "Press the UP and DOWN keys to move your paddle."
+msgstr "Press the UP and DOWN keys to move your paddle."
+
+#: static/templates/index.html:41
+msgid "Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move."
+msgstr "Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move."
+
+#: static/templates/index.html:44
+msgid ""
+"Press the UP and DOWN keys to move your paddle.<br>\n"
+"      First player with a score of 3 wins.<br>\n"
+"      The game starts automatically after 1 minute, if no one presses."
+msgstr ""
+"Press the UP and DOWN keys to move your paddle.<br>\n"
+"      First player with a score of 3 wins.<br>\n"
+"      The game starts automatically after 1 minute, if no one presses."
+
+#: static/templates/modals/add_friends_modal.html:6
+#: static/templates/modals/friends_modal.html:10
+msgid "Manage friends requests"
+msgstr "Manage friends requests"
+
+#: static/templates/modals/add_friends_modal.html:7
+#: static/templates/modals/edit_profile_modal.html:7
+#: static/templates/modals/friends_modal.html:7
+#: static/templates/modals/matches_modal.html:8
+#: static/templates/modals/profile_modal.html:8
+#: static/templates/modals/tournament_modal.html:8
+msgid "Close"
+msgstr "Close"
+
+#: static/templates/modals/add_friends_modal.html:13
+#: static/templates/modals/edit_profile_modal.html:16
+#: static/templates/modals/edit_profile_modal.html:17
+msgid "Username"
+msgstr "Username"
+
+#: static/templates/modals/add_friends_modal.html:15
+msgid "Search"
+msgstr "Search"
+
+#: static/templates/modals/auth.html:10
+msgid "Please register or login"
+msgstr "Please register or login"
+
+#: static/templates/modals/auth.html:13 static/templates/modals/auth.html:45
+#: static/templates/modals/auth.html:54
+msgid "Register"
+msgstr "Register"
+
+#: static/templates/modals/auth.html:14
+msgid "Log in"
+msgstr "Log in"
+
+#: static/templates/modals/auth.html:19 static/templates/modals/auth.html:23
+#: static/templates/modals/auth.html:74
+msgid "Login"
+msgstr "Login"
+
+#: static/templates/modals/auth.html:21 static/templates/modals/auth.html:49
+#: static/templates/modals/auth.html:72
+msgid "Email"
+msgstr "Email"
+
+#: static/templates/modals/auth.html:22 static/templates/modals/auth.html:50
+#: static/templates/modals/auth.html:73
+msgid "Password"
+msgstr "Password"
+
+#: static/templates/modals/auth.html:26
+msgid "Enter OTP Code:"
+msgstr "Enter OTP Code:"
+
+#: static/templates/modals/auth.html:28
+msgid "Submit OTP token"
+msgstr "Submit OTP token"
+
+#: static/templates/modals/auth.html:29
+msgid "return"
+msgstr "return"
+
+#: static/templates/modals/auth.html:33
+msgid "Login with Google"
+msgstr "Login with Google"
+
+#: static/templates/modals/auth.html:38
+msgid "Login with 42"
+msgstr "Login with 42"
+
+#: static/templates/modals/auth.html:41 static/templates/modals/auth.html:66
+#: static/templates/modals/auth.html:76
+#: static/templates/modals/edit_profile_modal.html:33
+msgid "Back"
+msgstr "Back"
+
+#: static/templates/modals/auth.html:47
+msgid "Username/alias"
+msgstr "Username/alias"
+
+#: static/templates/modals/auth.html:48
+msgid "Name"
+msgstr "Name"
+
+#: static/templates/modals/auth.html:52
+msgid "Enable Two-Factor Authentication"
+msgstr "Enable Two-Factor Authentication"
+
+#: static/templates/modals/auth.html:58
+msgid "Register with Google"
+msgstr "Register with Google"
+
+#: static/templates/modals/auth.html:63
+msgid "Register with 42"
+msgstr "Register with 42"
+
+#: static/templates/modals/auth.html:70
+#: static/templates/modals/edit_profile_modal.html:35
+msgid "Remove Account"
+msgstr "Remove Account"
+
+#: static/templates/modals/edit_profile_modal.html:6
+#: static/templates/modals/profile_modal.html:7
+#: static/templates/modals/user_profile_modal.html:6
+msgid "User Profile"
+msgstr "User Profile"
+
+#: static/templates/modals/edit_profile_modal.html:12
+msgid "Email Address"
+msgstr "Email Address"
+
+#: static/templates/modals/edit_profile_modal.html:13
+msgid "email@yourHost.whatever"
+msgstr "email@yourHost.whatever"
+
+#: static/templates/modals/edit_profile_modal.html:20
+msgid "New Avatar"
+msgstr "New Avatar"
+
+#: static/templates/modals/edit_profile_modal.html:23
+msgid "Save changes"
+msgstr "Save changes"
+
+#: static/templates/modals/edit_profile_modal.html:25
+msgid "Enable 2FA"
+msgstr "Enable 2FA"
+
+#: static/templates/modals/edit_profile_modal.html:26
+msgid "Disable 2FA"
+msgstr "Disable 2FA"
+
+#: static/templates/modals/edit_profile_modal.html:28
+msgid "Here is the QR code for you to scan"
+msgstr "Here is the QR code for you to scan"
+
+#: static/templates/modals/edit_profile_modal.html:29
+msgid "QR Code"
+msgstr "QR Code"
+
+#: static/templates/modals/edit_profile_modal.html:30
+msgid "Or enter this code manually, if you must..."
+msgstr "Or enter this code manually, if you must..."
+
+#: static/templates/modals/edit_profile_modal.html:32
+msgid "Confirm 2FA"
+msgstr "Confirm 2FA"
+
+#: static/templates/modals/friends_modal.html:6
+#: static/templates/modals/main_menu_modal.html:12
+msgid "Friends"
+msgstr "Friends"
+
+#: static/templates/modals/game_menu_modal.html:7
+msgid "Select Game Mode"
+msgstr "Select Game Mode"
+
+#: static/templates/modals/game_menu_modal.html:10
+msgid "One Player"
+msgstr "One Player"
+
+#: static/templates/modals/game_menu_modal.html:11
+msgid "Two Players (hot seat)"
+msgstr "Two Players (hot seat)"
+
+#: static/templates/modals/game_menu_modal.html:12
+msgid "Two Players (with a friend)"
+msgstr "Two Players (with a friend)"
+
+#: static/templates/modals/game_menu_modal.html:13
+msgid "Two Players (remote)"
+msgstr "Two Players (remote)"
+
+#: static/templates/modals/game_menu_modal.html:14
+msgid "Tournament"
+msgstr "Tournament"
+
+#: static/templates/modals/game_menu_modal.html:15
+#: static/templates/modals/tournament_modal.html:13
+msgid "Previous page"
+msgstr "Previous page"
+
+#: static/templates/modals/main_menu_modal.html:8
+msgid "Menu"
+msgstr "Menu"
+
+#: static/templates/modals/main_menu_modal.html:11
+msgid "Profile"
+msgstr "Profile"
+
+#: static/templates/modals/main_menu_modal.html:13
+msgid "START PLAYING"
+msgstr "START PLAYING"
+
+#: static/templates/modals/main_menu_modal.html:14
+msgid "Log Out"
+msgstr "Log Out"
+
+#: static/templates/modals/matches_modal.html:7
+msgid "User Matches"
+msgstr "User Matches"
+
+#: static/templates/modals/profile_modal.html:12
+msgid "F****"
+msgstr "F****"
+
+#: static/templates/modals/profile_modal.html:17
+msgid "Matches Played"
+msgstr "Matches Played"
+
+#: static/templates/modals/profile_modal.html:18
+msgid "Wins"
+msgstr "Wins"
+
+#: static/templates/modals/profile_modal.html:19
+msgid "Losses"
+msgstr "Losses"
+
+#: static/templates/modals/profile_modal.html:23
+#: static/templates/modals/user_profile_modal.html:19
+msgid "Matches"
+msgstr "Matches"
+
+#: static/templates/modals/profile_modal.html:31
+#: static/templates/modals/user_profile_modal.html:27
+msgid "Tournaments"
+msgstr "Tournaments"
+
+#: static/templates/modals/tournament_modal.html:7
+msgid "Amount of players"
+msgstr "Amount of players"
+
+#: static/templates/modals/tournament_modal.html:11
+msgid "4 Players"
+msgstr "4 Players"
+
+#: static/templates/modals/tournament_modal.html:12
+msgid "8 Players"
+msgstr "8 Players"
+
+#: static/templates/modals/tournaments_modal.html:6
+msgid "User Tournaments"
+msgstr "User Tournaments"
+
+#: static/templates/modals/user_profile_modal.html:16
+msgid "Add friend"
+msgstr "Add friend"
+
+#: static/templates/tournament4.html:23 static/templates/tournament4.html:27
+#: static/templates/tournament4.html:35 static/templates/tournament4.html:39
+#: static/templates/tournament4.html:51 static/templates/tournament4.html:55
+msgid "Waiting..."
+msgstr "Waiting..."

@@ -1,0 +1,232 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-05 08:12+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: backend/settings.py:228
+msgid "English"
+msgstr "Engels"
+
+msgid "Dutch"
+msgstr "Nederlands"
+
+msgid "French"
+msgstr "Frans"
+
+msgid "There must be more than 2 participants."
+msgstr "Er moeten meer dan 2 deelnemers zijn."
+
+msgid "There must be fewer than 15 participants."
+msgstr "Er moeten minder dan 15 deelnemers zijn."
+
+msgid "A tournament is about to start!"
+msgstr "Een toernooi staat op het punt te beginnen!"
+
+msgid "players in."
+msgstr "spelers erin."
+
+msgid "Join now!"
+msgstr "Doe nu mee!"
+
+msgid "Pong Game"
+msgstr "Pong Spel"
+
+msgid "Exit"
+msgstr "Afsluiten"
+
+msgid "Press the UP and DOWN keys to move your paddle."
+msgstr "Druk op de UP- en DOWN-toetsen om je paddle te bewegen."
+
+msgid "Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move."
+msgstr "Linkse speler: gebruik de W/S-toetsen om te bewegen. Rechter speler: gebruik de UP/DOWN-toetsen om te bewegen."
+
+msgid "Press the UP and DOWN keys to move your paddle.<br>\n      First player with a score of 3 wins.<br>\n      The game starts automatically after 1 minute, if no one presses."
+msgstr "Druk op de UP- en DOWN-toetsen om je paddle te bewegen.<br>\n      De eerste speler met een score van 3 wint.<br>\n      Het spel begint automatisch na 1 minuut, als niemand drukt."
+
+msgid "Manage friends requests"
+msgstr "Beheer vriendenaanvragen"
+
+msgid "Close"
+msgstr "Sluiten"
+
+msgid "Username"
+msgstr "Gebruikersnaam"
+
+msgid "Search"
+msgstr "Zoeken"
+
+msgid "Please register or login"
+msgstr "Registreer je of log in"
+
+msgid "Register"
+msgstr "Registreren"
+
+msgid "Log in"
+msgstr "Inloggen"
+
+msgid "Login"
+msgstr "Inloggen"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "Password"
+msgstr "Wachtwoord"
+
+msgid "Enter OTP Code:"
+msgstr "Voer OTP-code in:"
+
+msgid "Submit OTP token"
+msgstr "Verzend OTP-token"
+
+msgid "return"
+msgstr "terug"
+
+msgid "Login with Google"
+msgstr "Inloggen met Google"
+
+msgid "Login with 42"
+msgstr "Inloggen met 42"
+
+msgid "Back"
+msgstr "Terug"
+
+msgid "Username/alias"
+msgstr "Gebruikersnaam/alias"
+
+msgid "Name"
+msgstr "Naam"
+
+msgid "Enable Two-Factor Authentication"
+msgstr "Schakel Twee-Factor Authenticatie in"
+
+msgid "Register with Google"
+msgstr "Registreren met Google"
+
+msgid "Register with 42"
+msgstr "Registreren met 42"
+
+msgid "Remove Account"
+msgstr "Verwijder Account"
+
+msgid "User Profile"
+msgstr "Gebruikersprofiel"
+
+msgid "Email Address"
+msgstr "E-mailadres"
+
+msgid "email@yourHost.whatever"
+msgstr "email@jouwHost.watdanook"
+
+msgid "New Avatar"
+msgstr "Nieuwe Avatar"
+
+msgid "Save changes"
+msgstr "Wijzigingen opslaan"
+
+msgid "Enable 2FA"
+msgstr "2FA inschakelen"
+
+msgid "Disable 2FA"
+msgstr "2FA uitschakelen"
+
+msgid "Here is the QR code for you to scan"
+msgstr "Hier is de QR-code die je kunt scannen"
+
+msgid "QR Code"
+msgstr "QR-code"
+
+msgid "Or enter this code manually, if you must..."
+msgstr "Of voer deze code handmatig in, als je moet..."
+
+msgid "Confirm 2FA"
+msgstr "Bevestig 2FA"
+
+msgid "Friends"
+msgstr "Vrienden"
+
+msgid "Select Game Mode"
+msgstr "Kies Spelmodus"
+
+msgid "One Player"
+msgstr "Één speler"
+
+msgid "Two Players (hot seat)"
+msgstr "Twee spelers (hot seat)"
+
+msgid "Two Players (with a friend)"
+msgstr "Twee spelers (met een vriend)"
+
+msgid "Two Players (remote)"
+msgstr "Twee spelers (op afstand)"
+
+msgid "Tournament"
+msgstr "Toernooi"
+
+msgid "Previous page"
+msgstr "Vorige pagina"
+
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Profile"
+msgstr "Profiel"
+
+msgid "START PLAYING"
+msgstr "BEGIN MET SPELEN"
+
+msgid "Log Out"
+msgstr "Uitloggen"
+
+msgid "User Matches"
+msgstr "Gebruikerswedstrijden"
+
+msgid "F****"
+msgstr "F****"
+
+msgid "Matches Played"
+msgstr "Gespeelde Wedstrijden"
+
+msgid "Wins"
+msgstr "Overwinningen"
+
+msgid "Losses"
+msgstr "Verlies"
+
+msgid "Matches"
+msgstr "Wedstrijden"
+
+msgid "Tournaments"
+msgstr "Toernooien"
+
+msgid "Amount of players"
+msgstr "Aantal spelers"
+
+msgid "4 Players"
+msgstr "4 Spelers"
+
+msgid "8 Players"
+msgstr "8 Spelers"
+
+msgid "User Tournaments"
+msgstr "Gebruikers Toernooien"
+
+msgid "Add friend"
+msgstr "Vriend toevoegen"
+
+msgid "Waiting..."
+msgstr "Wachten..."
