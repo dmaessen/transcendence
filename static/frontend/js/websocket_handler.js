@@ -249,13 +249,13 @@ function handleServerMessage(message) {
         case "add_winners":
             addWinnersTournament(message);
             break;
-        case "join_tournament":
-            document.getElementById("tournamentBtn").textContent = "Join tournament";
-            joinTournament(data);
-        case "ongoing_tournament":
-            btn = document.getElementById("tournamentBtn");
-            btn.textContent = "Ongoing tournament"
-            btn.disable() = true;
+        // case "join_tournament":
+        //     document.getElementById("tournamentBtn").textContent = "Join tournament";
+        //     joinTournament(data);
+        // case "ongoing_tournament":
+        //     btn = document.getElementById("tournamentBtn");
+        //     btn.textContent = "Ongoing tournament"
+        //     btn.disable() = true;
         // default:
         //     console.warn("Unknown message type received:", message.type);
     }
