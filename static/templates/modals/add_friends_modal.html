@@ -1,17 +1,18 @@
+{% load i18n %}
 <div class="modal fade" id="addFriendsModal" tabindex="-1" aria-labelledby="addFriendsModalLabel" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addFriendsModalLabel">Manage friends requests</h5>
-                <button id="addFriendCloseBtn" type="button" class="btn-close" aria-label="Close"></button>
+                <h5 class="modal-title" id="addFriendsModalLabel">{% trans "Manage friends requests" %}</h5>
+                <button id="addFriendCloseBtn" type="button" class="btn-close" aria-label="{% trans 'Close' %}"></button>
             </div>
             <div class="modal-body text-center">
                 <form>
                     <div class="form-group">
                         <label for="searchFriend"></label>
-                        <input type="friendUsername" class="form-control" id="newFriendUsername" placeholder="Username" maxlength="30">
+                        <input type="friendUsername" class="form-control" id="newFriendUsername" placeholder="{% trans 'Username' %}" maxlength="30">
                     </div>
-                    <button id="searchFriendBtn" type="button" class="btn btn-outline-dark w-100 mb-2">Search</button>
+                    <button id="searchFriendBtn" type="button" class="btn btn-outline-dark w-100 mb-2">{% trans "Search" %}</button>
                 </form>
                 <table id="frienshipRequestTable" class="table">
                     <tbody>
@@ -22,4 +23,3 @@
         </div>
     </div>
 </div>
-{% comment %} TODO also load the list of friends request with accept and refuse buttons {% endcomment %}
