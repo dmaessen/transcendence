@@ -75,33 +75,24 @@ function startGame(mode) {
 document.getElementById("playBtn").addEventListener("click", async() => {
     // gameMenuFirst.hide();
     // gameMenu.show();
-    console.log("calling select btn!");
     selectTournamentBtn();
-    // try {
-    //     const data = await fetchData("/tournament-status/");
-    //     console.log("Fetched tournament status:", data);
-    //     if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
-    //             tournamentMenuBtn.style.display = "none";
-    //         else // check on this
-    //             tournamentMenuBtn.style.display = "block";
-    // } catch (error) {
-    //     console.error("Error fetching tournament status:", error);
-    // }
 });
 
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
-document.getElementById("tournamentBtn").addEventListener("click", () => {
-    gameMenuTournament.show();
-    gameMenu.hide();});
+// document.getElementById("tournamentBtn").addEventListener("click", () => {
+//     gameMenuTournament.show();
+//     gameMenu.hide();});
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    disableTournamentButtons();});
+    // disableTournamentButtons();
+});
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    disableTournamentButtons();});
+    // disableTournamentButtons();
+});
 
 document.getElementById("previousBtn").addEventListener("click", () => {
     gameMenuFirst.show();
@@ -204,10 +195,10 @@ window.addEventListener("load", async () => {
     }
 });
 
-function disableTournamentButtons() {
-    tournamentMenuBtn.style.display = "none";  // Hide the tournament button
-    gameMenuTournament.hide(); // Hide the tournament menu
-}
+// function disableTournamentButtons() {
+//     tournamentMenuBtn.style.display = "none";  // Hide the tournament button
+//     gameMenuTournament.hide(); // Hide the tournament menu
+// }
 
 function showTournamentAdBanner(players_in, total_spots) {// Show banner to promote for other players
     if (players_in < total_spots) {
