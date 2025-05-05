@@ -78,7 +78,6 @@ document.getElementById("playBtn").addEventListener("click", async() => {
     selectTournamentBtn();
 });
 
-
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));

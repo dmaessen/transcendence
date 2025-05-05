@@ -31,6 +31,14 @@
     margin-top: 20px;
 }
 
+#game-instruction3 {
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    color: #000000;
+    margin-top: 20px;
+}
+
 #tournamentBanner {
     z-index: 1051;
 }

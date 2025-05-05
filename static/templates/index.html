@@ -16,7 +16,7 @@
 <body>
 
     <!-- Language selector with safe z-index -->
-  <form action="{% url 'set_language' %}" method="post" class="position-fixed top-0 end-0 mt-5 me-3" style="z-index: 1100;">
+  <form action="{% url 'set_language' %}" method="post" class="position-fixed top-0 end-0 me-3" style="margin-top: 4.0rem; z-index: 1100;">
     {% csrf_token %}
     <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
       <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
@@ -51,10 +51,9 @@
 
     <!-- Instructions -->
     <p id="timer">0m 0s</p>
+    <canvas id="game" style="display:none;"></canvas>
     <p id="game-instruction1">{% trans "Press the UP and DOWN keys to move your paddle." %}</p>
-    <p id="game-instruction2">
-        {% trans "Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move." %}
-    </p>
+    <p id="game-instruction2">{% trans "Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move." %}</p>
     <p id="game-instruction3">
         {% blocktrans %}Press the UP and DOWN keys to move your paddle.<br>
         First player with a score of 3 wins.<br>
@@ -92,12 +91,12 @@
 
     <!-- LOGIN MODAL IS NOT VISIBLE WITHOUT THIS -->
     <!-- Optional: Force modal to show for testing -->
-    {# <script>
+    <!-- <script>
         document.addEventListener('DOMContentLoaded', () => {
             const modal = new bootstrap.Modal(document.getElementById('SignInMenu'));
             modal.show();
         });
-    </script> #}
+    </script> -->
 
 </body>
 </html>
