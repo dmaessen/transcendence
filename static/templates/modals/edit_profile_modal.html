@@ -1,39 +1,39 @@
+{% load i18n %}
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editProfileModalLabel">User Profile</h5>
-                <button id="editCloseBtn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="editProfileModalLabel">{% trans "User Profile" %}</h5>
+                <button id="editCloseBtn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
             </div>
             <div class="modal-body text-center">
               <form>
                 <div class="form-group">
-                <label for="emailAdress">Email Adress</label>
-                <input type="email" class="form-control" id="newMail" aria-describedby="emailHelp" placeholder="email@yourHost.whatever">
+                  <label for="emailAdress">{% trans "Email Address" %}</label>
+                  <input type="email" class="form-control" id="newMail" aria-describedby="emailHelp" placeholder="{% trans 'email@yourHost.whatever' %}">
                 </div>
                 <div class="form-group">
-                    <label for="Username">Username</label>
-                    <input type="username" class="form-control" id="newUsername" placeholder="Username" maxlength="30">
+                    <label for="Username">{% trans "Username" %}</label>
+                    <input type="username" class="form-control" id="newUsername" placeholder="{% trans 'Username' %}" maxlength="30">
                 </div>
                 <div class="form-group">
-                    <label for="upAvatar">New Avatar</label>
+                    <label for="upAvatar">{% trans "New Avatar" %}</label>
                     <input type="file" class="form-control-file" id="newAvatar" accept="image/png, image/jpeg">
                 </div>
-                <button id="saveChanges" type="submit" class="btn btn-outline-dark w-100 mb-2">Save changes</button>
+                <button id="saveChanges" type="submit" class="btn btn-outline-dark w-100 mb-2">{% trans "Save changes" %}</button>
               </form>
-              <button id="enable2FA" class="btn btn-outline-dark w-100 mb-2">Enable 2FA</button>
-              <button id="disable2FA" class="btn btn-outline-dark w-100 mb-2">Disable 2FA</button>
+              <button id="enable2FA" class="btn btn-outline-dark w-100 mb-2">{% trans "Enable 2FA" %}</button>
+              <button id="disable2FA" class="btn btn-outline-dark w-100 mb-2">{% trans "Disable 2FA" %}</button>
               <div id="qrContainer" class="overlay-form" style="display: none;">
-                  <h2>Here is the QR code for you to scan</h2>
-                  <img id= "qrCodeImage" src="" alt="QR Code" style="display: none; max-width: 100%; height: auto;">
-                  <p>Or enter this code manually, if you must...</p>
+                  <h2>{% trans "Here is the QR code for you to scan" %}</h2>
+                  <img id="qrCodeImage" src="" alt="{% trans 'QR Code' %}" style="display: none; max-width: 100%; height: auto;">
+                  <p>{% trans "Or enter this code manually, if you must..." %}</p>
                   <code id="otpKey"></code> 
-                  <button id="confirm2FA" class= "btn btn-success">Confirm 2FA</button>
-                  <button id="QR_back" class="btn btn-secondary">Back</button>
+                  <button id="confirm2FA" class="btn btn-success">{% trans "Confirm 2FA" %}</button>
+                  <button id="QR_back" class="btn btn-secondary">{% trans "Back" %}</button>
               </div>
-              <button id="deleteAccount" class="btn btn-danger">Remove Account</button>
+              <button id="deleteAccount" class="btn btn-danger">{% trans "Remove Account" %}</button>
             </div>
         </div>
     </div>
 </div>
-
