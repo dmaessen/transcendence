@@ -1,70 +1,72 @@
-let currentModal;
-
 window.addEventListener("popstate", (event) => {
     const state = event.state;
     if (!state) return;
 
-    // Close all modals
+    // Close all currently open modals
     document.querySelectorAll(".modal.show").forEach(modalEl => {
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
     });
 
-    console.log('Pop:', event.state);
+    // Clean canvas leftovers
+    gameCanvas.style.display = "none";
+    instructions1.style.display = "none";
+    instructions2.style.display = "none";
+    const gameMode = state.gameMode;
+
+    console.log("Game mode from state:", gameMode);
+
+    // Optionally remove leftover backdrop
+    document.body.classList.remove("modal-open");
+    document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+
+    console.log('Pop:', state.modalID);
 
     switch(state.modalID) {
         case "profileModal":
             loadProfile(state.userID, true, false);
-            currentModal = "profileModal";
             break;
         case "editProfileModal":
-            if (currentModal !== "editProfileModal") {
-                profileModal.hide();
-                editProfileModal.show();
-                currentModal = "editProfileModal";
-            }
+            profileModal.hide();
+            editProfileModal.show();
             break;
         case "AllMatchesModal":
             loadAllMatches(state.userID, false);
-            currentModal = "AllMatchesModal";
             break;
         case "AllTournamentsModal":
             loadAllTournaments(state.userID, false);
-            currentModal = "AllTournamentsModal";
             break;
         case "friendsModal":
             loadFriends(false);
-            currentModal = "friendsModal";
             break;
         case "addFriendsModal":
             loadFriendsRequests(false);
-            currentModal = "addFriendsModal";
             break;
         case "gameMenu":
-            if (currentModal !== "gameMenu") {
-                gameMenu.hide();
-                gameMenuFirst.show();
-                currentModal = "gameMenu";
-            }
+            gameMenu.show();
             break;
         case "gameMenuTournament":
-            if (currentModal !== "gameMenuTournament") {
-                gameMenuTournament.hide();
-                gameMenu.show();
-                currentModal = "gameMenuTournament";
-            }
+            gameMenuTournament.show();
+            break;
+        case "gameMenuFirst":
+            gameMenuFirst.show();
             break;
         case "SignInMenu":
+            SignInMenu.show(); // If applicable
+            break;
+        case "fourPlayersTournament":
+            exitGame();
+            break;
+        case "eightPlayersTournament":
+        case "onePlayer":
+        case "twoPlayers":
+        case "twoPlayersRemote":
+            startGame(gameMode);
             break;
         default:
             console.warn("Unknown modalID:", state.modalID);
             break;
     }
 });
-
-document.querySelectorAll(".modal-pop-close").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-        e.preventDefault();  // optional, in case it's inside a form
-        history.back();      // this will trigger your onpopstate logic
-    });
-});
+//TODO not go back further than the main menu if logged 
+//TODO go back from game logic outside modal

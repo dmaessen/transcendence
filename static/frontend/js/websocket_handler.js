@@ -107,7 +107,9 @@ const returnToStartMenu = async () => {
         await sleep(500);
         websocket.close();
     }
+    currentModal = "gameMenuFirst";
     gameMenuFirst.show();
+    history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
 }
 
 const returnToTournamentWaitingRoom = async (message) => {
@@ -186,7 +188,9 @@ const returnToStartMenuAfterTournament = async () => {
         await sleep(500);
         websocket.close();
     }
+    currentModal = "gameMenuFirst";
     gameMenuFirst.show();
+    history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
 }
 
 function handleServerMessage(message) {

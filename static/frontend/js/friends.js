@@ -87,7 +87,6 @@ const closeFriendsBtn = document.getElementById("closeFriendsBtn");
 if(closeFriendsBtn){
     closeFriendsBtn.addEventListener("click", function() {
         console.log("profile close clicked");
-        friendsModal.hide();
-        gameMenuFirst.show();
+        history.back();
     });
 }

@@ -80,20 +80,28 @@ document.getElementById("playBtn").addEventListener("click", async() => {
     history.pushState({ modalID: "gameMenu" }, "", "?modal=gameMenu");
 });
 
-
 document.getElementById("onePlayerBtn").addEventListener("click", () => {
     startGame("One Player");
-    history.pushState({ gameMode: "One Player" }, "", "?game=onePlayer");
+    currentModal = "onePlayer";
+    const mode = "One Player";
+    const encodedMode = encodeURIComponent(mode);
+    history.pushState({ modalID: "onePlayer", gameMode: mode }, "", `?modal=onePlayer&type=${encodedMode}`);
 });
 
 document.getElementById("twoPlayersBtn").addEventListener("click", () => {
     startGame("Two Players (hot seat)");
-    history.pushState({ gameMode: "Two Players (hot seat)" }, "", "?game=twoPlayers");
+    currentModal = "twoPlayers";
+    const mode = "Two Players (hot seat)";
+    const encodedMode = encodeURIComponent(mode);
+    history.pushState({ modalID: "twoPlayers", gameMode: mode }, "", `?modal=twoPlayers&type=${encodedMode}`);
 });
 
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => {
     startGame("Two Players (remote)");
-    history.pushState({ gameMode: "Two Players (remote)" }, "", "?game=twoPlayersRemote");
+    currentModal = "twoPlayersRemote";
+    const mode = "Two Players (remote)";
+    const encodedMode = encodeURIComponent(mode);
+    history.pushState({ modalID: "twoPlayersRemote", gameMode: mode }, "", `?modal=twoPlayersRemote&type=${encodedMode}`);
 });
 
 document.getElementById("tournamentBtn").addEventListener("click", () => {
@@ -106,25 +114,30 @@ document.getElementById("tournamentBtn").addEventListener("click", () => {
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
     disableTournamentButtons();
-    currentModal = ""
+    currentModal = "fourPlayersTournament";
+    const mode = "Tournament - 4 Players";
+    const encodedMode = encodeURIComponent(mode);
+    history.pushState({ modalID: "fourPlayersTournament", gameMode: mode }, "", `?modal=fourPlayersTournament&type=${encodedMode}`);
 });
 
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
     disableTournamentButtons();
+    currentModal = "eightPlayersTournament";
+    const mode = "Tournament - 8 Players";
+    const encodedMode = encodeURIComponent(mode);
+    history.pushState({ modalID: "eightPlayersTournament", gameMode: mode }, "", `?modal=eightPlayersTournament&type=${encodedMode}`);
 });
 
 document.getElementById("previousBtn").addEventListener("click", () => {
     history.back();
-
 });
 
 document.getElementById("previous2Btn").addEventListener("click", () => {
     history.back();
-
 });
 
-document.getElementById("exitButton").addEventListener("click", () =>  {
+function exitGame(){
     keyboardEnabled = false;
     gameState.running = false;
     stopTimer();
@@ -142,7 +155,14 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
             websocket.send(JSON.stringify({ action: "disconnect"}));
         websocket.close();
     }
-    gameMenuFirst.show();
+}
+
+document.getElementById("exitButton").addEventListener("click", () =>  {
+    exitGame();
+    history.back();
+    // gameMenuFirst.show();
+    // currentModal = "gameMenuFirst";
+    // history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
 });
 
 async function joinTournament(data){
@@ -201,8 +221,8 @@ window.addEventListener("load", async () => {
             await loginWebSocket();
         }
         currentModal = "gameMenuFirst";
-        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
         gameMenuFirst.show();
+        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
     } else {
         SignInMenu.show();
     }
@@ -422,7 +442,7 @@ window.addEventListener("beforeunload", () => {
         SignInMenu.show();
     } else {
         currentModal = "gameMenuFirst";
-        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
         gameMenuFirst.show();
+        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
     }
 });

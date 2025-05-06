@@ -361,8 +361,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 //handle the modals closing/oppening
                 loginModal.hide();
                 gameMenuFirst.show();
-                currentModal = "SignInMenu";
-                history.pushState({ modalID: "SignInMenu" }, "", "?modal=SignInMenu");
+                currentModal = "gameMenuFirst";
+                history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
 
             } else if(response.status === 403){
                 otpInputContainer.style.display = "block";
