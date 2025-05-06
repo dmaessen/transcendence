@@ -237,19 +237,12 @@ msgstr "Amis"
 msgid "Select Game Mode"
 msgstr "Sélectionner le mode de jeu"
 
-#: static/templates/modals/game_menu_modal.html:10
 msgid "One Player"
 msgstr "Un joueur"
 
-#: static/templates/modals/game_menu_modal.html:11
 msgid "Two Players (hot seat)"
-msgstr "Deux joueurs (siège chaud)"
+msgstr "Deux joueurs (hot seat)"
 
-#: static/templates/modals/game_menu_modal.html:12
-msgid "Two Players (with a friend)"
-msgstr "Deux joueurs (avec un ami)"
-
-#: static/templates/modals/game_menu_modal.html:13
 msgid "Two Players (remote)"
 msgstr "Deux joueurs (à distance)"
 
@@ -333,3 +326,14 @@ msgstr "Ajouter un ami"
 #: static/templates/tournament4.html:51 static/templates/tournament4.html:55
 msgid "Waiting..."
 msgstr "En attente..."
+
+#: static/frontend/js/game.js:254
+msgid "Press any key twice to start"
+msgstr "Appuyez deux fois pour commencer"
+
+msgid "Game Over: %(winner)s wins"
+msgstr "Fin : %(winner)s a gagné"
+
+msgid "Game stopped by player."
+msgstr "Jeu arrêté par le joueur."
+

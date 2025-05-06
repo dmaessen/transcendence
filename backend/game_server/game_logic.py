@@ -1,6 +1,7 @@
 import json
 import random
 import math
+from django.utils.translation import gettext as _
 
 MAX_BALL_SPEED = 15.0
 
@@ -233,7 +234,8 @@ class Game:
         self.running = False
         self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 5}
         print(f"Game ended. Winner: {winner}", flush=True)
-        return {"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner}
+        reason = _("Game Over: %(winner)s wins") % {'winner': winner}
+        return {"type": "end", "reason": reason, "winner": winner}
         
     def clear_game(self):
         self.players = {}  # Clear players

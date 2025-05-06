@@ -230,3 +230,12 @@ msgstr "Vriend toevoegen"
 
 msgid "Waiting..."
 msgstr "Wachten..."
+
+msgid "Press any key twice to start"
+msgstr "Druk op een toets om te starten"
+
+msgid "Game Over: %(winner)s wins"
+msgstr "Game Over: %(winner)s wint"
+
+msgid "Game stopped by player."
+msgstr "Spel gestopt door speler."

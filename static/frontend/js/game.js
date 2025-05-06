@@ -35,6 +35,11 @@ const gameState = {
     playerId: null,
 };
 
+const gameModeTexts = document.getElementById("gameModeTexts");
+const onePlayerText = gameModeTexts.dataset.one;
+const hotseatText = gameModeTexts.dataset.hotseat;
+const remoteText = gameModeTexts.dataset.remote;
+
 function startGame(mode) {
     keyboardEnabled = true;
     gameState.running = false;
@@ -52,15 +57,15 @@ function startGame(mode) {
     gameCanvas.style.height = gameCanvas.height / 2 + "px";
 
     if (mode === "One Player") {
-        gameTitle.textContent = "One Player";
+        gameTitle.textContent = onePlayerText; // "One Player"
         instructions1.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (hot seat)") {
-        gameTitle.textContent = "Two Players (hot seat)";
+        gameTitle.textContent = hotseatText; // "Two Players (hot seat)"
         instructions2.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (remote)") {
-        gameTitle.textContent = "Two Players (remote)";
+        gameTitle.textContent = remoteText; // "Two Players (remote)"
         instructions1.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") {
@@ -73,24 +78,18 @@ function startGame(mode) {
 }
 
 document.getElementById("playBtn").addEventListener("click", async() => {
-    // gameMenuFirst.hide();
-    // gameMenu.show();
     selectTournamentBtn();
 });
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
 document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
-// document.getElementById("tournamentBtn").addEventListener("click", () => {
-//     gameMenuTournament.show();
-//     gameMenu.hide();});
+
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    // disableTournamentButtons();
 });
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    // disableTournamentButtons();
 });
 
 document.getElementById("previousBtn").addEventListener("click", () => {
@@ -109,8 +108,8 @@ document.getElementById("exitButton").addEventListener("click", () =>  {
     instructions2.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    document.getElementById("tournamentBracket").style.display = "none"; // this working??
-    document.getElementById("tournamentBracket4").style.display = "none"; // this working??
+    document.getElementById("tournamentBracket").style.display = "none";
+    document.getElementById("tournamentBracket4").style.display = "none";
     if (websocket && websocket.readyState === WebSocket.OPEN) {
         if (gameState.mode != "Tournament - 4 Players" && gameState.mode != "Tournament - 8 Players" && gameState.mode != "4" && gameState.mode != "8")
             websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
@@ -146,21 +145,6 @@ tournamentBanner.addEventListener("click", async(event) => {
         console.log("Tournament Status:", data);
         if (data.remaining_spots > 0) {
             joinTournament(data);
-            // gameMenuFirst.hide();
-            // gameMenu.hide();
-            // gameMenuTournament.hide();
-
-            // gameState.mode = data.players_in + data.remaining_spots; 
-            // keyboardEnabled = true;
-            // gameState.running = false;
-            // gameTitle.style.display = "block";
-            // gameCanvas.style.display = "block";
-            // gameCanvas.width = 1400;
-            // gameCanvas.height = 1000;
-            // gameCanvas.style.width = gameCanvas.width / 2 + "px";
-            // gameCanvas.style.height = gameCanvas.height / 2 + "px";
-
-            // connectWebSocket(data.players_in + data.remaining_spots);
         }
     } catch (error) {
         console.error("Error fetching tournament status:", error);
@@ -194,12 +178,7 @@ window.addEventListener("load", async () => {
     }
 });
 
-// function disableTournamentButtons() {
-//     tournamentMenuBtn.style.display = "none";  // Hide the tournament button
-//     gameMenuTournament.hide(); // Hide the tournament menu
-// }
-
-function showTournamentAdBanner(players_in, total_spots) {// Show banner to promote for other players
+function showTournamentAdBanner(players_in, total_spots) { // Show banner to promote for other players
     if (players_in < total_spots) {
         tournamentBanner.style.display = "block"; 
         const playersInTournament = document.getElementById("playersInTournament");
@@ -213,15 +192,11 @@ function showWaitingRoomTournament(mode) {
     console.log("showWaitingRoomTournament called with mode:", mode);
     keyboardEnabled = false;
     gameState.running = false;
-    tournamentBanner.style.display = "none"; // needed?
-    document.getElementById("timer").style.display = "none"; // needed??
-    //gameTitle.textContent = "Tournament";
-    gameTitle.style.display = "none"; // needed??
-    gameCanvas.style.display = "none"; // needed??
+    tournamentBanner.style.display = "none";
+    document.getElementById("timer").style.display = "none";
+    gameTitle.style.display = "none";
+    gameCanvas.style.display = "none";
 
-    // const bracketElement = document.getElementById("tournamentBracket");
-    // console.log("Bracket element:", bracketElement);
-    // bracketElement.style.display = "grid";
     drawBracket(mode);
 }
 
@@ -267,6 +242,8 @@ function updateGameState(data) {
 }
 
 function displayStartPrompt() {
+    const startPromptText = document.getElementById("startPromptText").textContent.trim().slice(0, -1);
+
     gameCanvas.style.display = "block";
     gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     gameContext.font = "50px Courier New";
@@ -274,7 +251,8 @@ function displayStartPrompt() {
     gameContext.fillRect(gameCanvas.width / 2 - 350, gameCanvas.height / 2 - 48, 700, 100);
     gameContext.fillStyle = "#ffffff";
     gameContext.textAlign = "center";
-    gameContext.fillText("Press any key twice to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
+    gameContext.fillText(startPromptText, gameCanvas.width / 2, gameCanvas.height / 2 + 15);
+    // gameContext.fillText("Press any key twice to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
     keyboardEnabled = true;
 }
 
@@ -388,8 +366,7 @@ window.addEventListener("beforeunload", () => {
         gameCanvas.style.display = "none";
         gameTitle.style.display = "none";
         socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-        socket.close()
-        // SignInMenu.show();
+        socket.close();
     }
     const token = localStorage.getItem("access_token");
     if (!token) {

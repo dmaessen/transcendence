@@ -17,6 +17,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from game_server.player import Player
 from data.models import CustomUser, Match
 import logging
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -263,9 +264,10 @@ class GameConsumer(AsyncWebsocketConsumer):
             if self.game_id in games:
                 del games[self.game_id]
                 await self.broadcast_game_state(self.game_id)
+                reason = _("Game stopped by player.")
                 await self.send(text_data=json.dumps({
                     "type": "end",
-                    "reason": "Game stopped by player.",  # change this to something dynamic to see who won
+                    "reason": reason,
                 }))
 
         elif action == "disconnect":
@@ -421,7 +423,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(10)
                 if len(game.players) == 1:
                     print(f"NB2: Both players aren't responding, starting game regardless. Starting game!", flush=True)
-                    await self.send_json({"type": "end", "reason": f"Game Over: {self.username} wins", "winner": self.username})
+                    reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
+                    await self.send_json({"type": "end", "reason": reason, "winner": self.username})
     
     async def broadcast_game_state(self, game_id):
         if game_id in games:
@@ -446,18 +449,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                             del games[self.game_id]
 
                     print(f"Winner determined by default (due to disconnection): {self.username}", flush=True)
-                    await self.send_json({"type": "end", "reason": f"Game Over: {self.username} wins", "winner": self.username})
+                    reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
+                    await self.send_json({"type": "end", "reason": reason, "winner": self.username})
                     await self.end_twoplayers({self.username})
-                    # await self.channel_layer.group_send(
-                    #         self.match_name,
-                    #         {
-                    #             "type": "end",
-                    #             "reason": f"Game Over: {self.username} wins",
-                    #             "winner": {self.username}
-                    #         }
-                    #     )
                     break
-
 
                 if not game.running:
                     player_username = None
@@ -473,13 +468,14 @@ class GameConsumer(AsyncWebsocketConsumer):
                         winner = player_username if game.score.get("player", 0) >= points else opponent_username
                         print(f"Winner determined: {winner}", flush=True)
 
-                        await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
+                        reason = _("Game Over: %(winner)s wins") % {'winner': winner}
+                        await self.send_json({"type": "end", "reason": reason, "winner": winner})
 
                         await self.channel_layer.group_send(
                             self.match_name,
                             {
                                 "type": "end",
-                                "reason": f"Game Over: {winner} wins",
+                                "reason": reason,
                                 "winner": winner
                             }
                         )

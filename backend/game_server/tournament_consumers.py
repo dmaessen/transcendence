@@ -20,6 +20,7 @@ from urllib.parse import parse_qs
 import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 games = {}
@@ -347,9 +348,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                                 print(f"Winner determined: {winner}", flush=True)
                                 game.stop_game(winner)
                                 game.reset_game("Two Players (remote)") 
+                                reason = reason = _("Game Over: %(winner)s wins") % {'winner': winner}
                                 await self.channel_layer.group_send(
                                     self.match_name,
-                                    {"type": "game.end", "reason": f"Game Over: {winner} wins"}
+                                    {"type": "game.end", "reason": reason}
+                                    # {"type": "game.end", "reason": f"Game Over: {winner} wins"}
                                 )
                                 await self.channel_layer.group_send(
                                     "tournament_lobby",
@@ -369,11 +372,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     print(f"Winner determined: {winner}", flush=True)
 
                     await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
+                    reason = reason = _("Game Over: %(winner)s wins") % {'winner': winner}
                     await self.channel_layer.group_send(
                         self.match_name,
                         {
                             "type": "game.end",
-                            "reason": f"Game Over: {winner} wins"
+                            "reason": reason
+                            # "reason": f"Game Over: {winner} wins"
                         }
                     )
                     await self.channel_layer.group_send(
@@ -400,7 +405,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(10)
                 if len(game.players) == 1:
                     print(f"NB2: Both players aren't responding, starting game regardless. Starting game!", flush=True)
-                    await self.send_json({"type": "end", "reason": f"Game Over: {self.username} wins", "winner": self.username})
+                    reason = reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
+                    await self.send_json({"type": "end", "reason": reason, "winner": self.username})
 
     async def game_created(self, event):
         game_id = event["game_id"]
@@ -680,11 +686,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         print(f"Winner determined: {winner}", flush=True)
 
                         await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
+                        reason = _("Game Over: %(winner)s wins") % {'winner': winner}
                         await self.channel_layer.group_send(
                             self.match_name,
                             {
                                 "type": "game.end",
-                                "reason": f"Game Over: {winner} wins"
+                                "reason": reason
                             }
                         )
                         await self.channel_layer.group_send(
