@@ -141,11 +141,13 @@ ROOT_URLCONF = 'backend.urls'
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
 
-# MEDIA_URL = '/media/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'media')
 

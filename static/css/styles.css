@@ -124,19 +124,26 @@ p {
     /* padding: 10px; */
 }
 
+.link-style {
+    color: grey;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+}
+
 .divider {
     font-size: 30px;
     display: flex;
     align-items: center;
-  }
-  
+}
+
 .divider::before, .divider::after {
     flex: 1;
     content: '';
     padding: 1px;
     background-color: black;
     margin: 1px;
-  }
+}
 
 #profileThead {
     display: table-header-group !important;
@@ -161,4 +168,12 @@ p {
     width: 90%;
     max-width: 400px;
     z-index: 1050; /* Higher than modal */
+}
+
+#allMatchesModal .modal-dialog {
+    max-width: 1200px; /* Adjust this size as needed */
+}
+
+#allTournamentsModal .modal-dialog {
+    max-width: 1200px; /* Adjust this size as needed */
 }

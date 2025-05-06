@@ -1,3 +1,6 @@
+const allMatchesModalElement = document.getElementById("allMatchesModal");
+const allMatchesModal = new bootstrap.Modal(allMatchesModalElement);
+
 function populateAllMatches(data) {
     // console.log("populateMatches data: ", data);
     if (!Array.isArray(data)) {
@@ -35,8 +38,8 @@ function populateAllMatches(data) {
             winnerLink.style.color = "gray"; // Make it look like a link
 
             winnerLink.addEventListener("click", function(){
-                const allMatchesModalElement = document.getElementById("allMatchesModal");
-                const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
+                // const allMatchesModalElement = document.getElementById("allMatchesModal");
+                // const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
                 allMatchesModal.hide();
                 loadProfile(winnerLink.dataset.userID);
             });
@@ -52,21 +55,25 @@ function populateAllMatches(data) {
         opponentLink.dataset.userID = item.opponentID;
         opponentLink.style.cursor = "pointer"; // Make it look clickable
         opponentLink.style.color = "gray"; // Make it look like a link
+
         opponentLink.addEventListener("click", function(){
-            const allMatchesModalElement = document.getElementById("allMatchesModal");
-            const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
+            // const allMatchesModalElement = document.getElementById("allMatchesModal");
+            // const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
             allMatchesModal.hide();
             loadProfile(opponentLink.dataset.userID);
         });
         opponentCell.appendChild(opponentLink);
         row.appendChild(opponentCell);
-        
+    
         allMatchesTable.appendChild(row);
     });
 }
 
-async function loadAllMatches(userID) {
+async function loadAllMatches(userID, push = true) {
     try {
+        // const allMatchesModalElement = document.getElementById("allMatchesModal");
+        // const allMatchesModal = new bootstrap.Modal(allMatchesModalElement);
+        allMatchesModal.show();
         const response = await fetch(`/data/api/allUserMatches/?userID=${userID}`, {
             method: "GET",
             headers: {
@@ -85,6 +92,13 @@ async function loadAllMatches(userID) {
 
         if (Array.isArray(data.matches)) {
             populateAllMatches(data.matches);
+            if(push) {
+                const state = { modalID: "AllMatchesModal", userID: userID };
+                const url = `?modal=AllMatchesModal&user=${userID}`;
+                currentModal = "AllMatchesModal";
+                history.pushState(state, '', url);
+                console.log("Push: ", state);
+            }
         } else {
             console.error("Data.matches is not an array:", data.matches);
         }
@@ -93,10 +107,10 @@ async function loadAllMatches(userID) {
     }
 }
 
-const allMatchesLink = document.querySelector('[data-bs-toggle="modal"][data-bs-target="#allMatchesModal"]');
+const allMatchesLink = document.getElementById("AllMatchesModal");
 if (allMatchesLink) {
-    allMatchesLink.addEventListener("click", function() {
-        const userID = document.getElementById("AllMatchesModal").dataset.userId;
+    allMatchesLink.addEventListener("click", function () {
+        const userID = document.getElementById("currentUser").dataset.userId;
         loadAllMatches(userID);
     });
 }
@@ -105,11 +119,6 @@ const closeAllMatchesBtn = document.getElementById("closeAllMatchesBtn");
 if(closeAllMatchesBtn){
     closeAllMatchesBtn.addEventListener("click", function() {
         console.log("profile close clicked");
-        const allMatchesModalElement = document.getElementById("allMatchesModal");
-        const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
-        allMatchesModal.hide();
-        const profileModalElement = document.getElementById("profileModal");
-        const profileModal = bootstrap.Modal.getInstance(profileModalElement);
-        profileModal.show();
+        history.back();
     });
 }

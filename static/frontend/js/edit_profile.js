@@ -1,3 +1,6 @@
+const editProfileModalElement = document.getElementById("editProfileModal");
+const editProfileModal =  new bootstrap.Modal(editProfileModalElement);
+
 const saveChangesBtn = document.getElementById("saveChanges");
 
 if (saveChangesBtn) {
@@ -50,12 +53,12 @@ if (saveChangesBtn) {
             }
 
             // Close edit modal
-            let editProfileModalElement = document.getElementById("editProfileModal");
-            let editProfileModal = bootstrap.Modal.getInstance(editProfileModalElement);
+            // let editProfileModalElement = document.getElementById("editProfileModal");
+            // let editProfileModal = bootstrap.Modal.getInstance(editProfileModalElement);
             editProfileModal.hide();
 
-            let modal = new bootstrap.Modal(document.getElementById("profileModal"));
-            modal.show();
+            // let modal = new bootstrap.Modal(document.getElementById("profileModal"));
+            profileModal.show();
             loadProfile("self");
 
         } catch (error) {
@@ -68,11 +71,8 @@ const editCloseBtn = document.getElementById("editCloseBtn")
 if(editCloseBtn){
     editCloseBtn.addEventListener("click", function (){
         console.log("profile close clicked");
-        const editProfileModalElement = document.getElementById("editProfileModal");
-        const editProfileModal = bootstrap.Modal.getInstance(editProfileModalElement);
+
         editProfileModal.hide();
-        const profileModalElement = document.getElementById("profileModal");
-        const profileModal = bootstrap.Modal.getInstance(profileModalElement);
         profileModal.show();
     });
 }

@@ -1,3 +1,6 @@
+const allTournamentsModalElement = document.getElementById("allTournamentsModal");
+const allTournamentsModal = new bootstrap.Modal(allTournamentsModalElement);
+
 function populateAllTournament(data) {
     console.log("populateTournaments data: ", data);
     if (!Array.isArray(data)) {
@@ -37,8 +40,8 @@ function populateAllTournament(data) {
             winnerLink.style.color = "gray"; // Make it look like a link
 
             winnerLink.addEventListener("click", function(){
-                const allTournamentsModalElement = document.getElementById("allTournamentsModal");
-                const allTournamentsModal = bootstrap.Modal.getInstance(allTournamentsModalElement);
+                // const allTournamentsModalElement = document.getElementById("allTournamentsModal");
+                // const allTournamentsModal = bootstrap.Modal.getInstance(allTournamentsModalElement);
                 allTournamentsModal.hide();
                 loadProfile(winnerLink.dataset.userID);
             });
@@ -52,8 +55,11 @@ function populateAllTournament(data) {
     });
 }
 
-async function loadAllTournaments(userID) {
+async function loadAllTournaments(userID, push = true) {
     try {
+        // const allTournamentsModalElement = document.getElementById("allTournamentsModal");
+        // const allTournamentsModal = new bootstrap.Modal(allTournamentsModalElement);
+        allTournamentsModal.show();
         const response = await fetch(`/data/api/userAllTournaments/?userID=${userID}`, {
             method: "GET",
             headers: {
@@ -72,6 +78,13 @@ async function loadAllTournaments(userID) {
 
         if (Array.isArray(data.tournaments)) {
             populateAllTournament(data.tournaments);
+            if (push) {
+                const state = { modalID: "AllTournamentsModal", userID: userID };
+                const url = `?modal=AllTournamentsModal&user=${userID}`;
+                currentModal = "AllTournamentsModal";
+                history.pushState(state, '', url);
+                console.log("Push: ", state);
+            }
         } else {
             console.error("Data.tournaments is not an array:", data.tournaments);
         }
@@ -80,12 +93,12 @@ async function loadAllTournaments(userID) {
     }
 }
 
-const allTournamentsLink = document.querySelector('[data-bs-toggle="modal"][data-bs-target="#allTournamentsModal"]');
+const allTournamentsLink = document.getElementById("AllTournamentsModal");
 if (allTournamentsLink) {
-    allTournamentsLink.addEventListener("click", function() {
-        const userID = document.getElementById("AllTournamentsModal").dataset.userId;
-        console.log("heeeeeey!!");
+    allTournamentsLink.addEventListener("click", function () {
+        const userID = document.getElementById("currentUser").dataset.userId;
         loadAllTournaments(userID);
+
     });
 }
 
@@ -93,11 +106,7 @@ const closeAllTournamentsBtn = document.getElementById("closeAllTournamentsBtn")
 if(closeAllTournamentsBtn){
     closeAllTournamentsBtn.addEventListener("click", function() {
         console.log("profile close clicked");
-        const allTournamentsModalElement = document.getElementById("allTournamentsModal");
-        const allTournamentsModal = bootstrap.Modal.getInstance(allTournamentsModalElement);
         allTournamentsModal.hide();
-        const profileModalElement = document.getElementById("profileModal");
-        const profileModal = bootstrap.Modal.getInstance(profileModalElement);
         profileModal.show();
     });
 }

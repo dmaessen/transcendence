@@ -1,3 +1,6 @@
+const loginModalElement = document.getElementById("SignInMenu");
+const loginModal = new bootstrap.Modal(loginModalElement);
+
 let loginsocket;
 
 async function loginWebSocket(){
@@ -356,14 +359,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 await loginWebSocket();
 
                 //handle the modals closing/oppening
-                const loginModalElement = document.getElementById("SignInMenu");
-                const mainMenuModalElement = document.getElementById("gameMenuFirst");
-                console.log("loginModalElement:", loginModalElement);
-                console.log("mainMenuModalElement:", mainMenuModalElement);
-                const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalElement);
                 loginModal.hide();
-                const mainMenuModal = bootstrap.Modal.getOrCreateInstance(mainMenuModalElement);
-                mainMenuModal.show();
+                gameMenuFirst.show();
+                currentModal = "SignInMenu";
+                history.pushState({ modalID: "SignInMenu" }, "", "?modal=SignInMenu");
 
             } else if(response.status === 403){
                 otpInputContainer.style.display = "block";

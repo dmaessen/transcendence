@@ -1,5 +1,8 @@
+const profileModalElement = document.getElementById("profileModal");
+const profileModal = new bootstrap.Modal(profileModalElement);
+
 async function addFriend(userID) {
-    console.log("addFriend userID: ", userID);
+    // console.log("addFriend userID: ", userID);
     try {
         const response = await fetch(`/data/api/addFriend/`, {
             method: "POST",
@@ -53,7 +56,7 @@ async function deleteFriend(userID) {
 }
 
 function populateTournament(data) {
-    console.log("populateTournaments data: ", data);
+    // console.log("populateTournaments data: ", data);
     if (!Array.isArray(data)) {
         console.error("Provided data is not an array:", data);
         return;
@@ -75,7 +78,7 @@ function populateTournament(data) {
     data.forEach(item => {
         // console.log("tournament winer: ", item.winner);
         // console.log("tournamente winnerID: ", item.winnerID);
-        console.log("tournament userWon: ", item.userWon);
+        // console.log("tournament userWon: ", item.userWon);
         const row = document.createElement("tr");
 
         const dateCell = document.createElement("td");
@@ -165,7 +168,7 @@ function populateMatches(data) {
 }
 
 async function loadUserData(userID) {
-    console.log("loadProfile userID: ", userID);
+    // console.log("loadProfile userID: ", userID);
     try {
         const response = await fetch(`/data/api/userData/?userID=${userID}`, {
             method: "GET",
@@ -178,7 +181,7 @@ async function loadUserData(userID) {
         }
 
         const data = await response.json();
-        console.log("loadProfile user data:", data);
+        // console.log("loadProfile user data:", data);
 
         document.getElementById("userAvatar").src = data.avatar;
         document.getElementById("username").textContent = data.username;
@@ -187,8 +190,7 @@ async function loadUserData(userID) {
         document.getElementById("matchesPlayed").textContent = data.matches_played;
         document.getElementById("wins").textContent = data.matches_won;
         document.getElementById("losses").textContent = data.matches_lost;
-        document.getElementById("AllMatchesModal").setAttribute("data-user-id", data.user_id);
-        document.getElementById("AllTournamentsModal").setAttribute("data-user-id", data.user_id);
+        document.getElementById("currentUser").dataset.userId = data.user_id;
         friendshipID = data.friendshipID;
 
         let btnType = document.getElementById("btnType");
@@ -197,11 +199,11 @@ async function loadUserData(userID) {
             if (data.btnType === "Add friend") {
                 addFriend(userID);
             } else if (data.btnType === "Edit profile") {
-                let profileModalElement = document.getElementById("profileModal");
-                let profileModal = bootstrap.Modal.getInstance(profileModalElement);
+                currentModal = "editProfileModal";
+                history.pushState({ modalID: "editProfileModal" }, "", "?modal=editProfileModal");
+                console.log("Push: editProfileModal");
                 profileModal.hide();
-                let modal = new bootstrap.Modal(document.getElementById("editProfileModal"));
-                modal.show();
+                editProfileModal.show();
             } else if (data.btnType === "Delete friend") {
                 deleteFriend(userID);
             } else if (data.btnType === "Cancel request") {
@@ -230,8 +232,8 @@ async function loadMatchesData(userID) {
         }
 
         const data = await response.json();
-        console.log("Raw response:", data);
-        console.log("Matches:", data.matches);
+        // console.log("Raw response:", data);
+        // console.log("Matches:", data.matches);
 
         if (Array.isArray(data.matches)) {
             populateMatches(data.matches);
@@ -258,8 +260,8 @@ async function loadTournametsData(userID) {
         }
 
         const data = await response.json();
-        console.log("Raw response:", data);
-        console.log("Tournaments:", data.tournaments);
+        // console.log("Raw response:", data);
+        // console.log("Tournaments:", data.tournaments);
 
         if (Array.isArray(data.tournaments)) {
             populateTournament(data.tournaments);
@@ -271,21 +273,28 @@ async function loadTournametsData(userID) {
     }
 }
 
-async function loadProfile(userID, openModal = true) {
+async function loadProfile(userID, openModal = true, push = true) {
     try {
-        // Close possible already opened modals to avoid the backgroud from getting darker and darker
-        const profileModalElement = document.getElementById("profileModal");
+        //Avoid black backgroud
+        // const profileModalElement = document.getElementById("profileModal");
         const existingModal = bootstrap.Modal.getInstance(profileModalElement);
         if (existingModal) {
             existingModal.hide();
         }
 
+        //Load all the information on the page
         await loadUserData(userID);
         await loadMatchesData(userID);
         await loadTournametsData(userID);
 
         if (openModal) {
-            const profileModalElement = document.getElementById("profileModal");
+            if (push) {
+                const state = { modalID: "profileModal", userID: userID };
+                const url = `?modal=profileModal&user=${userID}`;
+                history.pushState(state, '', url);
+                console.log("Push: ", state);
+            }
+        
             const profileModal = new bootstrap.Modal(profileModalElement);
             profileModal.show();
         }
@@ -298,32 +307,13 @@ const profileBtn = document.getElementById("profileBtn");
 if (profileBtn) {
     profileBtn.addEventListener("click", function () {
         loadProfile("self");
-        
     });
 }
-
-// const profileCloseButton = document.getElementById("profileCloseButton");
-// if(profileCloseButton){
-//     profileCloseButton.addEventListener("click", function() {
-//         console.log("profile close clicked");
-//         const profileModalElement = document.getElementById("profileModal");
-//         const profileModal = bootstrap.Modal.getInstance(profileModalElement);
-//         profileModal.hide();
-//         const gameMenuFirstElement = document.getElementById("gameMenuFirst");
-//         const gameMenuFirst = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
-//         gameMenuFirst.show();
-//     });
-// }
 
 const profileCloseButton = document.getElementById("profileCloseButton");
 if(profileCloseButton){
     profileCloseButton.addEventListener("click", function() {
-        console.log("profile close clicked");
-        const profileModalElement = document.getElementById("profileModal");
-        const profileModal = bootstrap.Modal.getInstance(profileModalElement);
-        profileModal.hide();
-        const gameMenuFirstElement = document.getElementById("gameMenuFirst");
-        const gameMenuFirst = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
-        gameMenuFirst.show();
+        // console.log("profile close clicked");
+        history.back();
     });
 }

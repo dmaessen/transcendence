@@ -52,15 +52,3 @@ div {
 #qrContainer button{
     margin-top: 10px;
 }
-
-.modal.stacked {
-    z-index: 1060;
-}
-
-#SignInMenu {
-    z-index: 1420 !important;
-}
-
-#RegisterMenu {
-    z-index: 1420 !important;
-}

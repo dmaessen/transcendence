@@ -11,3 +11,4 @@ async function fetchData(url, options = {}) {
         //throw error; // rethrow the error after logging it
     }
 }
+//TODO check what it does 

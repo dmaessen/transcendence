@@ -73,42 +73,56 @@ function startGame(mode) {
 }
 
 document.getElementById("playBtn").addEventListener("click", async() => {
-    // gameMenuFirst.hide();
-    // gameMenu.show();
     console.log("calling select btn!");
-    selectTournamentBtn();
-    // try {
-    //     const data = await fetchData("/tournament-status/");
-    //     console.log("Fetched tournament status:", data);
-    //     if (data.remaining_spots > 0 && data.players_in > 0) // at least one in
-    //             tournamentMenuBtn.style.display = "none";
-    //         else // check on this
-    //             tournamentMenuBtn.style.display = "block";
-    // } catch (error) {
-    //     console.error("Error fetching tournament status:", error);
-    // }
+    await selectTournamentBtn();
+    gameMenu.show();
+    currentModal = "gameMenu";
+    history.pushState({ modalID: "gameMenu" }, "", "?modal=gameMenu");
 });
 
 
-document.getElementById("onePlayerBtn").addEventListener("click", () => startGame("One Player"));
-document.getElementById("twoPlayersBtn").addEventListener("click", () => startGame("Two Players (hot seat)"));
-document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => startGame("Two Players (remote)"));
+document.getElementById("onePlayerBtn").addEventListener("click", () => {
+    startGame("One Player");
+    history.pushState({ gameMode: "One Player" }, "", "?game=onePlayer");
+});
+
+document.getElementById("twoPlayersBtn").addEventListener("click", () => {
+    startGame("Two Players (hot seat)");
+    history.pushState({ gameMode: "Two Players (hot seat)" }, "", "?game=twoPlayers");
+});
+
+document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => {
+    startGame("Two Players (remote)");
+    history.pushState({ gameMode: "Two Players (remote)" }, "", "?game=twoPlayersRemote");
+});
+
 document.getElementById("tournamentBtn").addEventListener("click", () => {
     gameMenuTournament.show();
-    gameMenu.hide();});
+    gameMenu.hide();
+    currentModal = "gameMenuTournament";
+    history.pushState({ modalID: "gameMenuTournament" }, "", "?modal=gameMenuTournament");
+});
+
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    disableTournamentButtons();});
+    disableTournamentButtons();
+    currentModal = ""
+});
+
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    disableTournamentButtons();});
+    disableTournamentButtons();
+});
 
 document.getElementById("previousBtn").addEventListener("click", () => {
-    gameMenuFirst.show();
-    gameMenu.hide();});
+    history.back();
+
+});
+
 document.getElementById("previous2Btn").addEventListener("click", () => {
-    gameMenuTournament.hide();
-    gameMenu.show();});
+    history.back();
+
+});
 
 document.getElementById("exitButton").addEventListener("click", () =>  {
     keyboardEnabled = false;
@@ -186,6 +200,8 @@ window.addEventListener("load", async () => {
         if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
             await loginWebSocket();
         }
+        currentModal = "gameMenuFirst";
+        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
         gameMenuFirst.show();
     } else {
         SignInMenu.show();
@@ -405,6 +421,8 @@ window.addEventListener("beforeunload", () => {
     if (!token) {
         SignInMenu.show();
     } else {
+        currentModal = "gameMenuFirst";
+        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
         gameMenuFirst.show();
     }
 });

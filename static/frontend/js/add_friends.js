@@ -1,3 +1,6 @@
+const addFriendsModalElement = document.getElementById("addFriendsModal");
+const addFriendsModal = new bootstrap.Modal(addFriendsModalElement);
+
 async function acceptFriend(friendshipID) {
     console.log("friendshipID: ", friendshipID);
     try {
@@ -74,11 +77,25 @@ function populateFRequests(data) {
         const row = document.createElement("tr");
         
         const usernameCell = document.createElement("td");
+        const usernameLink = document.createElement("span");
         if(item.user_id === item.sender_id){
-            usernameCell.textContent = item.receiver;
+            usernameLink.textContent = item.receiver;
+            usernameLink.dataset.userID = item.receiver_id;
+            usernameLink.style.cursor = "pointer";
+            usernameLink.style.color = "gray";
         } else {
-            usernameCell.textContent = item.sender;
+            usernameLink.textContent = item.sender;
+            usernameLink.dataset.userID = item.sender_id;
+            usernameLink.style.cursor = "pointer";
+            usernameLink.style.color = "gray";
         }
+        usernameLink.addEventListener("click", function(){
+            const addFriendsModalElement = document.getElementById("addFriendsModal");
+            const addFriendsModal = bootstrap.Modal.getInstance(addFriendsModalElement);
+            addFriendsModal.hide();
+            loadProfile(usernameLink.dataset.userID);
+        })
+        usernameCell.appendChild(usernameLink);
         row.appendChild(usernameCell);
         
         const acceptCell = document.createElement("td");
@@ -112,9 +129,12 @@ function populateFRequests(data) {
     });
 }
 
-async function loadFriendsRequests() {
+async function loadFriendsRequests(push = true) {
     console.log("loadFRequest");
     try {
+        const addFriendsModalElement = document.getElementById("addFriendsModal");
+        const addFriendsModal = new bootstrap.Modal(addFriendsModalElement);
+        addFriendsModal.show();
         const response = await fetch(`/data/api/friendsRequests`, {
             method: "GET",
             headers: {
@@ -130,6 +150,8 @@ async function loadFriendsRequests() {
         
         if (Array.isArray(data)) {
             populateFRequests(data);
+            if(push)
+                history.pushState({ modalID: "addFriendsModal" }, "", "?modal=addFriendsModal");    
         } else {
             console.error("Data.fRequests is not an array:", data);
         }
@@ -141,7 +163,9 @@ async function loadFriendsRequests() {
 
 const addFriendBtn = document.getElementById("addFriendsBtn");
 if(addFriendBtn) {
-    addFriendBtn.addEventListener("click", loadFriendsRequests);
+    addFriendBtn.addEventListener("click", () => {
+        loadFriendsRequests();
+    });
 }
 
 const searchFriendBtn = document.getElementById("searchFriendBtn");
@@ -169,8 +193,8 @@ if (searchFriendBtn) {
             const data = await response.json();
             const userID = data.user_id;
             if (userID) {
-                const addFriendsModalElement = document.getElementById("addFriendsModal");
-                const addFriendsModal = bootstrap.Modal.getInstance(addFriendsModalElement);
+                // const addFriendsModalElement = document.getElementById("addFriendsModal");
+                // const addFriendsModal = bootstrap.Modal.getInstance(addFriendsModalElement);
                 addFriendsModal.hide();
                 loadProfile(userID);
             } else {
@@ -186,11 +210,7 @@ const addFriendCloseBtn = document.getElementById("addFriendCloseBtn");
 if(addFriendCloseBtn){
     addFriendCloseBtn.addEventListener("click", function() {
         console.log("add close clicked");
-        const addFriendsModalElement = document.getElementById("addFriendsModal");
-        const addFriendsModal = bootstrap.Modal.getInstance(addFriendsModalElement);
         addFriendsModal.hide();
-        const friendsModalElement = document.getElementById("friendsModal");
-        const friendsModal = bootstrap.Modal.getOrCreateInstance(friendsModalElement);
         friendsModal.show();
     });
 }
