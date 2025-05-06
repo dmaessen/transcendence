@@ -202,6 +202,7 @@ async function loadUserData(userID) {
                 profileModal.hide();
                 let modal = new bootstrap.Modal(document.getElementById("editProfileModal"));
                 modal.show();
+                loadEditProfileData();
             } else if (data.btnType === "Delete friend") {
                 deleteFriend(userID);
             } else if (data.btnType === "Cancel request") {
@@ -213,6 +214,36 @@ async function loadUserData(userID) {
     } catch (error) {
         console.error("Error fetching user data:", error);
     }
+}
+
+function loadEditProfileData() {
+    // Get current user profile data
+    fetch('/data/api/get_profile/', {
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Loading user data for edit:", data);
+        
+        // Fill in form fields with current values
+        // document.getElementById("newUsername").value = data.username || '';
+        // document.getElementById("newMail").value = data.email || '';
+        
+        // Set preferred language dropdown
+        const langSelect = document.getElementById("preferredLanguage");
+        if (data.preferred_language) {
+            console.log("Setting preferred language to:", data.preferred_language);
+            langSelect.value = data.preferred_language;
+        } else {
+            // Default to current active language if no preference saved
+            langSelect.value = document.documentElement.lang;
+        }
+    })
+    .catch(error => {
+        console.error("Error loading profile data:", error);
+    });
 }
 
 async function loadMatchesData(userID) {

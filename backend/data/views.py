@@ -8,6 +8,10 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 import sys
+from django.utils import translation
+from django.conf import settings
+from .forms import LanguagePreferenceForm
+from django.shortcuts import render
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
  
@@ -148,10 +152,11 @@ def edit_user_data(request):
     newUsername = request.POST.get('newUsername')
     newMail = request.POST.get('newMail')
     newAvatar = request.FILES.get('newAvatar')
-    
+    preferred_language = request.POST.get('preferred_language')
 
     logger.info(f"newUsername: {newUsername}")
     logger.info(f"newMail: {newMail}")
+    logger.info(f"preferred_language: {preferred_language}")
     
     user = request.user
     
@@ -169,6 +174,10 @@ def edit_user_data(request):
             user.email = newMail
         if newAvatar:
             user.avatar = newAvatar
+        if preferred_language:
+            user.preferred_language = preferred_language
+            translation.activate(preferred_language)
+            request.session[settings.LANGUAGE_COOKIE_NAME] = preferred_language
 
         user.save()
         
@@ -176,6 +185,7 @@ def edit_user_data(request):
             "username": user.username,
             "email": user.email,
             "avatar": user.avatar.url if user.avatar else None,
+            "preferred_language": user.preferred_language,
         }
                 
         return JsonResponse({"message": "Successfully edited", "user_data": updated_user_data}, status=200)
@@ -246,3 +256,21 @@ def search_user(request):
         return JsonResponse({"user_id": user.id})
     except CustomUser.DoesNotExist:
         return JsonResponse({"user_id": None})
+
+# API to get the current user's language preference
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    try:
+        user = request.user
+        profile_data = {
+            "username": user.username,
+            "email": user.email,
+            "avatar": user.avatar.url if hasattr(user, 'avatar') and user.avatar else None,
+            "preferred_language": user.preferred_language if hasattr(user, 'preferred_language') else settings.LANGUAGE_CODE,
+            # Include other profile fields as needed
+        }
+        return JsonResponse(profile_data, status=200)
+    except Exception as e:
+        logger.error(f"Error getting profile data: {e}")
+        return JsonResponse({"error": "Failed to retrieve profile data"}, status=500)

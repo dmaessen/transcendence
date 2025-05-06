@@ -85,6 +85,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth_2fa.middleware.AllauthTwoFactorMiddleware',
     'django_otp.middleware.OTPMiddleware',
+    'data.middleware.LanguagePreferenceMiddleware',
 
 ]
 
@@ -223,6 +224,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en'
 
+LANGUAGE_COOKIE_NAME = 'django_language'
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365  # One year
 
 LANGUAGES = [
     ('en', _('English')),

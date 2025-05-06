@@ -26,7 +26,8 @@ from .views import index
 urlpatterns = [
     path('', index),
     #path('i18n/', include('django.conf.urls.i18n')),
-    path('i18n/', set_language, name='set_language'),
+    # path('i18n/', set_language, name='set_language'),
+    path('i18n/setlang/', set_language, name='set_language'),
     path('matchmaking/', include('matchmaking.urls')),
     path('game_server/', include('game_server.urls')),
 	path('api/authentication/', include('authentication.urls')),
