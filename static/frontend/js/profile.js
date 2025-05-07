@@ -205,20 +205,20 @@ async function loadUserData(userID) {
         let btnType = document.getElementById("btnType");
         btnType.disabled = false;
         btnType.onclick = () => {
-            if (data.btnType === "Add friend") {
+            if (data.actionType === "add") {
                 addFriend(userID);
-            } else if (data.btnType === "Edit profile") {
+            } else if (data.actionType === "edit") {
                 let profileModalElement = document.getElementById("profileModal");
                 let profileModal = bootstrap.Modal.getInstance(profileModalElement);
                 profileModal.hide();
                 let modal = new bootstrap.Modal(document.getElementById("editProfileModal"));
                 modal.show();
                 loadEditProfileData();
-            } else if (data.btnType === "Delete friend") {
+            } else if (data.actionType === "delete") {
                 deleteFriend(userID);
-            } else if (data.btnType === "Cancel request") {
+            } else if (data.actionType === "request") {
                 deleteFriend(userID);
-            } else if (data.btnType === "Accept request") {
+            } else if (data.actionType === "accept") {
                 acceptFriend(friendshipID);
             }
         };

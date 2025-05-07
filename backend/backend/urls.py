@@ -21,7 +21,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from game_server.views import get_tournament_status
 from django.conf.urls.i18n import i18n_patterns, set_language
-# from django.views.i18n import JavaScriptCatalog
 from .views import index
 
 urlpatterns = [
@@ -29,7 +28,6 @@ urlpatterns = [
     #path('i18n/', include('django.conf.urls.i18n')),
     # path('i18n/', set_language, name='set_language'),
     path('i18n/setlang/', set_language, name='set_language'),
-    # path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     path('matchmaking/', include('matchmaking.urls')),
     path('game_server/', include('game_server.urls')),
 	path('api/authentication/', include('authentication.urls')),

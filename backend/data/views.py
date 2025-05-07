@@ -31,6 +31,7 @@ def get_user_data(request):
     if profileID == "self" or request.user.id == int(profileID):
         user = request.user
         btnType = _("Edit profile")
+        actionType = "edit"
     else:
         user = CustomUser.objects.filter(id = profileID).first()
         friendship = get_frienship(profileID, request.user.id)
@@ -38,12 +39,16 @@ def get_user_data(request):
             friendshipID =  friendship.id
             if friendship.status == "approved":
                 btnType = _("Delete friend")
+                actionType = "delete"
             elif friendship.status == "pending" and friendship.sender == request.user:
                 btnType = _("Friend request sent")
+                actionType = "request"
             else:
                 btnType = _("Accept request")
+                actionType = "accept"
         else:
             btnType = _("Add friend")
+            actionType = "add"
         
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -58,6 +63,7 @@ def get_user_data(request):
         "email": user.email,
         "avatar": user.avatar.url if user.avatar else None,
         "btnType": btnType,
+        "actionType": actionType,
         "matches_played": matches_played,
         "matches_won": matches_won,
         "matches_lost": matches_lost,
