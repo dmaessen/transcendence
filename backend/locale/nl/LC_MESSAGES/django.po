@@ -239,3 +239,9 @@ msgstr "Game Over: %(winner)s wint"
 
 msgid "Game stopped by player."
 msgstr "Spel gestopt door speler."
+
+msgid "Preferred Language"
+msgstr "Voorkeurestaal"
+
+msgid "This language will be used automatically when you log in"
+msgstr "Deze taal wordt automatisch gebruikt wanneer je inlogt"

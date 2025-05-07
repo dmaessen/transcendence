@@ -337,3 +337,8 @@ msgstr "Fin : %(winner)s a gagné"
 msgid "Game stopped by player."
 msgstr "Jeu arrêté par le joueur."
 
+msgid "Preferred Language"
+msgstr "Langue préférée"
+
+msgid "This language will be used automatically when you log in"
+msgstr "Cette langue sera utilisée automatiquement lorsque vous vous connecterez"
