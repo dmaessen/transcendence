@@ -69,7 +69,9 @@ function populateTournament(data) {
         tournamentsTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
-    headerRow.innerHTML = "<th>Tournament date</th><th>Winner</th>";
+    headerRow.innerHTML =
+        "<th>" + gettext("Tournament date") + "</th>" +
+        "<th>" + gettext("Winner") + "</th>";
     thead.appendChild(headerRow);
 
     data.forEach(item => {
@@ -120,7 +122,10 @@ function populateMatches(data) {
         matchesTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
-    headerRow.innerHTML = "<th>Match date</th><th>Winner</th><th>Opponent</th>";
+    // headerRow.innerHTML = "<th>Match date</th><th>Winner</th><th>Opponent</th>";
+    headerRow.innerHTML =
+        "<th>" + gettext("Tournament date") + "</th>" +
+        "<th>" + gettext("Winner") + "</th>";
     thead.appendChild(headerRow);
 
     //Populate

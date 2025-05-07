@@ -1,5 +1,10 @@
 {% load static i18n %}
 
+<script src="{% url 'javascript-catalog' %}"></script>
+<script>
+  const gettext = window.gettext;  // make gettext available
+</script>
+
 <!DOCTYPE html>
 {% get_current_language as current_language %}
 <html lang="{{ current_language }}">
@@ -25,18 +30,6 @@
       <option value="fr" {% if current_language == 'fr' %}selected{% endif %}>Français</option>
     </select>
   </form>
-  
-    <!-- <form action="{% url 'set_language' %}" method="post"
-          class="position-fixed top-0 end-0 mt-5 me-3"
-          style="z-index: 1100;">
-        {% csrf_token %}
-        <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
-          <option value="en" {% if LANGUAGE_CODE == 'en' or not LANGUAGE_CODE %}selected{% endif %}>English</option>
-          <option value="nl" {% if LANGUAGE_CODE == 'nl' %}selected{% endif %}>Nederlands</option>
-          <option value="fr" {% if LANGUAGE_CODE == 'fr' %}selected{% endif %}>Français</option>
-      </select>
-      
-    </form> -->
 
     <!-- Tournament banner -->
     <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">
@@ -94,15 +87,6 @@
     <script src="{% static 'frontend/js/add_friends.js' %}"></script>
     <script src="{% static 'frontend/js/edit_profile.js' %}"></script>
     <script src="{% static 'frontend/js/websocket_handler.js' %}"></script>
-
-    <!-- LOGIN MODAL IS NOT VISIBLE WITHOUT THIS -->
-    <!-- Optional: Force modal to show for testing -->
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const modal = new bootstrap.Modal(document.getElementById('SignInMenu'));
-            modal.show();
-        });
-    </script> -->
 
 </body>
 </html>

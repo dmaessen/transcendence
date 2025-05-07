@@ -342,3 +342,29 @@ msgstr "Langue préférée"
 
 msgid "This language will be used automatically when you log in"
 msgstr "Cette langue sera utilisée automatiquement lorsque vous vous connecterez"
+
+msgid "Tournament date"
+msgstr "Date tournoi"
+
+msgid "Winner"
+msgstr "Gagnant"
+
+msgid "Opponent"
+msgstr "Opposant"
+
+msgid "Match date"
+msgstr "Date match"
+
+msgid "Friend"
+msgstr "Ami"
+
+msgid "Status"
+msgstr "Statut"
+
+msgid "Accept"
+msgstr "Accepter"
+
+msgid "Decline"
+msgstr "Refuser"
+
+

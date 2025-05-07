@@ -15,7 +15,9 @@ function populateAllTournament(data) {
         allTournamentsTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
-    headerRow.innerHTML = "<th>Tournament date</th><th>Winner</th>";
+    headerRow.innerHTML =
+        "<th>" + gettext("Tournament date") + "</th>" +
+        "<th>" + gettext("Winner") + "</th>";
     thead.appendChild(headerRow);
 
     data.forEach(item => {

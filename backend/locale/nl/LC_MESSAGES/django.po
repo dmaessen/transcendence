@@ -245,3 +245,27 @@ msgstr "Voorkeurestaal"
 
 msgid "This language will be used automatically when you log in"
 msgstr "Deze taal wordt automatisch gebruikt wanneer je inlogt"
+
+msgid "Tournament date"
+msgstr "Toernooi datum"
+
+msgid "Winner"
+msgstr "Winnaar"
+
+msgid "Opponent"
+msgstr "Tegenstander"
+
+msgid "Match date"
+msgstr "Wedstrijd datum"
+
+msgid "Friend"
+msgstr "Vriend"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Accept"
+msgstr "Accepteer"
+
+msgid "Decline"
+msgstr "Afname"
