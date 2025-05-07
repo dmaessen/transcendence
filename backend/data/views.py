@@ -12,6 +12,7 @@ from django.utils import translation
 from django.conf import settings
 from .forms import LanguagePreferenceForm
 from django.shortcuts import render
+from django.utils.translation import gettext as _
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
  
@@ -29,20 +30,20 @@ def get_user_data(request):
     
     if profileID == "self" or request.user.id == int(profileID):
         user = request.user
-        btnType = "Edit profile"
+        btnType = _("Edit profile")
     else:
         user = CustomUser.objects.filter(id = profileID).first()
         friendship = get_frienship(profileID, request.user.id)
         if friendship:
             friendshipID =  friendship.id
             if friendship.status == "approved":
-                btnType = "Delete friend"
+                btnType = _("Delete friend")
             elif friendship.status == "pending" and friendship.sender == request.user:
-                btnType = "Friend request sent"
+                btnType = _("Friend request sent")
             else:
-                btnType = "Accept request"
+                btnType = _("Accept request")
         else:
-            btnType = "Add friend"
+            btnType = _("Add friend")
         
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)

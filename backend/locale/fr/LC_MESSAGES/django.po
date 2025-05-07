@@ -367,4 +367,15 @@ msgstr "Accepter"
 msgid "Decline"
 msgstr "Refuser"
 
+msgid "Delete friend"
+msgstr "Supprimer l'ami"
+
+msgid "Friend request sent"
+msgstr "Demande d'ami envoyée"
+
+msgid "Accept request"
+msgstr "Accepter la demande"
+
+msgid "Edit profile"
+msgstr "Modifier le profil"
 

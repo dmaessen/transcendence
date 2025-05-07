@@ -269,3 +269,15 @@ msgstr "Accepteer"
 
 msgid "Decline"
 msgstr "Afname"
+
+msgid "Delete friend"
+msgstr "Vriend verwijderen"
+
+msgid "Friend request sent"
+msgstr "Vriendschapsverzoek verzonden"
+
+msgid "Accept request"
+msgstr "Verzoek accepteren"
+
+msgid "Edit profile"
+msgstr "Profiel bewerken"
