@@ -6,7 +6,7 @@ from .views import RegisterView, LoginView, RefreshTokenView, google_callback,  
 from django.http import JsonResponse
 
 urlpatterns = [
-	path('sign_out', sign_out, name= 'sign_out'),
+	path('sign_out/', sign_out, name= 'sign_out'),
 	path('login/', LoginView.as_view(), name='login'),
 	path('register/', RegisterView.as_view(), name='register'),
     # path('refresh/', refresh_token, name='token_refresh'),

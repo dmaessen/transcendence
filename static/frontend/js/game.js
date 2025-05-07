@@ -175,17 +175,17 @@ tournamentBanner.addEventListener("click", async(event) => {
 
 window.addEventListener("load", async () => {
     //get token to check if user is logged, if it is, open main menu if not login modal
-    const accessToken = localStorage.getItem("access_token");
-    console.log("access_token on game: ", accessToken);
-    if (accessToken) {
-        // Ensure the onlineWebSocket is open if it wasn't already
-        if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
-            await loginWebSocket();
-        }
-        gameMenuFirst.show();
-    } else {
-        SignInMenu.show();
-    }
+    // const accessToken = localStorage.getItem("access_token");
+    // // console.log("access_token on game: ", accessToken);
+    // if (accessToken) {
+    //     // Ensure the onlineWebSocket is open if it wasn't already
+    //     if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
+    //         await loginWebSocket();
+    //     }
+    //     gameMenuFirst.show();
+    // } else {
+    //     SignInMenu.show();
+    // }
     const bracketElement = document.getElementById("tournamentBracket");
     bracketElement.style.display = "none";
 
@@ -397,10 +397,10 @@ window.addEventListener("beforeunload", () => {
         socket.close()
         // SignInMenu.show();
     }
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-        SignInMenu.show();
-    } else {
-        gameMenuFirst.show();
-    }
+    // const token = localStorage.getItem("access_token");
+    // if (!token) {
+    //     SignInMenu.show();
+    // } else {
+    //     gameMenuFirst.show();
+    // }
 });

@@ -33,14 +33,13 @@ import qrcode
 import io
 import base64
 import pyotp
-# from passlib.totp import TOTP
 import sys
 from django.core.cache import cache
 from django.conf import settings
 
 # @otp_required
 def login_2fa_required(request):
-    return redirect("game_server")
+    return redirect("/")
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -100,7 +99,7 @@ class RegisterView(APIView):
 			#return token
 			refresh = RefreshToken.for_user(user)
 			access_token = refresh.access_token
-			print(f"[DEBUG] going to return access token: ", access_token)
+			# print(f"[DEBUG] going to return access token: ", access_token)
 			response = JsonResponse({
 				'message': 'Login successful'
 			})
@@ -108,7 +107,7 @@ class RegisterView(APIView):
 				key="access_token",
 				value=str(access_token),
 				httponly=True,
-				samesite='Lax',
+				samesite='lax',
 				secure=False,  # [FLIP]set to True in production
 				max_age=300
 			)
@@ -116,13 +115,13 @@ class RegisterView(APIView):
 				key="refresh_token",
 				value=str(refresh),
 				httponly=True,
-				samesite='Lax',
+				samesite='lax',
 				secure=False, # [FLIP]set to True in production
 				max_age=86400
 			)
 			print("register response: ", response)
 			return response
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # class UserTOTPDevice(TOTPDevice):
 #     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -166,10 +165,7 @@ class LoginView(APIView):
 			otp_secret = device.key
 			totp = pyotp.TOTP(otp_secret)
 
-			# print(f"[DEBUG] Device used for verification: name={device.name}, key={otp_secret}")
 			if not totp.verify(otp_token, valid_window=1):
-				# print(f"totp current: {totp.now()}", file=sys.stderr)
-				# print(f"OTP verification failed. Token: {otp_token}, Secret: {otp_secret}", file=sys.stderr)
 				return JsonResponse({'error': 'Invalid 2FA code'}, status=status.HTTP_401_UNAUTHORIZED)
 		try:
 			user = CustomUser.objects.get(email=email)
@@ -183,15 +179,13 @@ class LoginView(APIView):
 			return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 		try:
 			refresh = RefreshToken.for_user(user)
-			access_token = str(refresh.access_token)
+			access_token = refresh.access_token
 			print(f"[DEBUG] made access token: ", access_token)
 		except Exception as e:
 			return JsonResponse({'error': f'Token generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 		print(f"[DEBUG] going to return access token: ", access_token)
 		response = JsonResponse({
-			# 'refresh': str(refresh),
-			# 'access': access_token,
 			'message': 'Login successful'
 		})
 		response.set_cookie(
@@ -212,9 +206,7 @@ class LoginView(APIView):
 		)
 		return response
 
-
 User = get_user_model()
-
 class DeleteAccountView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 	def delete(self, request):
@@ -235,9 +227,6 @@ class DeleteAccountView(APIView):
 
 				# Optionally, delete the user account
 				user.delete()
-				# print(f"[DeleteAccountView] Before deletion: {initial_count} 2FA device(s) found for user {user.email}")
-				# print(f"[DeleteAccountView] Deleted {deleted_count} 2FA device(s) for user {user.email}")
-				# print(f"[DeleteAccountView] After deletion: {final_count} 2FA device(s) remaining for user {user.email}")
 
 			return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 		except Exception as e:
@@ -251,7 +240,10 @@ def sign_out(request):
 	user = request.user
 	logout(request)
 	messages.success(request,f'You have been logged out')
-	return HttpResponse("you have been signed out")
+	response = HttpResponse("you have been signed out")
+	response.delete_cookie("access_token")
+	response.delete_cookie("refresh_token")
+	return response
 	# return redirect('sign_in')
 
 @api_view(["POST"])
@@ -283,48 +275,29 @@ def disable_2fa(request):
 	user.save()
 
 	return Response({"message": "2FA has been disabled successfully."}, status=200)
-
-# @api_view(["POST"])
-# @permission_classes([AllowAny]) 
-# def refresh_token(request):
-#     re = request.data.get("refresh_token")
-
-#     if not re:
-#         return Response({"error": "Refresh token is required"}, status=400)
-
-#     try:
-#         refresh = RefreshToken(re)
-#         ac_token = str(refresh.access_token)
-#         re_token = str(refresh) 
-
-#         return Response({
-#             "access_token": ac_token,
-#             "refresh_token": re_token
-#         })
-#     except InvalidToken:
-#         return Response({"error": "Invalid refresh token"}, status=401)
 class RefreshTokenView(APIView):
-    def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token')
-        if not refresh_token:
-            raise AuthenticationFailed("No refresh token in cookies")
+	def post(self, request):
+		refresh_token = request.COOKIES.get('refresh_token')
+		if not refresh_token:
+			raise AuthenticationFailed("No refresh token in cookies")
 
-        try:
-            token = RefreshToken(refresh_token)
-            access_token = str(token.access_token)
-        except Exception as e:
-            raise AuthenticationFailed("Invalid refresh token")
+		try:
+			token = RefreshToken(refresh_token)
+			access_token = token.access_token
+		except Exception as e:
+			raise AuthenticationFailed("Invalid refresh token")
 
-        response = JsonResponse({"message": "Token refreshed"})
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            samesite="Lax",
-            secure=False,
-            max_age=300
-        )
-        return response
+		print(f"[DEBUG] going to send refreshed access token: ", access_token);
+		response = JsonResponse({"message": "Token refreshed"})
+		response.set_cookie(
+			key="access_token",
+			value=str(access_token),
+			httponly=True,
+			samesite="Lax",
+			secure=False,
+			max_age=300
+		)
+		return response
 
 def home(request):
 	return render(request, 'base.html')
@@ -333,12 +306,8 @@ def home(request):
 @csrf_exempt
 def google_login(request):
 	client_id = settings.GOOGLE_CLIENT_ID
-	print(f"google client id: [", client_id, "]", flush=True)
 	if not client_id:
 		return JsonResponse({'error': 'no client id'}, status=status.HTTP_403_FORBIDDEN)
-	# if client_id != "517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com":
-	# 	print(f"[WARNING] Unrecognized client ID received: {client_id}")
-	
 	try:
 		body = json.loads(request.body)
 		token = body.get("id_token")
@@ -366,13 +335,9 @@ def google_login(request):
 			user.save()
 
 		refresh = RefreshToken.for_user(user)
-		access_token = str(refresh.access_token)
-		print(f"[DEBUG] going to return access token: ", access_token)
-		response = JsonResponse({
-			# 'refresh': str(refresh),
-			# 'access': access_token,
-			'message': 'Login successful'
-		})
+		access_token = refresh.access_token
+
+		response = redirect("http://localhost:8000/")
 		response.set_cookie(
 			key="access_token",
 			value=str(access_token),
@@ -390,14 +355,8 @@ def google_login(request):
 			max_age=86400
 		)
 		return response
-		# return Response({
-		# 	"refresh": str(refresh),
-		# 	"access": str(refresh.access_token),
-		# 	"message": "Google login successful"
-		# })
 	except ValueError as e:
 		return Response({"error": "Invalid ID token", "details": str(e)}, status=400)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -453,7 +412,6 @@ def login_42_callback(request):
 	email = profile.get("email")
 	username = profile.get("login")
 
-	print(f"regestering user with email: ", email, "and username:", username)
 	# Register or log in the user
 	user, created = CustomUser.objects.get_or_create(email=email, defaults={"username": username})
 	if created:
@@ -461,15 +419,12 @@ def login_42_callback(request):
 		user.save()
 
 	refresh = RefreshToken.for_user(user)
-	print(f"[DEBUG] going to return access token: ", access_token)
-	response = JsonResponse({
-		# 'refresh': str(refresh),
-		# 'access': access_token,
-		'message': 'Login successful'
-	})
+	access = refresh.access_token
+
+	response = JsonResponse({"message": "42 login successful"})
 	response.set_cookie(
 		key="access_token",
-		value=str(access_token),
+		value=str(access),
 		httponly=True,
 		samesite='Lax',
 		secure=False,  # [FLIP]set to True in production
@@ -504,7 +459,6 @@ def google_callback(request):
 			"redirect_uri": redirect_uri,
 			"grant_type": "authorization_code",
 		})
-		# print("[DEBUG] Raw token response:", token_response.text)  # Log the response content
 		token_response.raise_for_status()
 		token_data = token_response.json()
 		id_token = token_data.get("id_token")
@@ -529,14 +483,16 @@ def google_callback(request):
 			user.save()
 
 		refresh = RefreshToken.for_user(user)
+		access = refresh.access_token
 
-		print(f"[DEBUG] going to return access token: ", access_token)
-		response = JsonResponse({
-			'message': 'Login successful'
-		})
+		# print(f"[DEBUG] going to return access token: ", access_token)
+		# response = JsonResponse({
+		# 	'message': 'Login successful'
+		# })
+		response = redirect("http://localhost:8000/")
 		response.set_cookie(
 			key="access_token",
-			value=str(access_token),
+			value=str(access),
 			httponly=True,
 			samesite='Lax',
 			secure=False,  # [FLIP]set to True in production
@@ -550,21 +506,23 @@ def google_callback(request):
 			secure=False, # [FLIP]set to True in production
 			max_age=86400
 		)
-		return redirect(f"http://localhost:8000?{response}")
+		return response
+		# return redirect(f"http://localhost:8000?{response}")
 
 	except Exception as e:
 		return JsonResponse({"error": "Failed to authenticate with Google", "details": str(e)}, status=500)
 
-
 def index(request):
-    return render(request, 'index.html', {"user_is_authenticated": request.user.is_authenticated})
+    return render(request, 'index.html')
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def protected_user_data(request):
     user = request.user
     return Response({
         "username": user.username,
         "email": user.email,
         "id": user.id,
+		# "avatar": user.avatar,
+		"is_active": user.is_active,
     })

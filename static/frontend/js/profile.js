@@ -290,8 +290,8 @@ async function loadProfile(userID, openModal = true) {
 const profileBtn = document.getElementById("profileBtn");
 if (profileBtn) {
     profileBtn.addEventListener("click", function () {
+        refreshAccessToken()
         loadProfile("self");
-        
     });
 }
 
@@ -323,7 +323,7 @@ if (profileCloseButton) {
             return;
         }
 
-        // const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
+        const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenuFirstElement);
         if (gameMenuModal) {
             console.log("Showing game menu...");
             gameMenuModal.show();

@@ -119,6 +119,7 @@ SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        'authentication.authentication.CookieJWTAuthentication',
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -143,6 +144,8 @@ ROOT_URLCONF = 'backend.urls'
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_URL = '/media/'
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
@@ -229,9 +232,7 @@ FT_CLIENT_ID = os.getenv("42_UID")
 FT_CLIENT_SECRET = os.getenv("42_secret")
 FT_REDIRECT_URI = os.getenv("42_redirect", "http://localhost:8000/api/authentication/42/callback/")
 
-print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
-
-
+# print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
