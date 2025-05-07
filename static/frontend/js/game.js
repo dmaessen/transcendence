@@ -82,7 +82,7 @@ document.getElementById("playBtn").addEventListener("click", async() => {
 
 document.getElementById("onePlayerBtn").addEventListener("click", () => {
     startGame("One Player");
-    currentModal = "onePlayer";
+    currentModal = "game";
     const mode = "One Player";
     const encodedMode = encodeURIComponent(mode);
     history.pushState({ modalID: "onePlayer", gameMode: mode }, "", `?modal=onePlayer&type=${encodedMode}`);
@@ -90,7 +90,7 @@ document.getElementById("onePlayerBtn").addEventListener("click", () => {
 
 document.getElementById("twoPlayersBtn").addEventListener("click", () => {
     startGame("Two Players (hot seat)");
-    currentModal = "twoPlayers";
+    currentModal = "game";
     const mode = "Two Players (hot seat)";
     const encodedMode = encodeURIComponent(mode);
     history.pushState({ modalID: "twoPlayers", gameMode: mode }, "", `?modal=twoPlayers&type=${encodedMode}`);
@@ -98,7 +98,7 @@ document.getElementById("twoPlayersBtn").addEventListener("click", () => {
 
 document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => {
     startGame("Two Players (remote)");
-    currentModal = "twoPlayersRemote";
+    currentModal = "game";
     const mode = "Two Players (remote)";
     const encodedMode = encodeURIComponent(mode);
     history.pushState({ modalID: "twoPlayersRemote", gameMode: mode }, "", `?modal=twoPlayersRemote&type=${encodedMode}`);
@@ -114,7 +114,7 @@ document.getElementById("tournamentBtn").addEventListener("click", () => {
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
     disableTournamentButtons();
-    currentModal = "fourPlayersTournament";
+    currentModal = "game";
     const mode = "Tournament - 4 Players";
     const encodedMode = encodeURIComponent(mode);
     history.pushState({ modalID: "fourPlayersTournament", gameMode: mode }, "", `?modal=fourPlayersTournament&type=${encodedMode}`);
@@ -123,7 +123,7 @@ document.getElementById("fourPlayersTournamentBtn").addEventListener("click", ()
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
     disableTournamentButtons();
-    currentModal = "eightPlayersTournament";
+    currentModal = "game";
     const mode = "Tournament - 8 Players";
     const encodedMode = encodeURIComponent(mode);
     history.pushState({ modalID: "eightPlayersTournament", gameMode: mode }, "", `?modal=eightPlayersTournament&type=${encodedMode}`);
