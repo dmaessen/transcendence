@@ -67,11 +67,14 @@ function populateFRequests(data) {
         frienshipRequestTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
+    const uText = document.getElementById("text_username").textContent.trim();
+    const aText = document.getElementById("text_accept").textContent.trim();
+    const dText = document.getElementById("text_decline").textContent.trim();
     // headerRow.innerHTML = "<th>Username</th><th>Accept</th><th>Decline</th>";
     headerRow.innerHTML =
-        "<th>" + gettext("Username") + "</th>" +
-        "<th>" + gettext("Accept") + "</th>" +
-        "<th>" + gettext("Decline") + "</th>";
+        "<th>" + uText + "</th>" +
+        "<th>" + aText + "</th>" +
+        "<th>" + dText + "</th>";
     thead.appendChild(headerRow);
 
     data.forEach(item => {

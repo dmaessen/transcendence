@@ -14,10 +14,12 @@ function populateFriends(data) {
         friendsTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
+    const fText = document.getElementById("text_friend").textContent.trim();
+    const sText = document.getElementById("text_status").textContent.trim();
     // headerRow.innerHTML = "<th>Friend</th><th>Status</th>";
     headerRow.innerHTML =
-        "<th>" + gettext("Friend") + "</th>" +
-        "<th>" + gettext("Status") + "</th>";
+        "<th>" + fText + "</th>" +
+        "<th>" + sText + "</th>";
     thead.appendChild(headerRow);
 
     data.forEach(item => {

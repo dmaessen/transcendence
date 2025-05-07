@@ -15,9 +15,11 @@ function populateAllTournament(data) {
         allTournamentsTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
+    const tText = document.getElementById("text_tournament_date").textContent.trim();
+    const wText = document.getElementById("text_winner").textContent.trim();
     headerRow.innerHTML =
-        "<th>" + gettext("Tournament date") + "</th>" +
-        "<th>" + gettext("Winner") + "</th>";
+        "<th>" + tText + "</th>" +
+        "<th>" + wText + "</th>";
     thead.appendChild(headerRow);
 
     data.forEach(item => {

@@ -1,9 +1,20 @@
 {% load static i18n %}
 
-<script src="{% url 'javascript-catalog' %}"></script>
-<script>
-  const gettext = window.gettext;  // make gettext available
-</script>
+<!-- <script src="{% url 'javascript-catalog' %}"></script> -->
+<!-- <script>
+  // const gettext = window.gettext;
+  window.TRANSLATIONS = {
+    match_date: "{% trans 'Match date' %}",
+    tournament_date: "{% trans 'Tournament date' %}",
+    winner: "{% trans 'Winner' %}",
+    opponent: "{% trans 'Opponent' %}",
+    status: "{% trans 'Status' %}",
+    friend: "{% trans 'Friend' %}",
+    accept: "{% trans 'Accept' %}",
+    decline: "{% trans 'Decline' %}",
+    username: "{% trans 'Username' %}",
+  }
+</script> -->
 
 <!DOCTYPE html>
 {% get_current_language as current_language %}
@@ -30,6 +41,17 @@
       <option value="fr" {% if current_language == 'fr' %}selected{% endif %}>Français</option>
     </select>
   </form>
+
+    <!-- Translations for profile and tables -->
+    <p id="text_match_date" style="display: none;">{% trans 'Match date' %}</p>
+    <p id="text_tournament_date" style="display: none;">{% trans 'Tournament date' %}</p>
+    <p id="text_winner" style="display: none;">{% trans 'Winner' %}</p>
+    <p id="text_opponent" style="display: none;">{% trans 'Opponent' %}</p>
+    <p id="text_username" style="display: none;">{% trans 'Username' %}</p>
+    <p id="text_friend" style="display: none;">{% trans 'Friend' %}</p>
+    <p id="text_status" style="display: none;">{% trans 'Status' %}</p>
+    <p id="text_accept" style="display: none;">{% trans 'Accept' %}</p>
+    <p id="text_decline" style="display: none;">{% trans 'Decline' %}</p>
 
     <!-- Tournament banner -->
     <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">

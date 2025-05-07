@@ -15,11 +15,14 @@ function populateAllMatches(data) {
         allMatchesTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
+    const mText = document.getElementById("text_match_date").textContent.trim();
+    const wText = document.getElementById("text_winner").textContent.trim();
+    const oText = document.getElementById("text_opponent").textContent.trim();
     // headerRow.innerHTML = "<th>Match date</th><th>Winner</th><th>Opponent</th>";
     headerRow.innerHTML =
-        "<th>" + gettext("Match date") + "</th>" +
-        "<th>" + gettext("Winner") + "</th>" +
-        "<th>" + gettext("Opponent") + "</th>";
+        "<th>" + mText + "</th>" +
+        "<th>" + wText + "</th>" +
+        "<th>" + oText + "</th>";
     thead.appendChild(headerRow);
 
     //Populate
