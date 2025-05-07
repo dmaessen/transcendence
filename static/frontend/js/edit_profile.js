@@ -53,7 +53,16 @@ if (saveChangesBtn) {
                 document.getElementById("userAvatar").src = data.avatar_url; // Assuming API returns the new image URL
             }
             if (preferredLanguage) {
-                location.reload();
+                //location.reload();
+                await fetch("/i18n/setlang/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-CSRFToken": getTheCookie("csrftoken"),
+                    },
+                    body: `language=${preferredLanguage}&next=/`
+                });
+                location.reload(); // Now reload in the new language
             }
 
             // Close edit modal

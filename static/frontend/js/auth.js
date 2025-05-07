@@ -363,7 +363,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalElement);
                 loginModal.hide();
                 const mainMenuModal = bootstrap.Modal.getOrCreateInstance(mainMenuModalElement);
-                mainMenuModal.show();
+                applyPreferredLanguageAfterLogin(mainMenuModal);
+                //mainMenuModal.show();
 
             } else if(response.status === 403){
                 otpInputContainer.style.display = "block";
@@ -429,6 +430,53 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+function applyPreferredLanguageAfterLogin(mainMenuModal) {
+    console.log("GETTING HERE IN AUTH");
+    fetch('/data/api/get_profile/', {
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("Failed to fetch user profile");
+        return response.json();
+    })
+    .then(data => {
+        if (data.preferred_language) {
+            console.log("Applying preferred language via set_language:", data.preferred_language);
+            return fetch("/i18n/setlang/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": getTheCookie("csrftoken"),  // You'll need a function to get CSRF token from cookies
+                },
+                body: `language=${data.preferred_language}&next=/`
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            mainMenuModal.show();
+        }
+    })
+    .catch(error => {
+        console.error("Error loading preferred language:", error);
+        mainMenuModal.show(); // Fall back to showing the modal even on failure
+    });
+}
+function getTheCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 // document.getElementById("logoutBtn").click = () => alert("clicked!");
 // function logOut () {
 //     console.log("Logout button clicked");

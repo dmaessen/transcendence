@@ -20,9 +20,9 @@
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ request.path }}">
     <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
-        <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
-        <option value="nl" {% if LANGUAGE_CODE == 'nl' %}selected{% endif %}>Nederlands</option>
-        <option value="fr" {% if LANGUAGE_CODE == 'fr' %}selected{% endif %}>Français</option>
+      <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
+      <option value="nl" {% if current_language == 'nl' %}selected{% endif %}>Nederlands</option>
+      <option value="fr" {% if current_language == 'fr' %}selected{% endif %}>Français</option>
     </select>
   </form>
   
