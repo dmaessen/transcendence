@@ -76,8 +76,8 @@ async function loadAllMatches(userID, push = true) {
         allMatchesModal.show();
         const response = await fetch(`/data/api/allUserMatches/?userID=${userID}`, {
             method: "GET",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
                 "Content-Type": "application/json",
             },
         });

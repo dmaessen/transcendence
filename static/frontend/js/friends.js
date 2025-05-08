@@ -58,8 +58,8 @@ async function loadFriends(push = true) {
         friendsModal.show();
         const response = await fetch(`/data/api/getFriends`, {
             method: "GET",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
             },
         });
         if (!response.ok) {

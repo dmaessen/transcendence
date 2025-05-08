@@ -26,8 +26,8 @@ if (saveChangesBtn) {
             console.log("form data: ", formData);
             const response = await fetch(`/data/api/editProfile/`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
                 },
                 body: formData
             });

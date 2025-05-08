@@ -65,8 +65,6 @@ window.addEventListener("popstate", (event) => {
             SignInMenu.show(); // If applicable
             break;
         case "fourPlayersTournament":
-            exitGame();
-            break;
         case "eightPlayersTournament":
         case "onePlayer":
         case "twoPlayers":

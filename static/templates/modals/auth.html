@@ -10,8 +10,8 @@
                         <h5 class="modal-title" id="SignInMenuLabel">Please register or login</h5>
                     </div>
                     <div class="modal-body">
-                            <button id="showRegister" class="btn btn-outline-dark w-100 mb-2">Register</button>
-                            <button id="showLogin" class="btn btn-outline-dark w-100 mb-2">Log in</button>
+                            <button id="showRegister" data-bs-toggle="modal" data-bs-target="#registerModal" class="btn btn-outline-secondary w-100 mb-2">Register</button>
+                            <button id="showLogin" data-bs-toggle="modal" data-bs-target="#loginModal" class="btn btn-outline-secondary w-100 mb-2">Log in</button>
                     </div>
                 </div>
                 <!-- Login Form (Initially Hidden) -->
@@ -40,7 +40,6 @@
                     </div>
                     <button id="backToMain1" class="btn btn-secondary">Back</button>
                 </div>
-    
                 <!-- Register Form (Initially Hidden) -->
                 <div id="registerContainer" class="overlay-form">
                     <h2>Register</h2>

@@ -6,8 +6,8 @@ async function acceptFriend(friendshipID) {
     try {
         const response = await fetch(`/data/api/acceptFriendship/`, {
             method: "POST",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({friendshipID: friendshipID})
@@ -32,8 +32,8 @@ async function declineFriend(friendshipID) {
     try {
         const response = await fetch(`/data/api/cancelFriendship/`, {
             method: "POST",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({friendshipID: friendshipID})
@@ -137,8 +137,8 @@ async function loadFriendsRequests(push = true) {
         addFriendsModal.show();
         const response = await fetch(`/data/api/friendsRequests`, {
             method: "GET",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
             }
         });
         if (!response.ok) {
@@ -182,8 +182,8 @@ if (searchFriendBtn) {
             
             const response = await fetch(`/data/api/searchUser/?friendUsername=${newFriendUsername}`, {
                 method: "GET",
+                credentials: "include",
                 headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
                 },
             });
             if (!response.ok) {

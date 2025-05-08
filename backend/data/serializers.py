@@ -78,15 +78,17 @@ class MatchSummarySerializer(serializers.ModelSerializer):
     def get_opponent(self, obj):
         user = self.context.get("user")
         if user:
-            opponent = obj.player_1.username if obj.player_2 == user else obj.player_2.username
-            return opponent
+            if obj.player_1 and obj.player_2:
+                opponent = obj.player_1.username if obj.player_2 == user else obj.player_2.username
+                return opponent
         return "Unknown"
     
     def get_opponentID(self, obj):
         user = self.context.get("user")
         if user:
-            opponentID = obj.player_1.id if obj.player_2 == user else obj.player_2.id
-            return opponentID
+            if obj.player_1 and obj.player_2:
+                opponentID = obj.player_1.id if obj.player_2 == user else obj.player_2.id
+                return opponentID
         return "Unknown"
 
 class TournamentSummarySerializer(serializers.ModelSerializer):

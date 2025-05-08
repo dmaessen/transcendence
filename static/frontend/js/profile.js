@@ -6,8 +6,8 @@ async function addFriend(userID) {
     try {
         const response = await fetch(`/data/api/addFriend/`, {
             method: "POST",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({userID: userID})
@@ -33,8 +33,8 @@ async function deleteFriend(userID) {
     try {
         const response = await fetch(`/data/api/deleteFriend/`, {
             method: "POST",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // if needed for authentication
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({userID: userID})
@@ -86,7 +86,9 @@ function populateTournament(data) {
         row.appendChild(dateCell);
 
         const winnerCell = document.createElement("td");
-        if (item.userWon == false) {
+        if (item.winnerID == "Unknown"){
+            winnerCell.textContent = "Unknown";
+        } else if (item.userWon == false) {
             const winnerLink = document.createElement("span");
             winnerLink.textContent = item.winner;
             winnerLink.dataset.userID = item.winnerID;
@@ -136,31 +138,39 @@ function populateMatches(data) {
         
         const winnerCell = document.createElement("td");
         if (item.opponent === item.winner_name) {
-            const winnerLink = document.createElement("span");
-            winnerLink.textContent = item.winner_name;
-            winnerLink.dataset.userID = item.opponentID;
-            winnerLink.style.cursor = "pointer"; // Make it look clickable
-            winnerLink.style.color = "gray"; // Make it look like a link
-
-            winnerLink.addEventListener("click", function(){
-                loadProfile(winnerLink.dataset.userID);
-            });
-            winnerCell.appendChild(winnerLink);
+            if(item.opponentID == "Unknown"){
+                winnerCell.textContent = "Unknown"
+            } else {
+                const winnerLink = document.createElement("span");
+                winnerLink.textContent = item.winner_name;
+                winnerLink.dataset.userID = item.opponentID;
+                winnerLink.style.cursor = "pointer"; // Make it look clickable
+                winnerLink.style.color = "gray"; // Make it look like a link
+    
+                winnerLink.addEventListener("click", function(){
+                    loadProfile(winnerLink.dataset.userID);
+                });
+                winnerCell.appendChild(winnerLink);
+            }
         } else {
             winnerCell.textContent = item.winner_name;
         }
         row.appendChild(winnerCell);
-
+        
         const opponentCell = document.createElement("td");
-        const opponentLink = document.createElement("span");
-        opponentLink.textContent = item.opponent;
-        opponentLink.dataset.userID = item.opponentID;
-        opponentLink.style.cursor = "pointer"; // Make it look clickable
-        opponentLink.style.color = "gray"; // Make it look like a link
-        opponentLink.addEventListener("click", function(){
-            loadProfile(opponentLink.dataset.userID);
-        });
-        opponentCell.appendChild(opponentLink);
+        if (item.opponentID == "Unknown"){
+            opponentCell.textContent = "Unknown";
+        } else {
+            const opponentLink = document.createElement("span");
+            opponentLink.textContent = item.opponent;
+            opponentLink.dataset.userID = item.opponentID;
+            opponentLink.style.cursor = "pointer"; // Make it look clickable
+            opponentLink.style.color = "gray"; // Make it look like a link
+            opponentLink.addEventListener("click", function(){
+                loadProfile(opponentLink.dataset.userID);
+            });
+            opponentCell.appendChild(opponentLink);
+        }
         row.appendChild(opponentCell);
         
         matchesTable.appendChild(row);
@@ -172,8 +182,8 @@ async function loadUserData(userID) {
     try {
         const response = await fetch(`/data/api/userData/?userID=${userID}`, {
             method: "GET",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
             },
         });
         if (!response.ok) {
@@ -198,6 +208,7 @@ async function loadUserData(userID) {
         btnType.onclick = () => {
             if (data.btnType === "Add friend") {
                 addFriend(userID);
+                loadProfile(userID);
             } else if (data.btnType === "Edit profile") {
                 currentModal = "editProfileModal";
                 history.pushState({ modalID: "editProfileModal" }, "", "?modal=editProfileModal");
@@ -206,10 +217,13 @@ async function loadUserData(userID) {
                 editProfileModal.show();
             } else if (data.btnType === "Delete friend") {
                 deleteFriend(userID);
+                loadProfile(userID);
             } else if (data.btnType === "Cancel request") {
                 deleteFriend(userID);
+                loadProfile(userID);
             } else if (data.btnType === "Accept request") {
                 acceptFriend(friendshipID);
+                loadProfile(userID);
             }
         };
     } catch (error) {
@@ -221,8 +235,8 @@ async function loadMatchesData(userID) {
     try {
         const response = await fetch(`/data/api/userMatches/?userID=${userID}`, {
             method: "GET",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
                 "Content-Type": "application/json",
             },
         });
@@ -249,8 +263,8 @@ async function loadTournametsData(userID) {
     try {
         const response = await fetch(`/data/api/userTournaments/?userID=${userID}`, {
             method: "GET",
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
                 "Content-Type": "application/json",
             },
         });
@@ -291,6 +305,7 @@ async function loadProfile(userID, openModal = true, push = true) {
             if (push) {
                 const state = { modalID: "profileModal", userID: userID };
                 const url = `?modal=profileModal&user=${userID}`;
+                currentModal = "profileModal";
                 history.pushState(state, '', url);
                 console.log("Push: ", state);
             }
