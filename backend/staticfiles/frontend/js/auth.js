@@ -12,15 +12,15 @@ function loadGoogleScript(callback) {
 async function checkLoginStatus() {
     await refreshAccessToken();
     
-    // try {
-    //     const response = await fetch(`${baseUrl}data/`, {
-    //         method: "GET",
-    //         credentials: "include",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             "X-CSRFToken": getCSRFToken(),
-    //         },
-    //     });
+    try {
+        const response = await fetch(`${baseUrl}data/`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+        });
 
         if (response.ok) {
             const data = await response.json();
@@ -33,10 +33,10 @@ async function checkLoginStatus() {
             console.warn("Unexpected response while checking login:", response.status);
             return false;
         }
-    // } catch (err) {
-    //     console.error("Error checking login status:", err);
-    //     return false;
-    // }
+    } catch (err) {
+        console.error("Error checking login status:", err);
+        return false;
+    }
 }
 
 async function fetchUserData() {

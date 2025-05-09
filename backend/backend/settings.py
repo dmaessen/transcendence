@@ -148,7 +148,7 @@ ROOT_URLCONF = 'backend.urls'
 
 STATIC_URL = '/static/'
 
-STATIC_URL = '/media/'
+# STATIC_URL = '/media/'
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files

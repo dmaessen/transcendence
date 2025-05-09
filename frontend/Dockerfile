@@ -2,7 +2,6 @@ FROM nginx:alpine
 
 RUN apk update && apk add --no-cache bash curl wget git bc netcat-openbsd openssl
 
-
 # Copy static files to Nginx HTML directory
 
 RUN rm /etc/nginx/conf.d/default.conf

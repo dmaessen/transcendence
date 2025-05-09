@@ -153,7 +153,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             //     await loginWebSocket();
             // }
         }
-        SignInModal.show();
 
         if (showLogin) {
             showLogin.addEventListener("click", function () {

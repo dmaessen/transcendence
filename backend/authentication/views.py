@@ -282,7 +282,6 @@ class RefreshTokenView(APIView):
 		refresh_token = request.COOKIES.get('refresh_token')
 		if not refresh_token:
 			raise AuthenticationFailed("No refresh token in cookies")
-
 		try:
 			token = RefreshToken(refresh_token)
 			access_token = token.access_token
