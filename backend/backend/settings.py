@@ -161,7 +161,7 @@ STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
 
 # # No need to set STATICFILES_DIRS if frontend is handling static files
 STATICFILES_DIRS = [
-   BASE_DIR / 'static/',  # Ensure Django knows where to find them
+   BASE_DIR / 'staticfiles/',  # Ensure Django knows where to find them
 ]
 
 TEMPLATES = [
