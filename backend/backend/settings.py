@@ -89,7 +89,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://frontend:8080",
     "http://localhost:8080",  # for local development, later change it
     "http://localhost:8000", 
-    "http://localhost:80",
+    # "http://localhost:80",
+    "https://localhost",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -102,7 +103,8 @@ CORS_ALLOW_METHODS = [
 
 CORS_ALLOW_HEADERS = [
     "authorization",
-    "content-type",
+    "Content-Type",
+    "X-CSRFToken",
 ]
 
 #TODO remove this for production  
@@ -110,9 +112,11 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ["https://localhost"]
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
@@ -149,8 +153,8 @@ STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -235,7 +239,7 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 # 42 api settings
 FT_CLIENT_ID = os.getenv("42_UID")
 FT_CLIENT_SECRET = os.getenv("42_secret")
-FT_REDIRECT_URI = os.getenv("42_redirect", "http://localhost:8000/api/authentication/42/callback/")
+FT_REDIRECT_URI = os.getenv("42_redirect", "https://localhost:8000/api/authentication/42/callback/")
 
 # print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 # print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)

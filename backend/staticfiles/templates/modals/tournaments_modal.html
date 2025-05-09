@@ -1,0 +1,20 @@
+<div class="modal fade" id="allTournamentsModal" tabindex="-1" aria-labelledby="allTournamentsModalLabel" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userTournamentsModalLabel">User Tournaments</h5>
+                <button id="closeAllTournamentsBtn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                {% comment %} <h4><span id="username">John Doe</span></h4> {% endcomment %}
+                <div class="matches">
+                     <table id="allTournamentsTable" class="table">
+                        <tbody>
+                            <!-- Filled dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

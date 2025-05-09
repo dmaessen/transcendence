@@ -11,7 +11,6 @@ urlpatterns = [
 	path('sign_out/', sign_out, name= 'sign_out'),
 	path('login/', LoginView.as_view(), name='login'),
 	path('register/', RegisterView.as_view(), name='register'),
-    # path('refresh/', refresh_token, name='token_refresh'),
     path('refresh/', RefreshTokenView.as_view(), name='token_refresh'),
     path('delete/', DeleteAccountView.as_view(), name='delete_account'),
     path('login-2fa/', login_2fa_required, name="login_2fa_required"),

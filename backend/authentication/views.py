@@ -25,6 +25,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 import google.oauth2.id_token as google_id_token
 import google.auth.transport.requests
+from django.views.decorators.csrf import ensure_csrf_cookie
 from urllib.parse import urlencode
 # import google.oauth2 
 import json
@@ -88,6 +89,7 @@ def register_2fa(request):
 class RegisterView(APIView):
 	@csrf_exempt
 	def post(self, request, *args, **kwargs):
+		print(f"[DEBUG] register view")
 		serializer = UserSerializer(data=request.data)
 		if serializer.is_valid():
 			user = serializer.save()
@@ -99,7 +101,7 @@ class RegisterView(APIView):
 			#return token
 			refresh = RefreshToken.for_user(user)
 			access_token = refresh.access_token
-			# print(f"[DEBUG] going to return access token: ", access_token)
+			print(f"[DEBUG] going to return access token: ", access_token)
 			response = JsonResponse({
 				'message': 'Login successful'
 			})
@@ -282,7 +284,6 @@ class RefreshTokenView(APIView):
 		refresh_token = request.COOKIES.get('refresh_token')
 		if not refresh_token:
 			raise AuthenticationFailed("No refresh token in cookies")
-
 		try:
 			token = RefreshToken(refresh_token)
 			access_token = token.access_token
@@ -339,7 +340,7 @@ def google_login(request):
 		refresh = RefreshToken.for_user(user)
 		access_token = refresh.access_token
 
-		response = redirect("http://localhost:8000/")
+		response = redirect("https://localhost:8000/")
 		response.set_cookie(
 			key="access_token",
 			value=str(access_token),
@@ -448,7 +449,7 @@ def google_callback(request):
 		return JsonResponse({"error": "Missing authorization code"}, status=400)
 
 	token_url = "https://oauth2.googleapis.com/token"
-	redirect_uri = "http://localhost:8000/api/authentication/google/callback/"  # Must match your registered redirect URI
+	redirect_uri = "https://localhost/api/authentication/google/callback/"  # Must match your registered redirect URI
 	client_id = settings.GOOGLE_CLIENT_ID
 	client_secret = settings.GOOGLE_CLIENT_SECRET
 
@@ -491,7 +492,7 @@ def google_callback(request):
 		# response = JsonResponse({
 		# 	'message': 'Login successful'
 		# })
-		response = redirect("http://localhost:8000/")
+		response = redirect("https://localhost:8000/")
 		response.set_cookie(
 			key="access_token",
 			value=str(access),
@@ -509,11 +510,11 @@ def google_callback(request):
 			max_age=86400
 		)
 		return response
-		# return redirect(f"http://localhost:8000?{response}")
 
 	except Exception as e:
 		return JsonResponse({"error": "Failed to authenticate with Google", "details": str(e)}, status=500)
 
+@ensure_csrf_cookie
 def index(request):
     return render(request, 'index.html')
 

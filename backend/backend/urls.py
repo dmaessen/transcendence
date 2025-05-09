@@ -24,13 +24,13 @@ from django.views.generic import TemplateView
 from .views import index
 
 urlpatterns = [
-    # path('', TemplateView.as_view(template_name='index.html'), name='index'),
+    path('', TemplateView.as_view(template_name='index.html'), name='index'),
     path('matchmaking/', include('matchmaking.urls')),
     path('game_server/', include('game_server.urls')),
 	path('api/authentication/', include('authentication.urls')),
     path('data/', include('data.urls')),
     path("accounts/", include("allauth.urls")),
     path("accounts/2fa", include("allauth_2fa.urls")),
-    #path('api/', include('game_server.urls')),
+    path('api/', include('game_server.urls')),
     path('tournament-status/', get_tournament_status, name='tournament-status'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -45,6 +45,11 @@ python manage.py migrate
 #   echo "No migrations needed."
 # fi
 
+echo "creating static folder"
+mkdir "/app/staticfiles/"
+
+echo "migrating static files"
+python manage.py collectstatic --noinput
 
 echo "Starting Django server..."
 # python manage.py runserver 0.0.0.0:8000 --verbrosity 2
