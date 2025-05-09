@@ -235,12 +235,14 @@ class DeleteAccountView(APIView):
 	
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@csrf_exempt
+# @permission_classes([IsAuthenticated])
 def sign_out(request):
+	print(f">>>>>>>>>User: {request.user}")
 	user = request.user
 	logout(request)
-	messages.success(request,f'You have been logged out')
-	response = HttpResponse("you have been signed out")
+	messages.success(request, 'You have been logged out')
+	response = JsonResponse({"message": "you have been signed out"})
 	response.delete_cookie("access_token")
 	response.delete_cookie("refresh_token")
 	return response

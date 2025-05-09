@@ -212,11 +212,11 @@ tournamentBanner.addEventListener("click", async(event) => {
 });
 
 window.addEventListener("load", async () => {
+    loggedin = await checkLoginStatus();
+    console.log("loggedin: ", loggedin);
+
     //get token to check if user is logged, if it is, open main menu if not login modal
-    const accessToken = localStorage.getItem("access_token");
-    console.log("access_token on game: ", accessToken);
-    if (accessToken) {
-        // Ensure the onlineWebSocket is open if it wasn't already
+    if (loggedin) {
         if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
             await loginWebSocket();
         }
@@ -434,10 +434,8 @@ window.addEventListener("beforeunload", () => {
         gameTitle.style.display = "none";
         socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
         socket.close()
-        // SignInMenu.show();
     }
-    const token = localStorage.getItem("access_token");
-    if (!token) {
+    if (checkLoginStatus) {
         SignInMenu.show();
     } else {
         currentModal = "gameMenuFirst";

@@ -1,4 +1,6 @@
 from django.urls import path, include
+from django.urls import re_path
+from django.http import HttpResponse
 # from dj_rest_auth import get_refresh_view
 # from django.contrib.auth import views as auth_views
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -23,4 +25,6 @@ urlpatterns = [
     path("42/callback/", login_42_callback, name="callback_42"),
     path('ping/', lambda request: JsonResponse({"status": "ok"})),
     path('data/', protected_user_data, name="user_data"),
+    re_path(r'^\.well-known/appspecific/com\.chrome\.devtools\.json$', lambda r: HttpResponse('', status=204)),
+
 ]

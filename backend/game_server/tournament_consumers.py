@@ -28,10 +28,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     tournament = None  # keeps track of the tournament instance
     initiator = None
 
-    async def connect(self):
-        query_params = parse_qs(self.scope["query_string"].decode("utf-8"))
-        token = query_params.get("token", [None])[0]
-        logger.info(f"querry: {query_params}\ntoken: {token}")
+    async def connect(self, request):
+        token = request.COOKIES.get("access_token")
         if token:
             try:
                 # Validate the JWT token
