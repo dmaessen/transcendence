@@ -1,4 +1,4 @@
-const baseUrl = `http://${window.location.host}/api/authentication/`;
+const baseUrl = `https://${window.location.host}/api/authentication/`;
 // Helper functions
 function loadGoogleScript(callback) {
     const script = document.createElement('script');
@@ -85,16 +85,6 @@ function getCSRFToken() {
     return match ? decodeURIComponent(match[1]) : "";
 }
 
-// function scheduleTokenRefresh() {
-//     setInterval(async () => {
-//         console.log("Attempting automatic token refresh...");
-//         const newAccessToken = await refreshAccessToken();
-//         if (!newAccessToken) {
-//             console.warn("Automatic token refresh failed. User may need to re-login soon.");
-//         }
-//     }, 29 * 60 * 1000);
-// }
-
 async function refreshAccessToken() {
     try {
         const response = await fetch(`${baseUrl}refresh/`, {
@@ -147,7 +137,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const SignInModal = bootstrap.Modal.getOrCreateInstance(signInMenu);
         const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenu);
-        
+        console.log("csrf token: ", getCSRFToken());
+
         if (!user_logged) {
             console.log("No access token found. Showing SignInMenu...");
             SignInModal.show();
@@ -162,6 +153,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             //     await loginWebSocket();
             // }
         }
+        SignInModal.show();
 
         if (showLogin) {
             showLogin.addEventListener("click", function () {
@@ -245,8 +237,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         const urlAccessToken = urlParams.get("access");
         const urlRefreshToken = urlParams.get("refresh");
         if (urlAccessToken && urlRefreshToken) {
-            // localStorage.setItem("access_token", urlAccessToken);
-            // localStorage.setItem("refresh_token", urlRefreshToken);
             alert("Google login successful!");
             window.history.replaceState({}, document.title, "/");
             setTimeout(() => {
@@ -276,9 +266,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 if (result.ok) {
                                     alert("google login successful")
                                     window.location.href = "/";
-                                    // localStorage.setItem("access_token", data.access);
-                                    // localStorage.setItem("refresh_token", data.refresh);
-                                    // scheduleTokenRefresh();
                                     // if (signInMenu) {
                                     //     const signInModal = bootstrap.Modal.getInstance(signInMenu);
                                     //     if (signInModal) signInModal.hide();
@@ -599,7 +586,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                         credentials: "include",
                         headers: {
                             "Content-Type": "application/json",
-                            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
                             "X-CSRFToken": getCSRFToken(),
                         },
                     });
@@ -618,7 +604,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (disable2FA) {
             disable2FA.addEventListener("click", async function () {
-                // let access_token = localStorage.getItem("access_token");
                 if (!access_token) {
                     access_token = await refreshAccessToken();
                     if (!access_token) {
@@ -631,7 +616,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                     credentials: "include",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${access_token}`,
                         "X-CSRFToken": getCSRFToken(),
                     },
                 });

@@ -89,7 +89,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://frontend:8080",
     "http://localhost:8080",  # for local development, later change it
     "http://localhost:8000", 
-    "http://localhost:80",
+    # "http://localhost:80",
+    "https://localhost",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -102,17 +103,19 @@ CORS_ALLOW_METHODS = [
 
 CORS_ALLOW_HEADERS = [
     "authorization",
-    "content-type",
+    "Content-Type",
+    "X-CSRFToken",
 ]
 
 #TODO remove this for production  
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ["https://localhost"]
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
@@ -148,7 +151,7 @@ STATIC_URL = '/static/'
 STATIC_URL = '/media/'
 
 # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
 
 # # No need to set STATICFILES_DIRS if frontend is handling static files
 STATICFILES_DIRS = [
@@ -230,7 +233,7 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 # 42 api settings
 FT_CLIENT_ID = os.getenv("42_UID")
 FT_CLIENT_SECRET = os.getenv("42_secret")
-FT_REDIRECT_URI = os.getenv("42_redirect", "http://localhost:8000/api/authentication/42/callback/")
+FT_REDIRECT_URI = os.getenv("42_redirect", "https://localhost:8000/api/authentication/42/callback/")
 
 # print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 

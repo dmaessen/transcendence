@@ -19,7 +19,7 @@ services:
     psql:
         image: postgres:13-alpine
         container_name: postgres
-        restart: always
+        restart: always 
         networks:
             - transcendence
         ports:
