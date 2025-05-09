@@ -321,6 +321,7 @@ async function loadProfile(userID, openModal = true, push = true) {
 const profileBtn = document.getElementById("profileBtn");
 if (profileBtn) {
     profileBtn.addEventListener("click", function () {
+        refreshAccessToken()
         loadProfile("self");
     });
 }

@@ -223,20 +223,19 @@ window.addEventListener("load", async () => {
         currentModal = "gameMenuFirst";
         gameMenuFirst.show();
         history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
+        try {
+            const bracketElement = document.getElementById("tournamentBracket");
+            bracketElement.style.display = "none";
+            const data = await fetchData("/tournament-status/");
+            console.log("Fetched tournament status:", data);
+            if (data.remaining_spots > 0 && data.players_in != 0) {
+                showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
+            }
+        } catch (error) {
+            console.error("Error fetching tournament status:", error);
+        }
     } else {
         SignInMenu.show();
-    }
-    const bracketElement = document.getElementById("tournamentBracket");
-    bracketElement.style.display = "none";
-
-    try {
-        const data = await fetchData("/tournament-status/");
-        console.log("Fetched tournament status:", data);
-        if (data.remaining_spots > 0 && data.players_in != 0) {
-            showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
-        }
-    } catch (error) {
-        console.error("Error fetching tournament status:", error);
     }
 });
 

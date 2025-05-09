@@ -20,10 +20,11 @@ from data.views import *
 from django.conf import settings
 from django.conf.urls.static import static
 from game_server.views import get_tournament_status
+from django.views.generic import TemplateView
 from .views import index
 
 urlpatterns = [
-    path('', index),
+    # path('', TemplateView.as_view(template_name='index.html'), name='index'),
     path('matchmaking/', include('matchmaking.urls')),
     path('game_server/', include('game_server.urls')),
 	path('api/authentication/', include('authentication.urls')),

@@ -111,12 +111,15 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        'authentication.authentication.CookieJWTAuthentication',
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -156,7 +159,6 @@ MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
 STATICFILES_DIRS = [
    BASE_DIR / 'static/',  # Ensure Django knows where to find them
 ]
-
 
 TEMPLATES = [
     {
@@ -236,6 +238,7 @@ FT_CLIENT_SECRET = os.getenv("42_secret")
 FT_REDIRECT_URI = os.getenv("42_redirect", "http://localhost:8000/api/authentication/42/callback/")
 
 # print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
+# print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -311,6 +314,12 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     "SIGNING_KEY": "complexsigningkey", # generate a key and replace me
     "ALGORITHM": "HS512",
+    "AUTH_COOKIE": "access_token",
+    "AUTH_COOKIE_REFRESH": "refresh_token",
+    "AUTH_COOKIE_SECURE": True,
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_PATH": "/",
+    "AUTH_COOKIE_SAMESITE": "Lax",
 }
 
 SITE_ID = 1
@@ -324,7 +333,7 @@ ACCOUNT_ARAPTER = "allauth_2fa.adapter.OTPAdapter"
 
 REST_AUTH = {
     "USE_JWT": True,
-    "JWT_AUTH_HTTPONLY": False,
+    "JWT_AUTH_HTTPONLY": True,
 }
 
 CACHES = {
@@ -355,32 +364,4 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 #             'key': ''
 #         }
 #     }
-# }
-
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'console': {
-#             'level': 'INFO',
-#             'class': 'logging.StreamHandler',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['console'],
-#             'level': 'INFO',
-#             'propagate': True,
-#         },
-#         'views': {  # Explicitly enable logs for views.py
-#             'handlers': ['console'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#         'serializers': {  # Explicitly enable logs for serializers.py
-#             'handlers': ['console'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#     },
 # }
