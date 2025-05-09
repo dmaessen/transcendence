@@ -53,8 +53,8 @@ function populateFriends(data) {
 
 async function loadFriends(push = true) {
     try{
-        const friendsModalElement = document.getElementById("friendsModal");
-        const friendsModal = new bootstrap.Modal(friendsModalElement);
+        // const friendsModalElement = document.getElementById("friendsModal");
+        // const friendsModal = new bootstrap.Modal(friendsModalElement);
         friendsModal.show();
         const response = await fetch(`/data/api/getFriends`, {
             method: "GET",
