@@ -6,7 +6,10 @@ DOCK_COMPOSE_KEYS := docker-compose.keys.yaml
 all: build_folder buildclean updetach
 
 build_folder:
+	@echo "Creating necessary folders at $(HOME)"
+	mkdir -p $(HOME)/.tranceanddance
 	mkdir -p $(HOME)/.tranceanddance/pgdata
+	mkdir -p $(HOME)/.tranceanddance/backenddata
 	mkdir -p $(HOME)/.tranceanddance/elasticdata
 
 build up:

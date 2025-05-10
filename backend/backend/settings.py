@@ -19,6 +19,29 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 print(f"base_dir: {BASE_DIR}", flush= True)
 
+# Static files to serve Ngnix
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Static files during development
+]
+
+# Media files to serve Ngnix
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# #static files settings to serve with django
+# STATIC_URL = os.getenv('STATIC_PATH', '/static/')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic in production
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),  # Static files during development
+# ]
+
+# # Media files settings to serve with django
+# MEDIA_URL = os.getenv('MEDIA_PATH', '/media/')
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -85,13 +108,62 @@ MIDDLEWARE = [
 
 # governs whether your server accepts requests from different origins (domains, subdomains, or ports)
 # allows your backend to accept cross-origin requests from specific frontends. (browser thingys, not the server)
+# CORS_ALLOWED_ORIGINS = [
+#     "http://frontend:8080",
+#     "http://localhost:8080",  # for local development, later change it
+#     "http://localhost:8000", 
+#     # "http://localhost:80",
+#     "https://localhost",
+# ]
+
+# CORS_ALLOW_METHODS = [
+#     "GET",
+#     "POST",
+#     "PUT",
+#     "PATCH",
+#     "DELETE",
+# ]
+
+# CORS_ALLOW_HEADERS = [
+#     "authorization",
+#     "Content-Type",
+#     "X-CSRFToken",
+# ]
+
+# #TODO remove this for production  
+# SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
+# CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = False
+
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://localhost",
+#     "http://localhost:8080",
+#     "https://localhost:8080",  # optional, if applicable
+# ]
+
+# CSRF_COOKIE_SECURE = False
+# SESSION_COOKIE_SECURE = False
+# CSRF_COOKIE_HTTPONLY = False
+# CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
+# SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
+
+# Django CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://frontend:8080",
-    "http://localhost:8080",  # for local development, later change it
-    "http://localhost:8000", 
-    # "http://localhost:80",
+    "http://localhost",
     "https://localhost",
+    "http://localhost:8080",
+    "https://localhost:8080",
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://localhost",
+    "http://localhost",
+    "http://localhost:8080",
+    "https://localhost:8080",
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = [
     "GET",
@@ -103,23 +175,22 @@ CORS_ALLOW_METHODS = [
 
 CORS_ALLOW_HEADERS = [
     "authorization",
-    "Content-Type",
-    "X-CSRFToken",
+    "content-type",
+    "x-csrftoken",
+    "accept",
+    "origin",
+    "user-agent",
+    "x-requested-with",
 ]
 
-#TODO remove this for production  
-SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+# DO NOT include this if you're using credentials
+# CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_ALL_ORIGINS = True
-
-CSRF_TRUSTED_ORIGINS = ["https://localhost"]
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
-SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
+# CSRF settings
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -147,27 +218,33 @@ ROOT_URLCONF = 'backend.urls'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
+# STATIC_URL = '/static/'
+# STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
+# STATICFILES_DIRS = [
+#     os.path.join(STATIC_ROOT, 'frontend'),  # Ensure Django knows where to find them
+# ]
 
-# Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
+# # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
+# # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
 
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
+
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # # No need to set STATICFILES_DIRS if frontend is handling static files
-STATICFILES_DIRS = [
-   BASE_DIR / 'staticfiles/',  # Ensure Django knows where to find them
-]
+# STATICFILES_DIRS = [
+#    BASE_DIR / 'staticfiles',  # Ensure Django knows where to find them
+# ]
+
+
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'staticfiles', 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

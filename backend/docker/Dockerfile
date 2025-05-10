@@ -5,9 +5,8 @@ RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/l
 
 WORKDIR /app
 
-COPY ./requirements.txt /app/
-COPY ./entrypoint.sh /usr/local/bin/
-COPY ../ /app/
+COPY ./docker/entrypoint.sh /usr/local/bin/
+COPY . /app/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

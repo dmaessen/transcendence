@@ -34,7 +34,7 @@ async function loginWebSocket(){
     }
 }
 
-const baseUrl = `http://${window.location.host}/api/authentication/`;
+const baseUrl = `https://${window.location.host}/api/authentication/`;
 // Helper functions
 function loadGoogleScript(callback) {
     const script = document.createElement('script');
