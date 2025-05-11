@@ -37,6 +37,11 @@ import pyotp
 import sys
 from django.core.cache import cache
 from django.conf import settings
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 # @otp_required
 def login_2fa_required(request):
@@ -101,6 +106,7 @@ class RegisterView(APIView):
 			#return token
 			refresh = RefreshToken.for_user(user)
 			access_token = refresh.access_token
+			logging.info(f"[DEBUG] made access token: ", access_token)
 			print(f"[DEBUG] going to return access token: ", access_token)
 			response = JsonResponse({
 				'message': 'Login successful'
