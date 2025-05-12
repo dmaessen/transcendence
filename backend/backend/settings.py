@@ -22,28 +22,28 @@ from django.utils.translation import gettext_lazy as _
 BASE_DIR = Path(__file__).resolve().parent.parent
 print(f"base_dir: {BASE_DIR}", flush= True)
 
-# # Static files to serve Ngnix
-# STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),  # Static files during development
-# ]
-
-# # Media files to serve Ngnix
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
-#static files settings to serve with django
-STATIC_URL = os.getenv('STATIC_PATH', '/static/')
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic in production
+# Static files to serve Ngnix
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # Static files during development
 ]
 
-# Media files settings to serve with django
-MEDIA_URL = os.getenv('MEDIA_PATH', '/media/')
+# Media files to serve Ngnix
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# #static files settings to serve with django
+# STATIC_URL = os.getenv('STATIC_PATH', '/static/')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic in production
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),  # Static files during development
+# ]
+
+# # Media files settings to serve with django
+# MEDIA_URL = os.getenv('MEDIA_PATH', '/media/')
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
