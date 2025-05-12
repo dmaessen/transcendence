@@ -1,85 +1,80 @@
-    <!-- User Registration Menu Modal -->
-    {% load static %}
-    <div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel" aria-hidden="true">
-        <script src="https://accounts.google.com/gsi/client" referrerpolicy="strict-origin-when-cross-origin" async defer></script>
-        <meta name="google-signin-client_id" content="517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div id="mainMenuContainer">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="SignInMenuLabel">Please register or login</h5>
-                    </div>
-                    <div class="modal-body">
-                            <button id="showRegister" class="btn btn-outline-dark w-100 mb-2">Register</button>
-                            <button id="showLogin" class="btn btn-outline-dark w-100 mb-2">Log in</button>
-                    </div>
+{% load static %}
+{% load i18n %}
+<div class="modal fade" id="SignInMenu" tabindex="-1" aria-labelledby="SignInMenuLabel" aria-hidden="true">
+    <script src="https://accounts.google.com/gsi/client" referrerpolicy="strict-origin-when-cross-origin" async defer></script>
+    <meta name="google-signin-client_id" content="517456269488-9cioqmptmcqvl54r3jh1ti36a579gvts.apps.googleusercontent.com">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div id="mainMenuContainer">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="SignInMenuLabel">{% trans "Please register or login" %}</h5>
                 </div>
-                <!-- Login Form (Initially Hidden) -->
-                <div id="loginContainer" class="overlay-form">
-                    <h2>Login</h2>
-                    <form id="loginForm">
-                        <input type="email" id="loginEmail" placeholder="Email" required><br>
-                        <input type="password" id="loginPassword" placeholder="Password" required><br>
-                        <button type="submit">Login</button>
-                    </form>
-                    <div id="otpContainer" style="display: none;">
-                        <label for="otpToken">Enter OTP Code:</label>
-                        <input type="text" id="otpToken" name="otpToken" />
-                        <button type="submitOTP" id="submitOTPButton" class="btn btn-success">Submit OTP token</button>
-                        <button type="returnOTP" id="returnToLogin" class="btn btn-secondary">return</button>    
-                    </div>
-                    <button id="googleButtonLogin" class="btn btn-outline-dark w-100 mb-2">
-                        <img src="{{ MEDIA_URL }}images/google.256x256.png" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
-                        Login with Google
-                    </button>
-                    <div id="FtSignInButtonLogin">
-                        <a href="/api/authentication/42/login/" class="btn btn-outline-dark w-100 mb-2">
-                            <img src="{{ MEDIA_URL }}images/42_Logo.png" alt="42 Logo" style="height: 20px; margin-right: 8px;">
-                            Login with 42
-                        </a>
-                    </div>
-                    <button id="backToMain1" class="btn btn-secondary">Back</button>
+                <div class="modal-body">
+                        <button id="showRegister" class="btn btn-outline-dark w-100 mb-2">{% trans "Register" %}</button>
+                        <button id="showLogin" class="btn btn-outline-dark w-100 mb-2">{% trans "Log in" %}</button>
                 </div>
-    
-                <!-- Register Form (Initially Hidden) -->
-                <div id="registerContainer" class="overlay-form">
-                    <h2>Register</h2>
-                    <form id="registerForm">
-                        <input type="text" id="registerUsername" placeholder="Username/alias" required><br>
-                        <input type="text" id="registerName" placeholder="Name" required><br>
-                        <input type="email" id="registerEmail" placeholder="Email" required><br>
-                        <input type="password" id="registerPassword" placeholder="Password" required><br>
-                        <label>
-                            <input type="checkbox" id="enable2FAonRegister"> Enable Two-Factor Authentication
-                        </label><br>
-                        <button type="submit">Register</button>
-                    </form>
-                    {% comment %} <div id="googleSignInButtonRegister">
-                        <script src="https://accounts.google.com/gsi/client" referrerpolicy="strict-origin-when-cross-origin" async defer></script>
-                    </div> {% endcomment %}
-                    <button id="googleButtonRegister" class="btn btn-outline-dark w-100 mb-2">
-                        <img src="{{ MEDIA_URL }}images/google.256x256.png" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
-                        Register with Google
-                    </button>
-                    <div id="FtSignInButtonRegister">
-                        <a href="/api/authentication/42/login/" class="btn btn-outline-dark w-100 mb-2">
-                            <img src="{{ MEDIA_URL }}images/42_Logo.png" alt="42 Logo" style="height: 20px; margin-right: 8px;">
-                            Register with 42
-                        </a>
-                            {% comment %} <span>Login with 42</span> {% endcomment %}
-                        {% comment %} </a> {% endcomment %}
-                    </div>
-                    <button id="backToMain2" class="btn btn-secondary">Back</button>
+            </div>
+
+            <div id="loginContainer" class="overlay-form">
+                <h2>{% trans "Login" %}</h2>
+                <form id="loginForm">
+                    <input type="email" id="loginEmail" placeholder="{% trans 'Email' %}" required><br>
+                    <input type="password" id="loginPassword" placeholder="{% trans 'Password' %}" required><br>
+                    <button type="submit">{% trans "Login" %}</button>
+                </form>
+                <div id="otpContainer" style="display: none;">
+                    <label for="otpToken">{% trans "Enter OTP Code:" %}</label>
+                    <input type="text" id="otpToken" name="otpToken" />
+                    <button type="submitOTP" id="submitOTPButton" class="btn btn-success">{% trans "Submit OTP token" %}</button>
+                    <button type="returnOTP" id="returnToLogin" class="btn btn-secondary">{% trans "return" %}</button>    
                 </div>
-                <div id="RemoveAccountContainer" class="overlay-form">
-                    <h2>Remove  Account</h2>
-                    <form id="removeAccountForm">
-                        <input type="email" id="loginEmail" placeholder="Email" required><br>
-                        <input type="password" id="loginPassword" placeholder="Password" required><br>
-                        <button type="submit">Login</button>
-                    </form>
-                    <button id="backToMain3" class="btn btn-secondary">Back</button>
+                <button id="googleButtonLogin" class="btn btn-outline-dark w-100 mb-2">
+                    <img src="{{ MEDIA_URL }}images/google.256x256.png" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
+                    {% trans "Login with Google" %}
+                </button>
+                <div id="FtSignInButtonLogin">
+                    <a href="/api/authentication/42/login/" class="btn btn-outline-dark w-100 mb-2">
+                        <img src="{{ MEDIA_URL }}images/42_Logo.png" alt="42 Logo" style="height: 20px; margin-right: 8px;">
+                        {% trans "Login with 42" %}
+                    </a>
                 </div>
+                <button id="backToMain1" class="btn btn-secondary">{% trans "Back" %}</button>
+            </div>
+
+            <div id="registerContainer" class="overlay-form">
+                <h2>{% trans "Register" %}</h2>
+                <form id="registerForm">
+                    <input type="text" id="registerUsername" placeholder="{% trans 'Username/alias' %}" required><br>
+                    <input type="text" id="registerName" placeholder="{% trans 'Name' %}" required><br>
+                    <input type="email" id="registerEmail" placeholder="{% trans 'Email' %}" required><br>
+                    <input type="password" id="registerPassword" placeholder="{% trans 'Password' %}" required><br>
+                    <label>
+                        <input type="checkbox" id="enable2FAonRegister"> {% trans "Enable Two-Factor Authentication" %}
+                    </label><br>
+                    <button type="submit">{% trans "Register" %}</button>
+                </form>
+                <button id="googleButtonRegister" class="btn btn-outline-dark w-100 mb-2">
+                    <img src="{{ MEDIA_URL }}images/google.256x256.png" alt="Ggle Logo" style="height: 20px; margin-right: 8px;">
+                    {% trans "Register with Google" %}
+                </button>
+                <div id="FtSignInButtonRegister">
+                    <a href="/api/authentication/42/login/" class="btn btn-outline-dark w-100 mb-2">
+                        <img src="{{ MEDIA_URL }}images/42_Logo.png" alt="42 Logo" style="height: 20px; margin-right: 8px;">
+                        {% trans "Register with 42" %}
+                    </a>
+                </div>
+                <button id="backToMain2" class="btn btn-secondary">{% trans "Back" %}</button>
+            </div>
+
+            <div id="RemoveAccountContainer" class="overlay-form">
+                <h2>{% trans "Remove Account" %}</h2>
+                <form id="removeAccountForm">
+                    <input type="email" id="loginEmail" placeholder="{% trans 'Email' %}" required><br>
+                    <input type="password" id="loginPassword" placeholder="{% trans 'Password' %}" required><br>
+                    <button type="submit">{% trans "Login" %}</button>
+                </form>
+                <button id="backToMain3" class="btn btn-secondary">{% trans "Back" %}</button>
             </div>
         </div>
     </div>
+</div>

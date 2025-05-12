@@ -72,7 +72,11 @@ function populateTournament(data) {
         tournamentsTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
-    headerRow.innerHTML = "<th>Tournament date</th><th>Winner</th>";
+    const tText = document.getElementById("text_tournament_date").textContent.trim();
+    const wText = document.getElementById("text_winner").textContent.trim();
+    headerRow.innerHTML =
+        "<th>" + tText + "</th>" +
+        "<th>" + wText + "</th>";
     thead.appendChild(headerRow);
 
     data.forEach(item => {
@@ -125,7 +129,14 @@ function populateMatches(data) {
         matchesTable.appendChild(thead);
     }
     let headerRow = document.createElement("tr");
-    headerRow.innerHTML = "<th>Match date</th><th>Winner</th><th>Opponent</th>";
+    const mText = document.getElementById("text_match_date").textContent.trim();
+    const wText = document.getElementById("text_winner").textContent.trim();
+    const oText = document.getElementById("text_opponent").textContent.trim();
+    // headerRow.innerHTML = "<th>Match date</th><th>Winner</th><th>Opponent</th>";
+    headerRow.innerHTML =
+        "<th>" + mText + "</th>" +
+        "<th>" + wText + "</th>" +
+        "<th>" + oText + "</th>";
     thead.appendChild(headerRow);
 
     //Populate
@@ -206,22 +217,23 @@ async function loadUserData(userID) {
         let btnType = document.getElementById("btnType");
         btnType.disabled = false;
         btnType.onclick = () => {
-            if (data.btnType === "Add friend") {
+            if (data.actionType === "add") {
                 addFriend(userID);
                 loadProfile(userID);
-            } else if (data.btnType === "Edit profile") {
+            } else if (data.actionType === "edit") {
                 currentModal = "editProfileModal";
                 history.pushState({ modalID: "editProfileModal" }, "", "?modal=editProfileModal");
                 console.log("Push: editProfileModal");
                 profileModal.hide();
                 editProfileModal.show();
-            } else if (data.btnType === "Delete friend") {
+                loadEditProfileData();
+            } else if (data.actionType === "delete") {
                 deleteFriend(userID);
                 loadProfile(userID);
-            } else if (data.btnType === "Cancel request") {
+            } else if (data.actionType === "request") {
                 deleteFriend(userID);
                 loadProfile(userID);
-            } else if (data.btnType === "Accept request") {
+            } else if (data.actionType === "accept") {
                 acceptFriend(friendshipID);
                 loadProfile(userID);
             }
@@ -229,6 +241,36 @@ async function loadUserData(userID) {
     } catch (error) {
         console.error("Error fetching user data:", error);
     }
+}
+
+function loadEditProfileData() {
+    // Get current user profile data
+    fetch('/data/api/get_profile/', {
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Loading user data for edit:", data);
+        
+        // Fill in form fields with current values
+        // document.getElementById("newUsername").value = data.username || '';
+        // document.getElementById("newMail").value = data.email || '';
+        
+        // Set preferred language dropdown
+        const langSelect = document.getElementById("preferredLanguage");
+        if (data.preferred_language) {
+            console.log("Setting preferred language to:", data.preferred_language);
+            langSelect.value = data.preferred_language;
+        } else {
+            // Default to current active language if no preference saved
+            langSelect.value = document.documentElement.lang;
+        }
+    })
+    .catch(error => {
+        console.error("Error loading profile data:", error);
+    });
 }
 
 async function loadMatchesData(userID) {

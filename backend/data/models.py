@@ -1,6 +1,8 @@
 from django.db import models
 # from cryptography.fields import encrypt  # Assuming this is a custom field for encryption
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils.translation import get_language
+from django.conf import settings
 
 class CustomUserManager(BaseUserManager):
 
@@ -41,6 +43,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
+    preferred_language = models.CharField(
+        max_length=10, 
+        choices=settings.LANGUAGES, 
+        default=settings.LANGUAGE_CODE
+    )
+
     # User manager
     objects = CustomUserManager()
 
@@ -69,9 +77,6 @@ class Match(models.Model):
     match_time = models.DurationField()
     winner = models.ForeignKey(CustomUser, related_name="match_winner", on_delete=models.SET_NULL, null=True, blank=True)
     tournament = models.ForeignKey('Tournament', related_name="matches", on_delete=models.SET_NULL, null=True, blank=True)  # Tournament for match, null if not part of any
-
-    # class Meta:
-    #     unique_together = ('player_1', 'player_2', 'tournament')
 
     def __str__(self):
         return f"Match_{self.player_1}.vs.{self.player_2} Winner: {self.winner}"

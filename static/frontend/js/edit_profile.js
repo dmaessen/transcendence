@@ -10,9 +10,11 @@ if (saveChangesBtn) {
             const newUsername = document.getElementById("newUsername").value;
             const newMail = document.getElementById("newMail").value;
             const newAvatar = document.getElementById("newAvatar").files[0];
+            const preferredLanguage = document.getElementById("preferredLanguage").value;
 
             console.log("New Username:", newUsername);
             console.log("New Email:", newMail);
+            console.log("New Pref Language:", preferredLanguage);
 
             const formData = new FormData();
 
@@ -22,6 +24,8 @@ if (saveChangesBtn) {
                 formData.append("newMail", newMail);
             if (newAvatar) 
                 formData.append("newAvatar", newAvatar);
+            if (preferredLanguage)
+                formData.append("preferred_language", preferredLanguage);
 
             console.log("form data: ", formData);
             const response = await fetch(`/data/api/editProfile/`, {
@@ -44,12 +48,24 @@ if (saveChangesBtn) {
 
             if (newUsername) {
                 document.getElementById("username").textContent = data.username;
-        }
+            }
             if(newMail){
                 document.getElementById("userEmail").textContent = data.email;
             }
             if (data.avatar_url) {
                 document.getElementById("userAvatar").src = data.avatar_url; // Assuming API returns the new image URL
+            }
+            if (preferredLanguage) {
+                //location.reload();
+                await fetch("/i18n/setlang/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-CSRFToken": getTheCookie("csrftoken"),
+                    },
+                    body: `language=${preferredLanguage}&next=/`
+                });
+                location.reload(); // Now reload in the new language
             }
 
             // Close edit modal

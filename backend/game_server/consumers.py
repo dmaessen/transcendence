@@ -17,6 +17,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from game_server.player import Player
 from data.models import CustomUser, Match
 import logging
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -261,9 +262,10 @@ class GameConsumer(AsyncWebsocketConsumer):
             if self.game_id in games:
                 del games[self.game_id]
                 await self.broadcast_game_state(self.game_id)
+                reason = _("Game stopped by player.")
                 await self.send(text_data=json.dumps({
                     "type": "end",
-                    "reason": "Game stopped by player.",  # change this to something dynamic to see who won
+                    "reason": reason,
                 }))
 
         elif action == "disconnect":
@@ -379,6 +381,31 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             game.clear_game()
 
+    async def end_twoplayers(self, winner_username):
+        if self.game_id in games:
+            game = games[self.game_id]
+            try:
+                match = await sync_to_async(
+                    lambda: Match.objects.select_related("player_1", "player_2").get(id=self.game_id)
+                )()
+                logger.info(f"Match id: {match.id}, players: {match.player_1.username} vs {match.player_2.username}")
+                if match.player_1.username == winner_username:
+                    match.winner = match.player_1
+                    match.player_1_points = game.score["player"]
+                    match.player_2_points = game.score["opponent"]
+                elif match.player_2.username == winner_username:
+                    match.winner = match.player_2
+                    match.player_2_points = game.score["opponent"]
+                    match.player_1_points = game.score["player"]
+                else:
+                    raise ValueError(f"Winner username not found in match")
+                await sync_to_async(match.save)()
+                logger.info("Match saved successfully")
+            except Exception as e:
+                logger.error(f"Error processing game result: {e}")
+
+            game.clear_game()
+
     async def trigger_start_game_auto_task(self, duration=70):
         print(f"Game {self.game_id} in trigger_start_game_auto_task", flush=True)
         await asyncio.sleep(duration)  # 1min 10sec wait
@@ -394,7 +421,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(10)
                 if len(game.players) == 1:
                     print(f"NB2: Both players aren't responding, starting game regardless. Starting game!", flush=True)
-                    await self.send_json({"type": "end", "reason": f"Game Over: {self.username} wins", "winner": self.username})
+                    reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
+                    await self.send_json({"type": "end", "reason": reason, "winner": self.username})
     
     async def broadcast_game_state(self, game_id):
         if game_id in games:
@@ -419,18 +447,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                             del games[self.game_id]
 
                     print(f"Winner determined by default (due to disconnection): {self.username}", flush=True)
-                    await self.send_json({"type": "end", "reason": f"Game Over: {self.username} wins", "winner": self.username})
-                    await self.channel_layer.group_send(
-                            self.match_name,
-                            {
-                                "type": "end",
-                                "reason": f"Game Over: {self.username} wins",
-                                "winner": {self.username}
-                            }
-                        )
+                    reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
+                    await self.send_json({"type": "end", "reason": reason, "winner": self.username})
+                    await self.end_twoplayers({self.username})
                     break
-
-                # if one player/two players hot seat then 
 
                 if not game.running:
                     player_username = None
@@ -446,13 +466,14 @@ class GameConsumer(AsyncWebsocketConsumer):
                         winner = player_username if game.score.get("player", 0) >= points else opponent_username
                         print(f"Winner determined: {winner}", flush=True)
 
-                        await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
+                        reason = _("Game Over: %(winner)s wins") % {'winner': winner}
+                        await self.send_json({"type": "end", "reason": reason, "winner": winner})
 
                         await self.channel_layer.group_send(
                             self.match_name,
                             {
                                 "type": "end",
-                                "reason": f"Game Over: {winner} wins",
+                                "reason": reason,
                                 "winner": winner
                             }
                         )

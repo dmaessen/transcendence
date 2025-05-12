@@ -1,8 +1,9 @@
+{% load i18n %}
 <div class="modal fade" id="allTournamentsModal" tabindex="-1" aria-labelledby="allTournamentsModalLabel" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="userTournamentsModalLabel">User Tournaments</h5>
+                <h5 class="modal-title" id="userTournamentsModalLabel">{% trans "User Tournaments" %}</h5>
                 <button id="closeAllTournamentsBtn" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
