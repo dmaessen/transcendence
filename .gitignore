@@ -4,7 +4,7 @@
 *.pyc
 **/__pycache__/
 db.sqlite3
-media
+
 
 # Backup files # 
 *.bak 
@@ -140,6 +140,7 @@ GitHub.sublime-settings
 # Project especifc folders 
 pgdata/
 myvenv/
+media/avatars/
 
 *.token
 *.crt

@@ -15,11 +15,19 @@ from asgiref.sync import sync_to_async
 logger = logging.getLogger(__name__)
 
 class UserStatusConsumer(AsyncWebsocketConsumer):
-    async def connect(self, request):
+    async def connect(self):
         try:
             await self.accept()
-            # Retrieve the token from the query string
-            token = request.COOKIES.get("access_token")
+            # Retrieve the token from the cookies
+            cookies = self.scope.get("headers", [])
+            token = None
+            for header in cookies:
+                if header[0].decode("utf-8") == "cookie":
+                    cookie_header = header[1].decode("utf-8")
+                    cookies_dict = {k.strip(): v.strip() for k, v in (cookie.split("=") for cookie in cookie_header.split(";"))}
+                    token = cookies_dict.get("access_token")
+                    break
+                
             if token:
                 # Validate the JWT token
                 access_token = AccessToken(token)

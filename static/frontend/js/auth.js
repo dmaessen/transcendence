@@ -4,13 +4,8 @@ async function loginWebSocket(){
     console.log("Let's open those sockets bebê");
     try {
         const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-        //  socket = new WebSocket(`${protocol}://${window.location.host}/ws/online_users/`);
         loginsocket = new WebSocket(`${protocol}://${window.location.host}/ws/online_users/`);
-        // console.log("socket: ", loginsocket);
-        if (!token) {
-            console.error("No access token found! WebSocket authentication will fail.");
-            return;
-        }
+
         loginsocket.onopen =  async(event) => {
             console.log("onlineSocket openned");
             pingInterval = setInterval(() => {
@@ -180,21 +175,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenu);
         console.log("csrf token: ", getCSRFToken());
 
-        // if (!user_logged) {
-        //     console.log("No access token found. Showing SignInMenu...");
-        //     SignInModal.show();
-        //     gameMenuModal.hide();
-        // } else {
-        //     // console.log("user data: ", fetchUserData());
-        //     console.log("User already logged in. Hiding SignInMenu");
-        //     SignInModal.hide();
-        //     gameMenuModal.show();
-        //     // make sure this is eventually activated
-        //     // if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
-        //     //     await loginWebSocket();
-        //     // }
-        // }
-        // SignInModal.show();
+        if (!user_logged) {
+            console.log("No access token found. Showing SignInMenu...");
+            SignInModal.show();
+            gameMenuModal.hide();
+        } else {
+            // console.log("user data: ", fetchUserData());
+            console.log("User already logged in. Hiding SignInMenu");
+            SignInModal.hide();
+            gameMenuModal.show();
+            // make sure this is eventually activated
+            if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
+                await loginWebSocket();
+            }
+        }
 
         if (showLogin) {
             showLogin.addEventListener("click", function () {
