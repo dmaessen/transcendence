@@ -38,9 +38,11 @@ import sys
 from django.core.cache import cache
 from django.conf import settings
 import logging
+from django.middleware.csrf import get_token
 
 
 logger = logging.getLogger(__name__)
+logger.info("This is a test log from authentication.views")
 
 
 # @otp_required
@@ -92,7 +94,7 @@ def register_2fa(request):
 		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
 
 class RegisterView(APIView):
-	@csrf_exempt
+	# @csrf_exempt
 	def post(self, request, *args, **kwargs):
 		print(f"[DEBUG] register view")
 		serializer = UserSerializer(data=request.data)
@@ -142,7 +144,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-	@csrf_exempt
+	# @csrf_exempt
 	def post(self, request):
 		email = request.data.get('email')
 		password = request.data.get('password')
@@ -242,9 +244,9 @@ class DeleteAccountView(APIView):
 			return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 	
 
-@api_view(["GET"])
-@csrf_exempt
+# @csrf_exempt
 # @permission_classes([IsAuthenticated])
+@api_view(["GET"])
 def sign_out(request):
 	print(f">>>>>>>>>User: {request.user}")
 	user = request.user
@@ -285,8 +287,12 @@ def disable_2fa(request):
 	user.save()
 
 	return Response({"message": "2FA has been disabled successfully."}, status=200)
+
 class RefreshTokenView(APIView):
 	def post(self, request):
+		logging.info(f"!!!!!!Cookies: {request.COOKIES}")
+		logging.info(f"!!!!!!CSRF Token: {request.META.get('HTTP_X_CSRFTOKEN')}")
+
 		refresh_token = request.COOKIES.get('refresh_token')
 		if not refresh_token:
 			raise AuthenticationFailed("No refresh token in cookies")
@@ -308,11 +314,14 @@ class RefreshTokenView(APIView):
 		)
 		return response
 
+@ensure_csrf_cookie
 def home(request):
+	csrf_token = get_token(request)
+	logging.info(f">>>>>>>>>>>>>>>>>>>>>>>CSRF Token: {csrf_token}")
 	return render(request, 'base.html')
 
+# @csrf_exempt
 @api_view(["POST"])
-@csrf_exempt
 def google_login(request):
 	client_id = settings.GOOGLE_CLIENT_ID
 	if not client_id:
@@ -386,7 +395,7 @@ def login_42_redirect(request):
 		f"&response_type=code"
 	)
 
-@csrf_exempt
+# @csrf_exempt
 def login_42_callback(request):
 	if request.method == "POST":
 		body = json.loads(request.body)
@@ -527,6 +536,7 @@ def index(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def protected_user_data(request):
+    logging.info(f"Protected user data endpoint hit by user: {request.user.username}")
     user = request.user
     return Response({
         "username": user.username,

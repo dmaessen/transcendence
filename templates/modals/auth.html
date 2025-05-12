@@ -18,6 +18,7 @@
             <div id="loginContainer" class="overlay-form">
                 <h2>{% trans "Login" %}</h2>
                 <form id="loginForm">
+                        {% csrf_token %}
                     <input type="email" id="loginEmail" placeholder="{% trans 'Email' %}" required><br>
                     <input type="password" id="loginPassword" placeholder="{% trans 'Password' %}" required><br>
                     <button type="submit">{% trans "Login" %}</button>
@@ -44,6 +45,7 @@
             <div id="registerContainer" class="overlay-form">
                 <h2>{% trans "Register" %}</h2>
                 <form id="registerForm">
+                        {% csrf_token %}
                     <input type="text" id="registerUsername" placeholder="{% trans 'Username/alias' %}" required><br>
                     <input type="text" id="registerName" placeholder="{% trans 'Name' %}" required><br>
                     <input type="email" id="registerEmail" placeholder="{% trans 'Email' %}" required><br>
@@ -69,8 +71,9 @@
             <div id="RemoveAccountContainer" class="overlay-form">
                 <h2>{% trans "Remove Account" %}</h2>
                 <form id="removeAccountForm">
-                    <input type="email" id="loginEmail" placeholder="{% trans 'Email' %}" required><br>
-                    <input type="password" id="loginPassword" placeholder="{% trans 'Password' %}" required><br>
+                        {% csrf_token %}
+                    <input type="email" id="remloginEmail" placeholder="{% trans 'Email' %}" required><br>
+                    <input type="password" id="remloginPassword" placeholder="{% trans 'Password' %}" required><br>
                     <button type="submit">{% trans "Login" %}</button>
                 </form>
                 <button id="backToMain3" class="btn btn-secondary">{% trans "Back" %}</button>
