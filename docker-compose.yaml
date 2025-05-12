@@ -29,15 +29,15 @@ services:
         volumes:
             # - pgdata:/var/lib/postgresql/data/
             - ${HOME}/.tranceanddance/pgdata:/var/lib/postgresql/data/
-            # - ./media/:/media/
+            - ./media/:/media/
 
     backend:
         build: ./backend/docker
         container_name: backend
         volumes:
             - ./backend/:/app/
-            # - ./static/:/app/static/
-            # - ./media/:/media/
+            - ./static/:/app/static/
+            - ./media/:/media/
             - ./monitoring/logs/django_logs:/var/log/django
         ports:
             - "8000:8000"
@@ -57,7 +57,7 @@ services:
         volumes:
             # - ./backend/static/templates:/usr/share/nginx/html/static/templates 
             - ./static/:/usr/share/nginx/html/static/
-            # - ./media/:/media/
+            - ./media/:/media/
         ports:
             - "443:443"
         networks:
