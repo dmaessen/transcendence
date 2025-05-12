@@ -3,7 +3,9 @@ let loginsocket;
 async function loginWebSocket(){
     console.log("Let's open those sockets bebê");
     try {
-        loginsocket = new WebSocket(`ws://${window.location.host}/ws/online_users/`)
+        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+        //  socket = new WebSocket(`${protocol}://${window.location.host}/ws/online_users/`);
+        loginsocket = new WebSocket(`${protocol}://${window.location.host}/ws/online_users/`);
         // console.log("socket: ", loginsocket);
         if (!token) {
             console.error("No access token found! WebSocket authentication will fail.");
@@ -46,8 +48,8 @@ function loadGoogleScript(callback) {
 }
 
 async function checkLoginStatus() {
+    console.log("Checking login status...");
     await refreshAccessToken();
-    
     try {
         const response = await fetch(`${baseUrl}data/`, {
             method: "GET",
@@ -76,6 +78,7 @@ async function checkLoginStatus() {
 }
 
 async function fetchUserData() {
+    console.log("Fetching user data...");
     try {
         const response = await fetch(`${baseUrl}data/`, {
             method: "GET",
@@ -117,11 +120,13 @@ async function fetchUserData() {
 // }
 
 function getCSRFToken() {
+    console.log("Getting CSRF token...");
     const match = document.cookie.match(/csrftoken=([^;]+)/);
     return match ? decodeURIComponent(match[1]) : "";
 }
 
 async function refreshAccessToken() {
+    console.log("Refreshing access token...");
     try {
         const response = await fetch(`${baseUrl}refresh/`, {
             method: "POST",
@@ -320,13 +325,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const googleButtonRegister = document.getElementById("googleButtonRegister");
                     if (googleButtonRegister) {
                         googleButtonRegister.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=http://localhost:8000/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost:8000/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                     const googleButtonLogin = document.getElementById("googleButtonLogin");
                     if (googleButtonLogin) {
                         googleButtonLogin.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=http://localhost:8000/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost:8000/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                 }
