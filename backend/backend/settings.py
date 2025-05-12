@@ -317,7 +317,7 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 # 42 api settings
 FT_CLIENT_ID = os.getenv("42_UID")
 FT_CLIENT_SECRET = os.getenv("42_secret")
-FT_REDIRECT_URI = os.getenv("42_redirect", "https://localhost:8000/api/authentication/42/callback/")
+FT_REDIRECT_URI = os.getenv("42_redirect", "https://localhost/api/authentication/42/callback/")
 
 # print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 # print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
