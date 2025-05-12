@@ -19,28 +19,28 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 print(f"base_dir: {BASE_DIR}", flush= True)
 
-# Static files to serve Ngnix
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Static files during development
-]
-
-# Media files to serve Ngnix
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
-# #static files settings to serve with django
-# STATIC_URL = os.getenv('STATIC_PATH', '/static/')
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic in production
+# # Static files to serve Ngnix
+# STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, 'static'),  # Static files during development
 # ]
 
-# # Media files settings to serve with django
-# MEDIA_URL = os.getenv('MEDIA_PATH', '/media/')
+# # Media files to serve Ngnix
+# MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+#static files settings to serve with django
+STATIC_URL = os.getenv('STATIC_PATH', '/static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic in production
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Static files during development
+]
+
+# Media files settings to serve with django
+MEDIA_URL = os.getenv('MEDIA_PATH', '/media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -152,18 +152,17 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost",
     "https://localhost",
-    "http://localhost:8080",
-    "https://localhost:8080",
+    "http://localhost:8000",
+    "https://localhost:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://localhost",
     "http://localhost",
-    "http://localhost:8080",
-    "https://localhost:8080",
+    "http://localhost:8000",
+    "https://localhost:8000",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = [
     "GET",
@@ -186,11 +185,25 @@ CORS_ALLOW_HEADERS = [
 # DO NOT include this if you're using credentials
 # CORS_ALLOW_ALL_ORIGINS = True
 
-# CSRF settings
+# CSRF settings for development
+# CORS_ALLOW_CREDENTIALS = True
+# CSRF_COOKIE_SECURE = False
+# CSRF_COOKIE_SAMESITE = 'Lax'
+# SESSION_COOKIE_SECURE = False
+# SESSION_COOKIE_SAMESITE = 'Lax'
+# CSRF_COOKIE_HTTPONLY = False
+
+#CSRF settings for production
+CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_HTTPONLY = False
+
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -217,28 +230,6 @@ ROOT_URLCONF = 'backend.urls'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-# STATIC_URL = '/static/'
-# STATIC_ROOT = Path(os.getenv('STATIC_PATH')).resolve()
-# STATICFILES_DIRS = [
-#     os.path.join(STATIC_ROOT, 'frontend'),  # Ensure Django knows where to find them
-# ]
-
-# # Only include STATIC_ROOT for collectstatic, no need to specify static dirs in development if served by frontend
-# # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic will store files
-
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = Path(os.getenv('MEDIA_PATH')).resolve()
-
-
-# STATIC_ROOT = os.path.join(BASE_DIR, 'media')
-
-
-# # No need to set STATICFILES_DIRS if frontend is handling static files
-# STATICFILES_DIRS = [
-#    BASE_DIR / 'staticfiles',  # Ensure Django knows where to find them
-# ]
-
 
 
 TEMPLATES = [
@@ -311,8 +302,6 @@ USE_TZ = True
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_SECRET")
 
-SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
-SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
 # 42 api settings
 FT_CLIENT_ID = os.getenv("42_UID")
@@ -400,7 +389,7 @@ SIMPLE_JWT = {
     "AUTH_COOKIE_SECURE": True,
     "AUTH_COOKIE_HTTP_ONLY": True,
     "AUTH_COOKIE_PATH": "/",
-    "AUTH_COOKIE_SAMESITE": "Lax",
+    "AUTH_COOKIE_SAMESITE": "None",
 }
 
 SITE_ID = 1

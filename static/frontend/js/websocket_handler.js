@@ -30,12 +30,16 @@ function connectWebSocket(mode) {
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
     try {
+        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+        
         if (mode == "4" || mode == "8")
+            websocket = new WebSocket(`${protocol}://${window.location.host}/ws/tournament/`);
             // websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/`);
-            websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/?token=${token}`);
+            // websocket = new WebSocket(`ws://${window.location.host}?token=${token}`);
         else
+            websocket = new WebSocket(`${protocol}://${window.location.host}/ws/game_server/`);
             // websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/`);
-            websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
+            // websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
     
         websocket.onopen = async() => {
             console.log("Connected to the game server.");
