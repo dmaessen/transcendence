@@ -211,7 +211,8 @@ window.addEventListener("load", async () => {
             await loginWebSocket();
         }
         currentModal = "gameMenuFirst";
-        gameMenuFirst.show();
+        applyPreferredLanguageAfterLogin(gameMenuFirst);
+        // gameMenuFirst.show();
         history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
         try {
             const bracketElement = document.getElementById("tournamentBracket");
@@ -228,6 +229,41 @@ window.addEventListener("load", async () => {
         SignInMenu.show();
     }
 });
+
+function applyPreferredLanguageAfterLogin(gameMenuFirst) {
+    console.log("GETTING HERE AFTER LOGIN -- GAME.JS"); // to rm
+    fetch('/data/api/get_profile/', {
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("Failed to fetch user profile");
+        return response.json();
+    })
+    .then(data => {
+        if (data.preferred_language) {
+            console.log("Applying preferred language via set_language:", data.preferred_language);
+            return fetch("/i18n/setlang/", {
+                method: "POST",
+                credentials: 'include',
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": getTheCookie("csrftoken"),  // You'll need a function to get CSRF token from cookies
+                },
+                body: `language=${data.preferred_language}&next=/`
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            gameMenuFirst.show();
+        }
+    })
+    .catch(error => {
+        console.error("Error loading preferred language:", error);
+        gameMenuFirst.show(); // Fall back to showing the modal even on failure
+    });
+}
 
 function showTournamentAdBanner(players_in, total_spots) { // Show banner to promote for other players
     if (players_in < total_spots) {
