@@ -211,8 +211,8 @@ window.addEventListener("load", async () => {
             await loginWebSocket();
         }
         currentModal = "gameMenuFirst";
-        applyPreferredLanguageAfterLogin(gameMenuFirst);
-        // gameMenuFirst.show();
+        // applyPreferredLanguageAfterLogin(gameMenuFirst);
+        gameMenuFirst.show();
         history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
         try {
             const bracketElement = document.getElementById("tournamentBracket");
@@ -230,12 +230,16 @@ window.addEventListener("load", async () => {
     }
 });
 
-function applyPreferredLanguageAfterLogin(gameMenuFirst) {
+function applyPreferredLanguageAfterLogin() {
     console.log("GETTING HERE AFTER LOGIN -- GAME.JS"); // to rm
+
+    const gameMenuFirst = document.getElementById("gameMenuFirst");
+
     fetch('/data/api/get_profile/', {
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-        }
+        credentials: 'include',
+        // headers: {
+        //     "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        // }
     })
     .then(response => {
         if (!response.ok) throw new Error("Failed to fetch user profile");
@@ -249,19 +253,19 @@ function applyPreferredLanguageAfterLogin(gameMenuFirst) {
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": getTheCookie("csrftoken"),  // You'll need a function to get CSRF token from cookies
+                    // "X-CSRFToken": getCSRFToken(),
                 },
                 body: `language=${data.preferred_language}&next=/`
             }).then(() => {
                 location.reload();
             });
         } else {
-            gameMenuFirst.show();
+            // gameMenuFirst.show();
         }
     })
     .catch(error => {
         console.error("Error loading preferred language:", error);
-        gameMenuFirst.show(); // Fall back to showing the modal even on failure
+        // gameMenuFirst.show(); // Fall back to showing the modal even on failure
     });
 }
 

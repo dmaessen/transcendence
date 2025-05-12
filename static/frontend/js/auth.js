@@ -144,7 +144,7 @@ async function refreshAccessToken() {
 
 // DOM management function
 document.addEventListener("DOMContentLoaded", async function () {
-        // let user_logged = await checkLoginStatus();
+        let user_logged = await checkLoginStatus();
         const mainMenu = document.getElementById("mainMenuContainer");
         const signInMenu = document.getElementById("SignInMenu");
         const signInButton = document.getElementById("signIn");
@@ -471,6 +471,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 // const data = await response.json().catch(() => ({})); // 
                 if (response.ok) {
                     alert("logged in succesfully")
+                    applyPreferredLanguageAfterLogin();
                     window.location.href = "/";
                     setTimeout(() => {
                         window.location.href = "/";

@@ -59,9 +59,10 @@ if (saveChangesBtn) {
                 //location.reload();
                 await fetch("/i18n/setlang/", {
                     method: "POST",
+                    credentials: 'include',
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
-                        "X-CSRFToken": getTheCookie("csrftoken"),
+                        "X-CSRFToken": getCSRFToken(),
                     },
                     body: `language=${preferredLanguage}&next=/`
                 });
