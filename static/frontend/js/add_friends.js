@@ -171,9 +171,8 @@ if(addFriendBtn) {
 const searchFriendBtn = document.getElementById("searchFriendBtn");
 if (searchFriendBtn) {
     searchFriendBtn.addEventListener("click", async function (event) {
+        event.preventDefault();
         try{
-            event.preventDefault();
-
             const newFriendUsername = document.getElementById("newFriendUsername").value.trim();
             if (!username) {
                 alert("Please enter a username.");
@@ -193,9 +192,7 @@ if (searchFriendBtn) {
             const data = await response.json();
             const userID = data.user_id;
             if (userID) {
-                // const addFriendsModalElement = document.getElementById("addFriendsModal");
-                // const addFriendsModal = bootstrap.Modal.getInstance(addFriendsModalElement);
-                addFriendsModal.hide();
+               addFriendsModal.hide();
                 loadProfile(userID);
             } else {
                 alert("User not found");
@@ -209,8 +206,7 @@ if (searchFriendBtn) {
 const addFriendCloseBtn = document.getElementById("addFriendCloseBtn");
 if(addFriendCloseBtn){
     addFriendCloseBtn.addEventListener("click", function() {
-        console.log("add close clicked");
-        addFriendsModal.hide();
-        friendsModal.show();
+        // console.log("add close clicked");
+        history.back();
     });
 }

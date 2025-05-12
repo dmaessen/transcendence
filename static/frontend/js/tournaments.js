@@ -106,7 +106,6 @@ const closeAllTournamentsBtn = document.getElementById("closeAllTournamentsBtn")
 if(closeAllTournamentsBtn){
     closeAllTournamentsBtn.addEventListener("click", function() {
         console.log("profile close clicked");
-        allTournamentsModal.hide();
-        profileModal.show();
+        history.back();
     });
 }

@@ -175,20 +175,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenu);
         console.log("csrf token: ", getCSRFToken());
 
-        if (!user_logged) {
-            console.log("No access token found. Showing SignInMenu...");
-            SignInModal.show();
-            gameMenuModal.hide();
-        } else {
-            // console.log("user data: ", fetchUserData());
-            console.log("User already logged in. Hiding SignInMenu");
-            SignInModal.hide();
-            gameMenuModal.show();
-            // make sure this is eventually activated
-            if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
-                await loginWebSocket();
-            }
-        }
+        // if (!user_logged) {
+        //     console.log("No access token found. Showing SignInMenu...");
+        //     SignInModal.show();
+        //     gameMenuModal.hide();
+        // } else {
+        //     // console.log("user data: ", fetchUserData());
+        //     console.log("User already logged in. Hiding SignInMenu");
+        //     SignInModal.hide();
+        //     gameMenuModal.show();
+        //     // make sure this is eventually activated
+        //     if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
+        //         await loginWebSocket();
+        //     }
+        // }
 
         if (showLogin) {
             showLogin.addEventListener("click", function () {

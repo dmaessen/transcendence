@@ -28,8 +28,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     tournament = None  # keeps track of the tournament instance
     initiator = None
 
-    async def connect(self, request):
-        token = request.COOKIES.get("access_token")
+    async def connect(self):
         if token:
             try:
             # Retrieve the token from the cookies

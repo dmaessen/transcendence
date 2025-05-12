@@ -19,13 +19,6 @@ function connectWebSocket(mode) {
         console.warn("Reconnection already in progress.");
         return;
     }
-    
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-        console.error("No token no game!");
-        return;
-    }
-    console.log("token: ", token);
 
     reconnecting = true;
     console.log("Attempting to connect to websocket...");
