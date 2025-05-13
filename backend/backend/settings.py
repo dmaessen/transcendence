@@ -15,6 +15,9 @@ from datetime import timedelta
 
 import os
 
+from django.utils.translation import gettext_lazy as _
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 print(f"base_dir: {BASE_DIR}", flush= True)
@@ -26,7 +29,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # Static files during development
 ]
 
-# Media files to serve Ngnix
+# # Media files to serve Ngnix
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -38,7 +41,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 #     os.path.join(BASE_DIR, 'static'),  # Static files during development
 # ]
 
-# # Media files settings to serve with django
+# Media files settings to serve with django
 # MEDIA_URL = os.getenv('MEDIA_PATH', '/media/')
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -96,14 +99,17 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'data.middleware.LanguagePreferenceMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth_2fa.middleware.AllauthTwoFactorMiddleware',
     'django_otp.middleware.OTPMiddleware',
+
 ]
 
 # governs whether your server accepts requests from different origins (domains, subdomains, or ports)
@@ -295,9 +301,27 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'en'
+
+LANGUAGE_COOKIE_NAME = 'django_language'
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365  # One year
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('nl', _('Dutch')),
+    ('fr', _('French')),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
+
 USE_I18N = True
+USE_L10N = True
+
+
+
+TIME_ZONE = 'UTC'
 USE_TZ = True
 
 #google api settings
@@ -349,6 +373,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': '/var/log/django/django.log',
+            # 'filename': BASE_DIR / 'django.log',
             'formatter': 'verbose',
         },
         'console': {

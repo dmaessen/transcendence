@@ -8,6 +8,11 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 import sys
+from django.utils import translation
+from django.conf import settings
+from .forms import LanguagePreferenceForm
+from django.shortcuts import render
+from django.utils.translation import gettext as _
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
  
@@ -25,20 +30,25 @@ def get_user_data(request):
     
     if profileID == "self" or request.user.id == int(profileID):
         user = request.user
-        btnType = "Edit profile"
+        btnType = _("Edit profile")
+        actionType = "edit"
     else:
         user = CustomUser.objects.filter(id = profileID).first()
         friendship = get_frienship(profileID, request.user.id)
         if friendship:
             friendshipID =  friendship.id
             if friendship.status == "approved":
-                btnType = "Delete friend"
+                btnType = _("Delete friend")
+                actionType = "delete"
             elif friendship.status == "pending" and friendship.sender == request.user:
-                btnType = "Friend request sent"
+                btnType = _("Friend request sent")
+                actionType = "request"
             else:
-                btnType = "Accept request"
+                btnType = _("Accept request")
+                actionType = "accept"
         else:
-            btnType = "Add friend"
+            btnType = _("Add friend")
+            actionType = "add"
         
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -53,6 +63,7 @@ def get_user_data(request):
         "email": user.email,
         "avatar": user.avatar.url if user.avatar else None,
         "btnType": btnType,
+        "actionType": actionType,
         "matches_played": matches_played,
         "matches_won": matches_won,
         "matches_lost": matches_lost,
@@ -148,10 +159,11 @@ def edit_user_data(request):
     newUsername = request.POST.get('newUsername')
     newMail = request.POST.get('newMail')
     newAvatar = request.FILES.get('newAvatar')
-    
+    preferred_language = request.POST.get('preferred_language')
 
     logger.info(f"newUsername: {newUsername}")
     logger.info(f"newMail: {newMail}")
+    logger.info(f"preferred_language: {preferred_language}")
     
     user = request.user
     
@@ -169,6 +181,10 @@ def edit_user_data(request):
             user.email = newMail
         if newAvatar:
             user.avatar = newAvatar
+        if preferred_language:
+            user.preferred_language = preferred_language
+            translation.activate(preferred_language)
+            request.session[settings.LANGUAGE_COOKIE_NAME] = preferred_language
 
         user.save()
         
@@ -176,6 +192,7 @@ def edit_user_data(request):
             "username": user.username,
             "email": user.email,
             "avatar": user.avatar.url if user.avatar else None,
+            "preferred_language": user.preferred_language,
         }
                 
         return JsonResponse({"message": "Successfully edited", "user_data": updated_user_data}, status=200)
@@ -246,3 +263,21 @@ def search_user(request):
         return JsonResponse({"user_id": user.id})
     except CustomUser.DoesNotExist:
         return JsonResponse({"user_id": None})
+
+# API to get the current user's language preference
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    try:
+        user = request.user
+        profile_data = {
+            "username": user.username,
+            "email": user.email,
+            "avatar": user.avatar.url if hasattr(user, 'avatar') and user.avatar else None,
+            "preferred_language": user.preferred_language if hasattr(user, 'preferred_language') else settings.LANGUAGE_CODE,
+            # Include other profile fields as needed
+        }
+        return JsonResponse(profile_data, status=200)
+    except Exception as e:
+        logger.error(f"Error getting profile data: {e}")
+        return JsonResponse({"error": "Failed to retrieve profile data"}, status=500)

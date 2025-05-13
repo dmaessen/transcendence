@@ -6,29 +6,27 @@ let winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
 let tournamentInterval = null;
 
 async function selectTournamentBtn() {
-    console.log("selecting button");
     try{
         const data = await fetchData(`/tournament-status/`, {
         });
         if (data) {
             console.log("data: ", data);
             if (data.players_in > 0 && !data.running) {
-                // tournamentMenuBtn.style.display = "block"; // to show the button
                 document.getElementById("tournamentBtn").textContent = "Join tournament";
-                joinTournament(data);
+                document.getElementById("tournamentBtn").addEventListener("click", () => {
+                    gameMenuTournament.hide();
+                    joinTournament(data);
+                });
             }
             else if (data.running) {
                 console.log("tournament is running atm");
                 document.getElementById("tournamentBtn").style.display = "none"; // to hide the button
-                // btn = document.getElementById("tournamentBtn");
-                // btn.textContent = "Ongoing tournament";
-                // btn.disable() = true;
-                //ongoing tournament
             }
             else {
-                // tournamentMenuBtn.style.display = "block"; // to show the button
                 document.getElementById("tournamentBtn").textContent = "Start new tournament";
-                //start tournament
+                document.getElementById("tournamentBtn").addEventListener("click", () => {
+                    gameMenuTournament.show();
+                    gameMenu.hide();});
             }
         }
     } catch (error){
@@ -178,7 +176,6 @@ async function updateBracket(mode) {
             }
         }
 
-        // add winners8 logic
         winners8 = JSON.parse(localStorage.getItem("winners8")) || [];
         if (winners8.length === 4) {
             playerElem = document.getElementById(`Player${9}`);
@@ -247,115 +244,6 @@ async function updateBracket(mode) {
             return;
         }
     }
-
-
-    // if (mode == 4 && final_winner != null) {
-    //     playerElem = document.getElementById(`Player${13}_`);
-    //     if (playerElem && playerElem.textContent.trim() === final_winner.username) {
-    //         resultElem = document.getElementById(`Result${13}_`);
-    //         if (resultElem) {
-    //             resultElem.innerHTML = "&nbsp;&nbsp;👑";
-    //         }
-    //     } else {
-    //         resultElem = document.getElementById(`Result${14}_`);
-    //         if (resultElem) {
-    //             resultElem.innerHTML = "&nbsp;&nbsp;👑";
-    //         }
-    //     }
-    //     await clearArrayWinners();
-    // }
-    // if (mode == 8 && final_winner != null) {
-    //     playerElem = document.getElementById(`Player${13}`);
-    //     if (playerElem && playerElem.textContent.trim() === final_winner.username) {
-    //         resultElem = document.getElementById(`Result${13}`);
-    //         if (resultElem) {
-    //             resultElem.innerHTML = "&nbsp;&nbsp;👑";
-    //         }
-    //         resultElem = document.getElementById(`Result${14}`);
-    //         if (resultElem) {
-    //             resultElem.innerHTML = "&nbsp;";
-    //         }
-    //     } else {
-    //         resultElem = document.getElementById(`Result${14}`);
-    //         if (resultElem) {
-    //             resultElem.innerHTML = "&nbsp;&nbsp;👑";
-    //         }
-    //         resultElem = document.getElementById(`Result${13}`);
-    //         if (resultElem) {
-    //             resultElem.innerHTML = "&nbsp;";
-    //         }
-    //     }
-    //     await clearArrayWinners();
-    // }
-    
-    // if (mode == 8 && (currentRound == 1 || currentRound == 2)) {
-    //     if (bracket && bracket[1]) {
-    //         for (let i = 0; i < mode; i++) {
-    //             playerElem = document.getElementById(`Player${i + 1}`);
-    //             resultElem = document.getElementById(`Result${i + 1}`);
-    //             bracket[1].forEach(match => {
-    //                 match.forEach(playerObj => {  
-    //                     let playerName = playerObj.player.username;  
-    //                     if (playerElem && playerElem.textContent.trim() === playerName) {
-    //                         if (playerObj.winner) {
-    //                             resultElem.innerHTML = "&nbsp;&nbsp;👑";
-    //                             if (!winners8.includes(playerName)) {
-    //                                 winners8.push(playerName);
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-    //     });}}
-    // }
-    
-    
-    // if (mode == 8 && winners8.length == 4) {
-    //     playerElem = document.getElementById(`Player${9}`);
-    //     if (playerElem) {
-    //         playerElem.innerText = winners8[0];
-    //     }
-    //     playerElem = document.getElementById(`Player${10}`);
-    //     if (playerElem) {
-    //         playerElem.innerText = winners8[1];
-    //     }
-    //     playerElem = document.getElementById(`Player${11}`);
-    //     if (playerElem) {
-    //         playerElem.innerText = winners8[2];
-    //     }
-    //     playerElem = document.getElementById(`Player${12}`);
-    //     if (playerElem) {
-    //         playerElem.innerText = winners8[3];
-    //     }
-    // }
-    // if (mode == 8 && (currentRound == 3 || currentRound == 2)) {
-    //     if (bracket && bracket[2]) {
-    //         for (let i = 8; i < 13; i++) {
-    //             playerElem = document.getElementById(`Player${i + 1}`);
-    //             resultElem = document.getElementById(`Result${i + 1}`);
-    //             bracket[2].forEach(match => {
-    //                 match.forEach(playerObj => {  
-    //                     let playerName = playerObj.player.username;  
-    //                     if (playerElem && playerElem.textContent.trim() === playerName) {
-    //                         if (playerObj.winner) {
-    //                             resultElem.innerHTML = "&nbsp;&nbsp;👑";
-    //                             if (!winners8_final.includes(playerName)) {
-    //                                 winners8_final.push(playerName);
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-    //     });}}
-    // }
-    // if (mode == 8 && winners8_final.length == 2){
-    //     playerElem = document.getElementById(`Player${13}`);
-    //     if (playerElem){
-    //         playerElem.innerText = winners8_final[0];
-    //     }
-    //     playerElem = document.getElementById(`Player${14}`);
-    //     if (playerElem){
-    //         playerElem.innerText = winners8_final[1];
-    //     }
-    // }
 }
 
 // Clear brackets from previous players/results

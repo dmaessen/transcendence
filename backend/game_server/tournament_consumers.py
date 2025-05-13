@@ -20,6 +20,7 @@ from urllib.parse import parse_qs
 import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 games = {}
@@ -32,10 +33,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         token = request.COOKIES.get("access_token")
         if token:
             try:
-                # Validate the JWT token
-                access_token = AccessToken(token)
-                user_id = access_token["user_id"]
-                logger.info(f"----userid: {user_id}\n\n")
+            # Retrieve the token from the cookies
+                cookies = self.scope.get("headers", [])
+                token = None
+                for header in cookies:
+                    if header[0].decode("utf-8") == "cookie":
+                        cookie_header = header[1].decode("utf-8")
+                        cookies_dict = {k.strip(): v.strip() for k, v in (cookie.split("=") for cookie in cookie_header.split(";"))}
+                        token = cookies_dict.get("access_token")
+                        break
 
                 # Fetch the user from the database based on the user_id
                 user = await sync_to_async(CustomUser.objects.get)(id=user_id)
@@ -345,9 +351,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                                 print(f"Winner determined: {winner}", flush=True)
                                 game.stop_game(winner)
                                 game.reset_game("Two Players (remote)") 
+                                reason = reason = _("Game Over: %(winner)s wins") % {'winner': winner}
                                 await self.channel_layer.group_send(
                                     self.match_name,
-                                    {"type": "game.end", "reason": f"Game Over: {winner} wins"}
+                                    {"type": "game.end", "reason": reason}
+                                    # {"type": "game.end", "reason": f"Game Over: {winner} wins"}
                                 )
                                 await self.channel_layer.group_send(
                                     "tournament_lobby",
@@ -367,11 +375,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     print(f"Winner determined: {winner}", flush=True)
 
                     await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
+                    reason = reason = _("Game Over: %(winner)s wins") % {'winner': winner}
                     await self.channel_layer.group_send(
                         self.match_name,
                         {
                             "type": "game.end",
-                            "reason": f"Game Over: {winner} wins"
+                            "reason": reason
+                            # "reason": f"Game Over: {winner} wins"
                         }
                     )
                     await self.channel_layer.group_send(
@@ -398,7 +408,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(10)
                 if len(game.players) == 1:
                     print(f"NB2: Both players aren't responding, starting game regardless. Starting game!", flush=True)
-                    await self.send_json({"type": "end", "reason": f"Game Over: {self.username} wins", "winner": self.username})
+                    reason = reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
+                    await self.send_json({"type": "end", "reason": reason, "winner": self.username})
 
     async def game_created(self, event):
         game_id = event["game_id"]
@@ -678,11 +689,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         print(f"Winner determined: {winner}", flush=True)
 
                         await self.send_json({"type": "end", "reason": f"Game Over: {winner} wins", "winner": winner})
+                        reason = _("Game Over: %(winner)s wins") % {'winner': winner}
                         await self.channel_layer.group_send(
                             self.match_name,
                             {
                                 "type": "game.end",
-                                "reason": f"Game Over: {winner} wins"
+                                "reason": reason
                             }
                         )
                         await self.channel_layer.group_send(

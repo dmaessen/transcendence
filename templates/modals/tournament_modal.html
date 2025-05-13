@@ -1,15 +1,16 @@
+{% load i18n %}
 <!-- THIRD Game Menu Modal Tournament -->
 <div class="modal fade" id="gameMenuTournament" tabindex="-1" aria-labelledby="gameMenuLabelTournament">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="gameMenuLabelTournament">Amount of players</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="gameMenuLabelTournament">{% trans "Amount of players" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
             </div>
             <div class="modal-body">
-                <button id="fourPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">4 Players</button>
-                <button id="eightPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">8 Players</button>
-                <button id="previous2Btn" class="btn btn-outline-secondary w-100 mb-2">Previous page</button>
+                <button id="fourPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">{% trans "4 Players" %}</button>
+                <button id="eightPlayersTournamentBtn" class="btn btn-outline-dark w-100 mb-2">{% trans "8 Players" %}</button>
+                <button id="previous2Btn" class="btn btn-outline-secondary w-100 mb-2">{% trans "Previous page" %}</button>
             </div>
         </div>
     </div>

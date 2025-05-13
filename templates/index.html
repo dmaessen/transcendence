@@ -1,33 +1,71 @@
-{% load static %}
+{% load static i18n %}
 
 <!DOCTYPE html>
-<html lang="en">
+{% get_current_language as current_language %}
+<html lang="{{ current_language }}">
 <head>
     <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong Game</title>
-    <!-- Link Bootstrap toolkit -->
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css">
     <!-- Link CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
 </head>
 <body>
+
+  <!-- Language selector for index.html -->
+  <form action="{% url 'set_language' %}" method="post" class="position-fixed top-0 end-0 me-3" style="margin-top: 4.0rem; z-index: 1100;">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}">
+    <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
+      <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
+      <option value="nl" {% if current_language == 'nl' %}selected{% endif %}>Nederlands</option>
+      <option value="fr" {% if current_language == 'fr' %}selected{% endif %}>Français</option>
+    </select>
+  </form>
+
+    <!-- Translations for profile and tables -->
+    <p id="text_match_date" style="display: none;">{% trans 'Match date' %}</p>
+    <p id="text_tournament_date" style="display: none;">{% trans 'Tournament date' %}</p>
+    <p id="text_winner" style="display: none;">{% trans 'Winner' %}</p>
+    <p id="text_opponent" style="display: none;">{% trans 'Opponent' %}</p>
+    <p id="text_username" style="display: none;">{% trans 'Username' %}</p>
+    <p id="text_friend" style="display: none;">{% trans 'Friend' %}</p>
+    <p id="text_status" style="display: none;">{% trans 'Status' %}</p>
+    <p id="text_accept" style="display: none;">{% trans 'Accept' %}</p>
+    <p id="text_decline" style="display: none;">{% trans 'Decline' %}</p>
+
+    <!-- Tournament banner -->
     <div id="tournamentBanner" class="alert alert-info position-fixed top-0 start-0 m-3" role="alert" style="display: none;">
-        🚀 A tournament is about to start!<br><span id="playersInTournament">0/8</span> players in. 
-        <a href="" class="alert-link" id="joinTournamentLink">Join now!</a> 
+        🚀 {% trans "A tournament is about to start!" %}<br>
+        <span id="playersInTournament">0/8</span> {% trans "players in." %}
+        <a href="" class="alert-link" id="joinTournamentLink">{% trans "Join now!" %}</a>
     </div>
-    <div id="currentUser" data-user-id="" style="display: none;"></div>
-    <h1 id="gameTitle" class="text-center my-3 display-6">Pong Game</h1>
-    <button id="exitButton" type="button" class="btn btn-outline-dark position-fixed top-0 end-0 m-3">Exit</button>
+<div id="currentUser" data-user-id="" style="display: none;"></div>
+    <!-- Title and Exit button -->
+    <h1 id="gameTitle" class="text-center my-3 display-6">{% trans "Pong Game" %}</h1>
+    <button id="exitButton" type="button" class="btn btn-outline-dark position-fixed top-0 end-0 m-3">{% trans "Exit" %}</button>
+
+    <!-- Instructions -->
     <p id="timer">0m 0s</p>
     <canvas id="game" style="display:none;"></canvas>
-    <!-- <canvas id="tournamentBracket" width="800" height="600"></canvas> -->
-    <p id="game-instruction1">Press the UP and DOWN keys to move your paddle.</p>
-    <p id="game-instruction2">Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move.</p>
-    <p id="game-instruction3">Press the UP and DOWN keys to move your paddle.<br>First player with a score of 3 wins.<br>The game starts automatically after 1 minute, if no one presses.</p>
-        
-    {% comment %} Modals {% endcomment %}
+    <p id="game-instruction1">{% trans "Press the UP and DOWN keys to move your paddle." %}</p>
+    <p id="game-instruction2">{% trans "Left player: use the W/S keys to move. Right player: use UP/DOWN keys to move." %}</p>
+    <p id="game-instruction3">
+        {% blocktrans %}Press the UP and DOWN keys to move your paddle.<br>
+        First player with a score of 3 wins.<br>
+        The game starts automatically after 1 minute, if no one presses.{% endblocktrans %}
+    </p>
+    <p id="gameModeTexts" style="display: none"
+      data-one="{% trans 'One Player' %}"
+      data-hotseat="{% trans 'Two Players (hot seat)' %}"
+      data-remote="{% trans 'Two Players (remote)' %}">
+    </p>
+    <p id="startPromptText" style="display: none;">{% trans "Press any key twice to start" %}"</p>
+
+    <!-- Modals (must be directly under body) -->
     {% include 'tournament.html' %}
     {% include 'tournament4.html' %}
     {% include 'modals/auth.html' %}
@@ -40,9 +78,8 @@
     {% include 'modals/tournaments_modal.html' %}
     {% include 'modals/add_friends_modal.html' %}
     {% include 'modals/edit_profile_modal.html' %}
-    
-    
-    {% comment %} Scripts {% endcomment %}
+
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'frontend/js/game.js' %}"></script>
     <script src="{% static 'frontend/js/auth.js' %}"></script>

@@ -4,13 +4,8 @@ async function loginWebSocket(){
     console.log("Let's open those sockets bebê");
     try {
         const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-        //  socket = new WebSocket(`${protocol}://${window.location.host}/ws/online_users/`);
         loginsocket = new WebSocket(`${protocol}://${window.location.host}/ws/online_users/`);
-        // console.log("socket: ", loginsocket);
-        if (!token) {
-            console.error("No access token found! WebSocket authentication will fail.");
-            return;
-        }
+
         loginsocket.onopen =  async(event) => {
             console.log("onlineSocket openned");
             pingInterval = setInterval(() => {
@@ -480,6 +475,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 // const data = await response.json().catch(() => ({})); // 
                 if (response.ok) {
                     alert("logged in succesfully")
+                    applyPreferredLanguageAfterLogin();
                     window.location.href = "/";
                     setTimeout(() => {
                         window.location.href = "/";

@@ -1,17 +1,17 @@
+{% load i18n %}
 <!-- SECOND Game Menu Modal -->
 <div class="modal fade" id="gameMenu" tabindex="-1" aria-labelledby="gameMenuLabel" data-backdrop="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="gameMenuLabel">Select Game Mode</h5>
+                <h5 class="modal-title" id="gameMenuLabel">{% trans "Select Game Mode" %}</h5>
             </div>
             <div class="modal-body">
-                <button id="onePlayerBtn" class="btn btn-outline-dark w-100 mb-2">One Player</button>
-                <button id="twoPlayersBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (hot seat)</button>
-                <button id="twoPlayersFriendsBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (with a friend)</button>
-                <button id="twoPlayersRemoteBtn" class="btn btn-outline-dark w-100 mb-2">Two Players (remote)</button>
-                <button id="tournamentBtn" class="btn btn-outline-dark w-100 mb-2">Tournament</button>
-                <button id="previousBtn" class="btn btn-outline-secondary w-100 mb-2">Previous page</button>
+                <button id="onePlayerBtn" class="btn btn-outline-dark w-100 mb-2">{% trans "One Player" %}</button>
+                <button id="twoPlayersBtn" class="btn btn-outline-dark w-100 mb-2">{% trans "Two Players (hot seat)" %}</button>
+                <button id="twoPlayersRemoteBtn" class="btn btn-outline-dark w-100 mb-2">{% trans "Two Players (remote)" %}</button>
+                <button id="tournamentBtn" class="btn btn-outline-dark w-100 mb-2">{% trans "Tournament" %}</button>
+                <button id="previousBtn" class="btn btn-outline-secondary w-100 mb-2">{% trans "Previous page" %}</button>
             </div>
         </div>
     </div>
