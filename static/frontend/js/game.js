@@ -211,34 +211,6 @@ tournamentBanner.addEventListener("click", async(event) => {
     }
 });
 
-window.addEventListener("load", async () => {
-    loggedin = await checkLoginStatus();
-    console.log("loggedin: ", loggedin);
-
-    //get token to check if user is logged, if it is, open main menu if not login modal
-    if (loggedin) {
-        if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
-            await loginWebSocket();
-        }
-        currentModal = "gameMenuFirst";
-        gameMenuFirst.show();
-        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
-        try {
-            const bracketElement = document.getElementById("tournamentBracket");
-            bracketElement.style.display = "none";
-            const data = await fetchData("/tournament-status/");
-            console.log("Fetched tournament status:", data);
-            if (data.remaining_spots > 0 && data.players_in != 0) {
-                showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
-            }
-        } catch (error) {
-            console.error("Error fetching tournament status:", error);
-        }
-    } else {
-        SignInMenu.show();
-    }
-});
-
 function disableTournamentButtons() {
     tournamentMenuBtn.style.display = "none";  // Hide the tournament button
     gameMenuTournament.hide(); // Hide the tournament menu
@@ -422,24 +394,3 @@ setInterval(() => {
         websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
 }, 1000 / 60);
-
-window.addEventListener("beforeunload", () => {
-    if (socket && socket.readyState === WebSocket.OPEN && socket !== loginsocket) {
-        console.log("Closing WebSocket before page unload.");
-        gameState.running = false;
-        stopTimer();
-        instructions1.style.display = "none";
-        instructions2.style.display = "none";
-        gameCanvas.style.display = "none";
-        gameTitle.style.display = "none";
-        socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-        socket.close()
-    }
-    if (checkLoginStatus) {
-        SignInMenu.show();
-    } else {
-        currentModal = "gameMenuFirst";
-        gameMenuFirst.show();
-        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
-    }
-});
