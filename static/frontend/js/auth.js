@@ -116,8 +116,15 @@ async function fetchUserData() {
 
 function getCSRFToken() {
     console.log("Getting CSRF token...");
-    const match = document.cookie.match(/csrftoken=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : "";
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            return decodeURIComponent(value);
+        }
+    }
+    console.warn("CSRF token not found in cookies.");
+    return "";
 }
 
 async function refreshAccessToken() {
@@ -471,7 +478,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 // const data = await response.json().catch(() => ({})); // 
                 if (response.ok) {
                     alert("logged in succesfully")
-                    applyPreferredLanguageAfterLogin();
+                    // applyPreferredLanguageAfterLogin();
                     window.location.href = "/";
                     setTimeout(() => {
                         window.location.href = "/";

@@ -38,6 +38,7 @@ window.addEventListener("load", async () => {
         if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
             await loginWebSocket();
         }
+        applyPreferredLanguageAfterLogin();
         currentModal = "gameMenuFirst";
         gameMenuFirst.show();
         history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
