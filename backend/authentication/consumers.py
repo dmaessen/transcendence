@@ -79,10 +79,9 @@ class UserStatusConsumer(AsyncWebsocketConsumer):
                 cache.set(f"user_online_{user.id}", True, timeout=3000)
         await self.send(text_data=json.dumps({"type": "pong"}))
 
-    async def disconnect(self, close_code, request):
+    async def disconnect(self, close_code):
         user = self.scope["user"]
         logger.info(f"user {user.username} is now disconnected")
         if user.is_authenticated:
             cache.delete(f"user_online_{user.id}")
-            sign_out(request)
             logger.info(f"user {user.username} is decached\n\n")
