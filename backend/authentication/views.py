@@ -406,7 +406,7 @@ def login_42_redirect(request):
 		f"&response_type=code"
 	)
 
-# @csrf_exempt
+@csrf_exempt
 def login_42_callback(request):
 	if request.method == "POST":
 		body = json.loads(request.body)
@@ -469,6 +469,7 @@ def login_42_callback(request):
 	)
 	return response
 
+@csrf_exempt
 def google_callback(request):
 	code = request.GET.get('code')
 	if not code:
@@ -518,7 +519,7 @@ def google_callback(request):
 		# response = JsonResponse({
 		# 	'message': 'Login successful'
 		# })
-		response = redirect("https://localhost:8000/")
+		response = redirect("https://localhost/")
 		response.set_cookie(
 			key="access_token",
 			value=str(access),

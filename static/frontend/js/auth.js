@@ -261,7 +261,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                     },
                     body: JSON.stringify({ code: ftCode }),
                 });
-                const data = await response.json();
+
+                let data = {}
+                try {
+                    await response.json();
+                } catch (jsonError) {
+                    console.warn("response is not valid JSON");
+                    data = { error: "unexpected response format"};
+                }
                 if (response.ok) {
                     alert("42 login successful!");
                     window.location.href = "/";
@@ -321,13 +328,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const googleButtonRegister = document.getElementById("googleButtonRegister");
                     if (googleButtonRegister) {
                         googleButtonRegister.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost:8000/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                     const googleButtonLogin = document.getElementById("googleButtonLogin");
                     if (googleButtonLogin) {
                         googleButtonLogin.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost:8000/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                 }
