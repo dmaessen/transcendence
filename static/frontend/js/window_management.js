@@ -3,7 +3,7 @@ const modals = document.querySelectorAll(".modal");
 modals.forEach(modal => {
     modal.addEventListener("show.bs.modal", async function () {
         const isLoggedIn = await checkLoginStatus();
-        if (!isLoggedIn) {
+        if (!isLoggedIn && modal.id !== "SignInMenu") {
             window.location.reload();
         }
     });
