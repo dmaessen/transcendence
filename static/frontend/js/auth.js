@@ -51,7 +51,7 @@ async function checkLoginStatus() {
     console.log("Checking login status...");
     await refreshAccessToken();
     try {
-        const response = await fetch(`${baseUrl}data/`, {
+        const response = await fetch(`${baseUrl}me/`, {
             method: "GET",
             credentials: "include",
             headers: {
@@ -60,19 +60,21 @@ async function checkLoginStatus() {
             },
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log("User is authenticated:", data);
-            return true;
-        } else if (response.status === 401) {
-            console.warn("User is not authenticated (401)");
-            return false;
-        } else {
-            console.warn("Unexpected response while checking login:", response.status);
+        if (!response.ok) {
+            console.warn(`[checkLoginStatus] Status: ${response.status} ${response.statusText}`);
             return false;
         }
+
+        const data = await response.json();
+
+        if (data.error) {
+            console.warn("User is not authenticated", data.error);
+            return false;
+        } 
+        console.log("User is authenticated:", data);
+        return true;
     } catch (err) {
-        console.error("Error checking login status:", err);
+        console.log("Error checking login status:", err);
         return false;
     }
 }
@@ -109,7 +111,7 @@ async function fetchUserData() {
             return "invalid login"
         }
     } catch (error) {
-        console.error("Error fetching data:", error);
+        console.log("Error fetching data:", error);
     }
 }
 
@@ -120,7 +122,7 @@ async function fetchUserData() {
 // }
 
 function getCSRFToken() {
-    console.log("Getting CSRF token...");
+    // console.log("Getting CSRF token...");
     const match = document.cookie.match(/csrftoken=([^;]+)/);
     return match ? decodeURIComponent(match[1]) : "";
 }
@@ -149,7 +151,6 @@ async function refreshAccessToken() {
 
 // DOM management function
 document.addEventListener("DOMContentLoaded", async function () {
-        let user_logged = await checkLoginStatus();
         const mainMenu = document.getElementById("mainMenuContainer");
         const signInMenu = document.getElementById("SignInMenu");
         const signInButton = document.getElementById("signIn");
@@ -178,8 +179,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const SignInModal = bootstrap.Modal.getOrCreateInstance(signInMenu);
         const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenu);
-        console.log("csrf token: ", getCSRFToken());
+        // console.log("csrf token: ", getCSRFToken());
 
+        let user_logged = await checkLoginStatus();
         if (!user_logged) {
             console.log("No access token found. Showing SignInMenu...");
             SignInModal.show();
@@ -189,12 +191,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.log("User already logged in. Hiding SignInMenu");
             SignInModal.hide();
             gameMenuModal.show();
-            // make sure this is eventually activated
-            // if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
-            //     await loginWebSocket();
-            // }
+            if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
+                await loginWebSocket();
+            }
         }
-        // SignInModal.show();
 
         if (showLogin) {
             showLogin.addEventListener("click", function () {
@@ -265,10 +265,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (response.ok) {
                     alert("42 login successful!");
                     window.location.href = "/";
-                    // if (signInMenu) {
-                    //     const signInModal = bootstrap.Modal.getInstance(signInMenu);
-                    //     if (signInModal) signInModal.hide();
-                    // }
                 } else {
                     alert("42 login failed: " + (data.error || JSON.stringify(data)));
                 }

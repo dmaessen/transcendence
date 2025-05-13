@@ -244,13 +244,20 @@ class DeleteAccountView(APIView):
 			return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 	
 
+def perform_logout(request):
+    logout(request)
+    response = {
+        "message": "you have been signed out"
+    }
+    return response
+
 # @csrf_exempt
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def sign_out(request):
-	print(f">>>>>>>>>User: {request.user}")
+	# print(f">>>>>>>>>User: {request.user}")
 	user = request.user
-	logout(request)
+	perform_logout(request)
 	messages.success(request, 'You have been logged out')
 	response = JsonResponse({"message": "you have been signed out"})
 	response.delete_cookie("access_token")
@@ -290,12 +297,10 @@ def disable_2fa(request):
 
 class RefreshTokenView(APIView):
 	def post(self, request):
-		logging.info(f"!!!!!!Cookies: {request.COOKIES}")
-		logging.info(f"!!!!!!CSRF Token: {request.META.get('HTTP_X_CSRFTOKEN')}")
 
 		refresh_token = request.COOKIES.get('refresh_token')
 		if not refresh_token:
-			return ({"error": "no refresh token"})
+			return JsonResponse({"error": "no refresh token"})
 			# raise AuthenticationFailed("No refresh token in cookies")
 		try:
 			token = RefreshToken(refresh_token)
@@ -303,7 +308,9 @@ class RefreshTokenView(APIView):
 		except Exception as e:
 			raise AuthenticationFailed("Invalid refresh token")
 
-		print(f"[DEBUG] going to send refreshed access token: ", access_token);
+		if not access_token: 
+			return JsonResponse({"error": "unable to refresh access token"})
+		print(f"[DEBUG] going to send refreshed access token: ", access_token)
 		response = JsonResponse({"message": "Token refreshed"})
 		response.set_cookie(
 			key="access_token",
@@ -356,7 +363,7 @@ def google_login(request):
 		refresh = RefreshToken.for_user(user)
 		access_token = refresh.access_token
 
-		response = redirect("https://localhost:8000/")
+		response = redirect("https://localhost/")
 		response.set_cookie(
 			key="access_token",
 			value=str(access_token),
@@ -381,12 +388,15 @@ def google_login(request):
 @permission_classes([IsAuthenticated])
 def me(request):
 	user = request.user
+	print("[DEBUG] me(user):", user, flush= True)
+	# if (user.is_authenticated):
 	return Response({
 		"id": user.id,
 		"username": user.username,
 		"email": user.email,
-		"two_factor_enabled": hasattr(user, 'totp_device') and user.totp_device.confirmed,
+		"two_factor_enabled": CustomTOTPDevice.objects.filter(customUser=user, confirmed=True).exists(),
 	})
+	# return Response({"error": "user not logged in"})
 
 def login_42_redirect(request):
 	base_url = "https://api.intra.42.fr/oauth/authorize"
@@ -536,13 +546,30 @@ def index(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@csrf_exempt
 def protected_user_data(request):
-    logging.info(f"Protected user data endpoint hit by user: {request.user.username}")
-    user = request.user
-    return Response({
-        "username": user.username,
-        "email": user.email,
-        "id": user.id,
-		# "avatar": user.avatar,
-		"is_active": user.is_active,
-    })
+	logging.info(f"Protected user data endpoint hit by user: {request.user.username}")
+	user = request.user
+	if (user):
+		return Response({
+			"username": user.username,
+			"email": user.email,
+			"id": user.id,
+			# "avatar": user.avatar,
+			"is_active": user.is_active,
+		})
+
+
+# @api_view(['GET'])
+# def me(request):
+# 	user = request.user
+# 	print("[DEBUG] me(user):", user, flush= True)
+# 	if (user.is_authenticated):
+# 		return Response({
+# 			"username": user.username,
+# 			"email": user.email,
+# 			"id": user.id,
+# 			# "avatar": user.avatar,
+# 			"is_active": user.is_active,
+# 		})
+# 	return Response({"error": "User not Authenticated"})
