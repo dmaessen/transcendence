@@ -95,6 +95,10 @@ class TournamentLogic:
     async def register_match_result(self, game_id, winner_username):
         print(f"Registering match result: Game {game_id}, Winner {winner_username}", flush=True)
         
+        if not any(m[0] == game_id for m in self.matches):
+            logger.info(f"Game {game_id} already processed or not in active matches list.")
+            return
+
         match_indices = [i for i, (g_id, p1, p2) in enumerate(self.matches) if g_id == game_id]
         if not match_indices:
             print(f"Game {game_id} not found in matches", flush=True)

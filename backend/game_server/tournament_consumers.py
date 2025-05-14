@@ -199,18 +199,37 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     "reason": "Game stopped by player.",  # change this to something dynamic to see who won
                 }))
 
+        # elif action == "disconnect_1v1game":
+        #     for game_id in list(games.keys()):
+        #         game = games[game_id]
+        #         print(f"Game {game_id} ended, in disconnect_1v1game", flush=True)
+        #         if self.player_id in game.players:
+        #             game.remove_player(self.player_id)
+        #             if not game.players:
+        #                 game.stop_game("No players")
+        #                 del games[game_id]
+        #                 print(f"Game {game_id} ended. Winner: No players", flush=True)
+        #         if hasattr(self, 'match_name'):
+        #             await self.channel_layer.group_discard(self.match_name, self.channel_name)
+
         elif action == "disconnect_1v1game":
-            for game_id in list(games.keys()):
-                game = games[game_id]
-                print(f"Game {game_id} ended, in disconnect_1v1game", flush=True)
-                if self.player_id in game.players:
-                    game.remove_player(self.player_id)
-                    if not game.players:
-                        game.stop_game("No players")
-                        del games[game_id]
-                        print(f"Game {game_id} ended. Winner: No players", flush=True)
-                if hasattr(self, 'match_name'):
-                    await self.channel_layer.group_discard(self.match_name, self.channel_name)
+            game_id = data.get("game_id")
+            if game_id is None or game_id not in games:
+                print(f"Invalid or unknown game_id in disconnect_1v1game", flush=True)
+                return
+
+            game = games[game_id]
+            print(f"Game {game_id} ended, in disconnect_1v1game", flush=True)
+
+            if self.player_id in game.players:
+                game.remove_player(self.player_id)
+                if not game.players:
+                    game.stop_game("No players")
+                    del games[game_id]
+                    print(f"Game {game_id} ended. Winner: No players", flush=True)
+
+            if hasattr(self, 'match_name'):
+                await self.channel_layer.group_discard(self.match_name, self.channel_name)
 
         elif action == "disconnect":
             await self.handle_player_leave()
@@ -413,10 +432,35 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
                 # if someone desconnected in the meantime before starting then this player wins automatically
                 await asyncio.sleep(10)
-                if len(game.players) == 1:
-                    print(f"NB2: Both players aren't responding, starting game regardless. Starting game!", flush=True)
-                    reason = reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
-                    await self.send_json({"type": "end", "reason": reason, "winner": self.username})
+                # if len(game.players) == 1:
+                #     print(f"NB2: Both players aren't responding, starting game regardless. Starting game!", flush=True)
+                #     reason = reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
+                #     await self.send_json({"type": "end", "reason": reason, "winner": self.username})
+                player_count = len(game.players)
+                if player_count == 1:
+                    winner_player = game.players[0]
+                    winner_name = winner_player.username if hasattr(winner_player, "username") else str(winner_player)
+                    print(f"🏆 Auto-win: Only player {winner_name} remains", flush=True)
+
+                    reason = _("Game Over: %(winner)s wins") % {'winner': winner_name}
+                    await self.send_json({"type": "end", "reason": reason, "winner": winner_name})
+                    # optionally register winner to the tournament
+                    if hasattr(self, "tournament_consumer"):
+                        await self.tournament_consumer.register_match_result(game_id, winner_name)
+
+                    # Clean up
+                    # del games[game_id]
+                elif player_count == 0:
+                    print("🛑 Both players disconnected. No winner.", flush=True)
+                    await self.send_json({
+                        "type": "end",
+                        "reason": _("Game Over: No players present"),
+                        "winner": None
+                    })
+                    # del games[game_id]
+
+                else:
+                    print("⚠️ Unexpected state: Game auto-started with 2 players but none ready?", flush=True)
 
     async def game_created(self, event):
         game_id = event["game_id"]
@@ -522,6 +566,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         if hasattr(self, 'tournament_db_id'):
             tournament_db = await sync_to_async(Tournament.objects.get)(id=self.tournament_db_id)
+        else:
+            print("No tournament_db_id found", flush=True)
+            return  # or handle this error more explicitly -- IS THIS CORRECT?
         user1 = await get_user_by_id(player1_id)
         user2 = await get_user_by_id(player2_id)
 
