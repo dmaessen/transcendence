@@ -61,7 +61,7 @@ class UserStatusConsumer(AsyncWebsocketConsumer):
                 logger.warning("No token provided.")
                 await self.close()  # Close if no token is provided
         except Exception as ex:
-            logger.error(f"WebSocket connect error: {e}")
+            logger.error(f"WebSocket connect error: {ex}")
             await self.close()
             
         # If the user is authenticated, mark them as online
@@ -81,7 +81,7 @@ class UserStatusConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         user = self.scope["user"]
-        logger.info(f"user {user.username} is now disconnected")
         if user.is_authenticated:
+            logger.info(f"user {user.username} is now disconnected")
             cache.delete(f"user_online_{user.id}")
             logger.info(f"user {user.username} is decached\n\n")

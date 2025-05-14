@@ -56,7 +56,7 @@ DEBUG = True
 
 # Controls which hostnames can make requests to your Django server.
 # ensures only recognized hosts can serve your app
-ALLOWED_HOSTS = ['*', 'localhost']
+ALLOWED_HOSTS = ['tranceanddance.com', 'localhost']
 
 # Application definition
 
@@ -109,7 +109,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth_2fa.middleware.AllauthTwoFactorMiddleware',
     'django_otp.middleware.OTPMiddleware',
-
 ]
 
 # governs whether your server accepts requests from different origins (domains, subdomains, or ports)
@@ -160,6 +159,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost",
     "http://localhost:8000",
     "https://localhost:8000",
+    "https://tranceanddance.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -167,6 +167,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost",
     "http://localhost:8000",
     "https://localhost:8000",
+    "https://tranceanddance.com",
 ]
 
 
@@ -199,7 +200,7 @@ CORS_ALLOW_HEADERS = [
 # SESSION_COOKIE_SAMESITE = 'Lax'
 # CSRF_COOKIE_HTTPONLY = False
 
-#CSRF settings for production
+#CSRF settings for production   
 CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
@@ -331,10 +332,8 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_SECRET")
 # 42 api settings
 FT_CLIENT_ID = os.getenv("42_UID")
 FT_CLIENT_SECRET = os.getenv("42_secret")
-FT_REDIRECT_URI = os.getenv("42_redirect", "https://localhost:8000/api/authentication/42/callback/")
+FT_REDIRECT_URI = os.getenv("42_redirect", "https://tranceanddance.com/api/authentication/42/callback/")
 
-# print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
-# print("[DEBUG] FT_REDIRECT_URI:", FT_REDIRECT_URI)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -408,7 +407,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    "SIGNING_KEY": "complexsigningkey", # generate a key and replace me
+    "SIGNING_KEY": "PqKojHe8YmKwtgm538bq6cWKep82PwOj", # generate a key and replace me
     "ALGORITHM": "HS512",
     "AUTH_COOKIE": "access_token",
     "AUTH_COOKIE_REFRESH": "refresh_token",

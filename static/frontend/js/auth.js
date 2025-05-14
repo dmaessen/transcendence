@@ -46,7 +46,7 @@ async function checkLoginStatus() {
     console.log("Checking login status...");
     await refreshAccessToken();
     try {
-        const response = await fetch(`${baseUrl}data/`, {
+        const response = await fetch(`${baseUrl}me/`, {
             method: "GET",
             credentials: "include",
             headers: {
@@ -55,19 +55,21 @@ async function checkLoginStatus() {
             },
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log("User is authenticated:", data);
-            return true;
-        } else if (response.status === 401) {
-            console.warn("User is not authenticated (401)");
-            return false;
-        } else {
-            console.warn("Unexpected response while checking login:", response.status);
+        if (!response.ok) {
+            console.warn(`[checkLoginStatus] Status: ${response.status} ${response.statusText}`);
             return false;
         }
+
+        const data = await response.json();
+
+        if (data.error) {
+            console.warn("User is not authenticated", data.error);
+            return false;
+        } 
+        console.log("User is authenticated:", data);
+        return true;
     } catch (err) {
-        console.error("Error checking login status:", err);
+        console.log("Error checking login status:", err);
         return false;
     }
 }
@@ -104,7 +106,7 @@ async function fetchUserData() {
             return "invalid login"
         }
     } catch (error) {
-        console.error("Error fetching data:", error);
+        console.log("Error fetching data:", error);
     }
 }
 
@@ -115,20 +117,9 @@ async function fetchUserData() {
 // }
 
 function getCSRFToken() {
-    console.log("Getting CSRF token...");
-    console.log("Cookies:", document.cookie);
-    const cookies = document.cookie.split(';');
-    console.log("Cookies:", cookies);
-    for (let cookie of cookies) {
-        console.log("Cookie:", cookie);
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'csrftoken') {
-            console.log("CSRF token found:", value);
-            return decodeURIComponent(value);
-        }
-    }
-    console.warn("CSRF token not found in cookies.");
-    return ""; // Return an empty string if the token is not found
+    // console.log("Getting CSRF token...");
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
 }
 
 async function refreshAccessToken() {
@@ -146,7 +137,7 @@ async function refreshAccessToken() {
             return null;
         }
         console.log("Access token refreshed.");
-        return true;
+        return data.access_token;
     } catch (error) {
         console.error("Error refreshing token", error);
         return null;
@@ -155,7 +146,6 @@ async function refreshAccessToken() {
 
 // DOM management function
 document.addEventListener("DOMContentLoaded", async function () {
-        let user_logged = await checkLoginStatus();
         const mainMenu = document.getElementById("mainMenuContainer");
         const signInMenu = document.getElementById("SignInMenu");
         const signInButton = document.getElementById("signIn");
@@ -184,22 +174,22 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const SignInModal = bootstrap.Modal.getOrCreateInstance(signInMenu);
         const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenu);
-        console.log("csrf token: ", getCSRFToken());
+        // console.log("csrf token: ", getCSRFToken());
 
-        // if (!user_logged) {
-        //     console.log("No access token found. Showing SignInMenu...");
-        //     SignInModal.show();
-        //     gameMenuModal.hide();
-        // } else {
-        //     // console.log("user data: ", fetchUserData());
-        //     console.log("User already logged in. Hiding SignInMenu");
-        //     SignInModal.hide();
-        //     gameMenuModal.show();
-        //     // make sure this is eventually activated
-        //     if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
-        //         await loginWebSocket();
-        //     }
-        // }
+        let user_logged = await checkLoginStatus();
+        if (!user_logged) {
+            console.log("No access token found. Showing SignInMenu...");
+            SignInModal.show();
+            gameMenuModal.hide();
+        } else {
+            // console.log("user data: ", fetchUserData());
+            console.log("User already logged in. Hiding SignInMenu");
+            SignInModal.hide();
+            gameMenuModal.show();
+            if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
+                await loginWebSocket();
+            }
+        }
 
         if (showLogin) {
             showLogin.addEventListener("click", function () {
@@ -266,14 +256,17 @@ document.addEventListener("DOMContentLoaded", async function () {
                     },
                     body: JSON.stringify({ code: ftCode }),
                 });
-                const data = await response.json();
+
+                let data = {}
+                try {
+                    await response.json();
+                } catch (jsonError) {
+                    console.warn("response is not valid JSON");
+                    data = { error: "unexpected response format"};
+                }
                 if (response.ok) {
                     alert("42 login successful!");
                     window.location.href = "/";
-                    // if (signInMenu) {
-                    //     const signInModal = bootstrap.Modal.getInstance(signInMenu);
-                    //     if (signInModal) signInModal.hide();
-                    // }
                 } else {
                     alert("42 login failed: " + (data.error || JSON.stringify(data)));
                 }
@@ -330,13 +323,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const googleButtonRegister = document.getElementById("googleButtonRegister");
                     if (googleButtonRegister) {
                         googleButtonRegister.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost:8000/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://tranceanddance.com/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                     const googleButtonLogin = document.getElementById("googleButtonLogin");
                     if (googleButtonLogin) {
                         googleButtonLogin.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost:8000/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://tranceanddance.com/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                 }
@@ -364,14 +357,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (registerForm) {
             registerForm.addEventListener("submit", async function (e) {
-                // e.preventDefault();
+                e.preventDefault();
                 const name = document.getElementById("registerName").value;
                 const username = document.getElementById("registerUsername").value;
                 const email = document.getElementById("registerEmail").value;
                 const password = document.getElementById("registerPassword").value;
                 const enable2FA = document.getElementById("enable2FAonRegister")?.checked;
+                
+                console.log("enable 2fa: ", enable2FA);
+                let registerData
                 try {
-                    const registerData = await fetch(`${baseUrl}register/`, {
+                        registerData = await fetch(`${baseUrl}register/`, {
                         method: "POST",
                         credentials: "include",
                         headers: {
@@ -380,21 +376,35 @@ document.addEventListener("DOMContentLoaded", async function () {
                         },
                         body: JSON.stringify({ username, name, email, password }),
                     });
-                } catch {
+                } catch (err) {
                         console.error("error trying to register", err);
-                        console.error("registerData: ", registerData);
-                    }
+                        return
+                }
                 try {
                     // const registrationDataResponse = await registerData.json();
                     if (!registerData.ok) {
-                        if (registerData.status == 400) {
-                            alert("registration failed, user may already exist")
-                        } else {
-                            alert(`Registration failed: ${JSON.stringify(registerData)}`);
+                        let errorMsg = `Error ${registerData.status}`;
+                        try {
+                            const errorJson = await registerData.json();
+                            errorMsg += `: ${errorJson.error || JSON.stringify(errorJson)}`;
+                        } catch (err) {
+                            const errorText = await registerData.text();
+                            errorMsg += `: ${errorText}`;
                         }
+                        alert(`Registration failed: ${errorMsg}`);
                         return;
                     }
+                    
+                    // if (!registerData.ok) {
+                    //     if (registerData.status === 400) {
+                    //         alert("registration failed, user may already exist")
+                    //     } else {
+                    //         alert(`Registration failed: ${registerData}`);
+                    //     }
+                    //     return;
+                    // }
                     alert("Registration successful! You will now be logged in automatically");
+                    window.location.href = "/";
                     // const accessToken = registrationDataResponse.access;
                     // const refreshToken = registrationDataResponse.refresh;
                     // if (!accessToken || !refreshToken) {
@@ -409,14 +419,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                     // }
                     // scheduleTokenRefresh()
                     if (enable2FA) {
+                        console.log("2fa clicked")
+                        alert("2fa clicked")
                         let refreshedToken = await refreshAccessToken();
-                        const tokenToUse = refreshedToken || accessToken;
+                        // const tokenToUse = refreshedToken || accessToken;
+                        const tokenToUse = refreshedToken;
                         const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                             method: "POST",
                             credentials: "include",
                             headers: {
                                 "Content-Type": "application/json",
-                                "Authorization": `Bearer ${tokenToUse}`,
                             },
                         });
                         const twoFAData = await twoFAResponse.json();
@@ -439,7 +451,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     }, 30);
                     
                 } catch (error) {
-                    console.error("Error:", error);
+                    console.error("Error in registration flow:", error);
                     alert("An error occurred. Check the console.");
                 }
             });
