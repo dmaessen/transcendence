@@ -28,6 +28,7 @@ window.addEventListener("beforeunload", () => {
         gameMenuFirst.show();
         history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
     }
+    // localStorage.removeItem("manualLangSelection");
 });
 
 window.addEventListener("load", async () => {
