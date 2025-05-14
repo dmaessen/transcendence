@@ -161,7 +161,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:8000",
     "https://tranceanddance.com",
     "https://10.15.178.211",
-    "https://*.codam.nl"
+    "https://*.codam.nl",
+
     
 ]
 
@@ -172,7 +173,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://localhost:8000",
     "https://tranceanddance.com",
     "https://10.15.178.211",
-    "https://*.codam.nl"
+    "https://*.codam.nl",
 ]
 
 
