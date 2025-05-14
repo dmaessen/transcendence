@@ -203,19 +203,21 @@ tournamentBanner.addEventListener("click", async(event) => {
 
 // When the user selects from the dropdown
 document.getElementById("languageDropdown").addEventListener("change", (e) => {
-    const selectedLang = e.target.value;
-    sessionStorage.setItem("manualLangSelection", selectedLang);
-    //applyLanguage(selectedLang);
+    localStorage.setItem("manualLangSelection", true);
 });
 
 
 function applyPreferredLanguageAfterLogin() {
-    const manuallySelected = sessionStorage.getItem("manualLangSelection");
+    const manuallySelected = localStorage.getItem("manualLangSelection");
     if (manuallySelected) {
-        // del sessionStorage.getItem("manualLangSelection"); // use the manually selected one
+        if (manuallySelected === true) {
+            localStorage.setItem("manualLangSelection", false);
+            return ;
+        } else if (manuallySelected === false) {
+            getUserPreferredLanguage(); // from server or cookie
+        }
     } else {
         getUserPreferredLanguage(); // from server or cookie
-        // applyLanguage(preferred);
     }
 }
 
