@@ -201,7 +201,26 @@ tournamentBanner.addEventListener("click", async(event) => {
     }
 });
 
+// When the user selects from the dropdown
+document.getElementById("languageDropdown").addEventListener("change", (e) => {
+    const selectedLang = e.target.value;
+    sessionStorage.setItem("manualLangSelection", selectedLang);
+    //applyLanguage(selectedLang);
+});
+
+
 function applyPreferredLanguageAfterLogin() {
+    const manuallySelected = sessionStorage.getItem("manualLangSelection");
+    if (manuallySelected) {
+        // del sessionStorage.getItem("manualLangSelection"); // use the manually selected one
+    } else {
+        getUserPreferredLanguage(); // from server or cookie
+        // applyLanguage(preferred);
+    }
+}
+
+
+function getUserPreferredLanguage() {
     console.log("GETTING HERE AFTER LOGIN -- GAME.JS"); // to rm
     // Check if the page has already been reloaded for language change
     fetch('/data/api/get_profile/', {
