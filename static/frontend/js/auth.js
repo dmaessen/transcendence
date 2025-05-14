@@ -591,22 +591,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (enable2FAButton) {
             enable2FAButton.addEventListener("click", async function () {
-                let accessToken = localStorage.getItem("access_token");
-                if (!accessToken) {
-                    accessToken = await refreshAccessToken();
-                    if (!accessToken) {
-                        alert("You are not logged in, please do so now.");
-                        window.location.href = "/game_server/";
-                        return;
-                    }
-                }
+                // let accessToken = localStorage.getItem("access_token");
+                // if (!accessToken) {
+                //     accessToken = await refreshAccessToken();
+                //     if (!accessToken) {
+                //         alert("You are not logged in, please do so now.");
+                //         window.location.href = "/game_server/";
+                //         return;
+                //     }
+                // }
                 try {
                     const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                         method: "POST",
                         credentials: "include",
                         headers: {
                             "Content-Type": "application/json",
-                            "Authorization": `Bearer ${accessToken}`,
                         },
                     });
                     const twoFAData = await twoFAResponse.json();
