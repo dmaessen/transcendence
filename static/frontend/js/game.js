@@ -17,6 +17,7 @@ const tournamentBanner = document.getElementById("tournamentBanner");
 
 let timerInterval;
 let keyboardEnabled = true;
+let playerCount = 4;
 
 instructions1.style.display = "none";
 instructions2.style.display = "none";
@@ -40,7 +41,7 @@ const onePlayerText = gameModeTexts.dataset.one;
 const hotseatText = gameModeTexts.dataset.hotseat;
 const remoteText = gameModeTexts.dataset.remote;
 
-function startGame(mode) {
+function startGame(mode, usernames=null) {
     keyboardEnabled = true;
     gameState.running = false;
     gameState.mode = mode; 
@@ -71,9 +72,9 @@ function startGame(mode) {
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") {
         gameMenuTournament.hide();
         if (mode === "Tournament - 4 Players")
-            connectWebSocket(4);
+            connectWebSocket(4, usernames);
         else
-            connectWebSocket(8);
+            connectWebSocket(8, usernames);
     }
 }
 
@@ -111,13 +112,16 @@ document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => {
 
 document.getElementById("tournamentBtn").addEventListener("click", () => {
     gameMenuTournament.show();
+   
     gameMenu.hide();
     currentModal = "gameMenuTournament";
     history.pushState({ modalID: "gameMenuTournament" }, "", "?modal=gameMenuTournament");
 });
 
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
-    startGame("Tournament - 4 Players");
+    // startGame("Tournament - 4 Players");
+    playerCount = 4;
+    openUsernameModal();
     // disableTournamentButtons();
     currentModal = "game";
     const mode = "Tournament - 4 Players";
@@ -126,7 +130,9 @@ document.getElementById("fourPlayersTournamentBtn").addEventListener("click", ()
 });
 
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
-    startGame("Tournament - 8 Players");
+    // startGame("Tournament - 8 Players");
+    playerCount = 8;
+    openUsernameModal();
     // disableTournamentButtons();
     currentModal = "game";
     const mode = "Tournament - 8 Players";
@@ -340,7 +346,7 @@ function updateGameState(data) {
 }
 
 function displayStartPrompt() {
-    const startPromptText = document.getElementById("startPromptText").textContent.trim().slice(0, -1);
+    const startPromptText = document.getElementById("startPromptText").textContent.trim();
 
     gameCanvas.style.display = "block";
     gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
@@ -399,7 +405,7 @@ function stopTimer() {
 document.addEventListener("keydown", (event) => {
     if (keyboardEnabled === false)
         return;
-    if (gameState.mode != "One Player" && gameState.mode != "Two Players (hot seat)") {
+    if (gameState.mode != "One Player" && gameState.mode != "Two Players (hot seat)"  && gameState.mode != "4" && gameState.mode != "8") {
         if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed, 'ready' state, waiting for the other player to start the game...");
             websocket.send(JSON.stringify({ action: "ready", mode: gameState.mode }));
@@ -431,8 +437,7 @@ setInterval(() => {
         return;
 
     let directions = [];
-
-    if (gameState.mode != "Two Players (hot seat)") {
+    if (gameState.mode != "Two Players (hot seat)" && gameState.mode != "4" && gameState.mode != "8") {
         if (pressedKeys.has("ArrowUp"))
             directions.push("up");
         if (pressedKeys.has("ArrowDown"))
@@ -453,3 +458,85 @@ setInterval(() => {
         websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
 }, 1000 / 60);
+
+
+
+
+// ----------------------------------- NEW ---------------------------------------
+
+function openUsernameModal() {
+    const firstModal = bootstrap.Modal.getInstance(document.getElementById('gameMenuTournament'));
+    if (firstModal) firstModal.hide();
+
+    const container = document.getElementById('usernameFieldsContainer');
+    container.innerHTML = '';
+    for (let i = 0; i < playerCount; i++) {
+        container.innerHTML += `
+        <div class="mb-3">
+            <input type="text" class="form-control username-input" placeholder="Username ${i + 1}" data-index="${i}">
+            <div class="form-text text-danger d-none" id="user-error-${i}">User not found</div>
+        </div>
+        `;
+    }
+
+    const usernameModal = new bootstrap.Modal(document.getElementById('tournamentUsernameModal'));
+    usernameModal.show();
+}
+
+document.getElementById('tournamentUserForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const inputs = document.querySelectorAll('.username-input');
+    let allValid = true;
+
+    for (let input of inputs) {
+        const index = input.dataset.index;
+        const username = input.value.trim();
+        const errorEl = document.getElementById(`user-error-${index}`);
+
+        if (!username) {
+            input.classList.add('is-invalid');
+            errorEl.textContent = 'Username required';
+            errorEl.classList.remove('d-none');
+            allValid = false;
+            continue;
+        }
+
+        // checks backend
+        const res = await fetch(`data/api/searchUser/?friendUsername=${username}`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+            },
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(`Error, status: ${res.status}`);
+        }
+
+        if (data.user_id !== null) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            errorEl.classList.add('d-none');
+        } else {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            errorEl.textContent = 'User not found';
+            errorEl.classList.remove('d-none');
+            allValid = false;
+        }
+    }
+
+    if (allValid) {
+        // ✅ All usernames are valid — proceed to tournament logic
+        const usernames = Array.from(inputs).map(input => input.value.trim());
+        console.log('Valid usernames:', usernames);
+        if (usernames.length == 4)
+            startGame("Tournament - 4 Players", usernames);
+            // connectWebSocket("4", usernames);
+        else if (usernames.length == 8)
+            startGame("Tournament - 8 Players", usernames);
+        // const usernameModal = new bootstrap.Modal(document.getElementById('tournamentUsernameModal'));
+        // usernameModal.hide();
+    }
+});

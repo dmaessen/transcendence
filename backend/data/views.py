@@ -282,3 +282,4 @@ def get_profile(request):
     except Exception as e:
         logger.error(f"Error getting profile data: {e}")
         return JsonResponse({"error": "Failed to retrieve profile data"}, status=500)
+

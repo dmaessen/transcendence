@@ -34,7 +34,7 @@ class TournamentLogic:
         await self.cache_update()
         await self._start_next_round()
 
-    async def cache_update(self):
+    async def cache_update(self): # not needed a nymore right?
         channel_layer = get_channel_layer()
         state = self.get_tournament_state()
         serialized = msgspec.json.encode(state).decode("utf-8")
@@ -49,10 +49,6 @@ class TournamentLogic:
         await asyncio.sleep(5)
 
     def _create_bracket(self):
-        # random.shuffle(self.players)
-        # self.bracket[self.current_round] = [
-        #     (self.players[i], self.players[i + 1]) for i in range(0, len(self.players), 2)
-        # ]
         if self.current_round not in self.bracket:
             self.bracket[self.current_round] = []
 
@@ -64,33 +60,69 @@ class TournamentLogic:
 
         print(f"tournament bracket created: {self.bracket}", flush=True)
 
+    # async def _start_next_round(self):
+    #     print(f"NEW ROUND IN START NEXT ROUND", flush=True)
+    #     if self.final_winner:
+    #         print(f"tournament already ended. Winner: {self.final_winner}", flush=True)
+    #         return
+
+    #     self.matches = []
+    #     self.winners = []
+    #     channel_layer = get_channel_layer()
+
+    #     for player1, player2 in self.bracket[self.current_round]:
+    #         match_exists = any(match["player1"] == player1["player"]["id"] and match["player2"] == player2["player"]["id"] for match in self.matches)
+            
+    #         if not match_exists:
+    #             await channel_layer.group_send(
+    #                 "tournament_lobby",
+    #                 {
+    #                     "type": "create.game.tournament",
+    #                     "player1": player1["player"]["id"],
+    #                     "player2": player2["player"]["id"],
+    #                 }
+    #             )
+    #             print(f"Sent create.game.tournament message for {player1['player']['username']} vs {player2['player']['username']}", flush=True)
+    #             # self.matches.append({"player1": player1["id"], "player2": player2["id"]})
+
+    #     print(f"Round {self.current_round} started.", flush=True)
+    #     asyncio.create_task(self._round_timeout_handler(self.current_round, timeout_seconds=300))  # 5 min timeout
+
     async def _start_next_round(self):
         print(f"NEW ROUND IN START NEXT ROUND", flush=True)
         if self.final_winner:
-            print(f"tournament already ended. Winner: {self.final_winner}", flush=True)
+            print(f"Tournament already ended. Winner: {self.final_winner}", flush=True)
             return
 
+        self.current_match_queue = []
         self.matches = []
         self.winners = []
-        channel_layer = get_channel_layer()
 
         for player1, player2 in self.bracket[self.current_round]:
-            match_exists = any(match["player1"] == player1["player"]["id"] and match["player2"] == player2["player"]["id"] for match in self.matches)
-            
-            if not match_exists:
-                await channel_layer.group_send(
-                    "tournament_lobby",
-                    {
-                        "type": "create.game.tournament",
-                        "player1": player1["player"]["id"],
-                        "player2": player2["player"]["id"],
-                    }
-                )
-                print(f"Sent create.game.tournament message for {player1['player']['username']} vs {player2['player']['username']}", flush=True)
-                # self.matches.append({"player1": player1["id"], "player2": player2["id"]})
+            self.current_match_queue.append((player1["player"]["id"], player2["player"]["id"]))
 
-        print(f"Round {self.current_round} started.", flush=True)
-        asyncio.create_task(self._round_timeout_handler(self.current_round, timeout_seconds=300))  # 5 min timeout
+        print(f"Match queue for round {self.current_round}: {self.current_match_queue}", flush=True)
+
+        await self._start_next_match_in_queue()
+
+    async def _start_next_match_in_queue(self):
+        if not self.current_match_queue:
+            print("All matches for this round have been started.", flush=True)
+            asyncio.create_task(self._round_timeout_handler(self.current_round, timeout_seconds=300))
+            return
+
+        player1_id, player2_id = self.current_match_queue.pop(0)
+
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            "tournament_lobby",
+            {
+                "type": "create.game.tournament",
+                "player1": player1_id,
+                "player2": player2_id,
+            }
+        )
+        print(f"Sent create.game.tournament message for {player1_id} vs {player2_id}", flush=True)
 
     async def register_match_result(self, game_id, winner_username):
         print(f"Registering match result: Game {game_id}, Winner {winner_username}", flush=True)
@@ -137,7 +169,9 @@ class TournamentLogic:
         
         # rm previous matches 
         self.matches = [(g_id, p1, p2) for g_id, p1, p2 in self.matches if g_id != game_id]
-         
+        
+        await asyncio.sleep(15)
+
         if len(self.matches) == 0:
             await self._advance_to_next_round()
 

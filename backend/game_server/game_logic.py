@@ -144,6 +144,25 @@ class Game:
                 if direction == "w_up" and player["y"] > 0:
                     player["y"] -= 10
 
+        if self.mode == "Two Players (tournament)":
+            for direction in directions:
+                if direction == "w_up":
+                    for p in self.players.values():
+                        if p["x"] == 20 and p["y"] > 0:
+                            p["y"] -= 10
+                if direction == "s_down":
+                    for p in self.players.values():
+                        if p["x"] == 20 and p["y"] + p["height"] < self.height:
+                            p["y"] += 10
+                if direction == "up":
+                    for p in self.players.values():
+                        if p["x"] == self.width - 40 and p["y"] > 0:
+                            p["y"] -= 10
+                if direction == "down":
+                    for p in self.players.values():
+                        if p["x"] == self.width - 40 and p["y"] + p["height"] < self.height:
+                            p["y"] += 10
+
         elif player_id in self.players:
             paddle = self.players[player_id]
             for direction in directions:

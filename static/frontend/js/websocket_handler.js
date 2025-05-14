@@ -3,13 +3,7 @@ let websocket;
 let socket;
 let reconnecting = false; // needed??
 
-function connectWebSocket(mode) {
-    // if (websocket && websocket.readyState === WebwebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif websocket
-    //     console.log("WebwebSocket already connected.");
-    //     startGameMenu(); // or not
-    //     return;
-    // }
-
+function connectWebSocket(mode, usernames=null) {
     if (reconnecting) {
         console.warn("Reconnection already in progress.");
         return;
@@ -44,7 +38,7 @@ function connectWebSocket(mode) {
                         gameState.mode = mode;
                         console.log("start_tounrment from connectWebsocket undergoing");
                     }
-                    websocket.send(JSON.stringify({ action: "join_tournament", mode: mode }));
+                    websocket.send(JSON.stringify({ action: "add_all_players", mode: mode, players: usernames }));
                     gameState.mode = mode;
                     showWaitingRoomTournament(mode);
                 } catch (error) {
@@ -110,8 +104,8 @@ const returnToTournamentWaitingRoom = async (message) => {
     instructions3.style.display = "none";
     gameCanvas.style.display = "none";
     gameTitle.style.display = "none";
-    if (websocket && websocket.readyState === WebSocket.OPEN)
-        websocket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
+    // if (websocket && websocket.readyState === WebSocket.OPEN)
+    //     websocket.send(JSON.stringify({ action: "disconnect_1v1game", mode: gameState.mode, game_id: gameState.gameId }));
     showWaitingRoomTournament(gameState.mode);
 }
 
@@ -230,6 +224,7 @@ function handleServerMessage(message) {
             document.getElementById("tournamentBracket4").style.display = "none";
             instructions3.style.display = "block";
             gameState.running = false;
+            gameState.gameId = message.game_id;
             startGameMenu();
             break;
         case "tournament_update":
