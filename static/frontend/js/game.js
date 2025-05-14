@@ -118,7 +118,7 @@ document.getElementById("tournamentBtn").addEventListener("click", () => {
 
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    disableTournamentButtons();
+    // disableTournamentButtons();
     currentModal = "game";
     const mode = "Tournament - 4 Players";
     const encodedMode = encodeURIComponent(mode);
@@ -127,7 +127,7 @@ document.getElementById("fourPlayersTournamentBtn").addEventListener("click", ()
 
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    disableTournamentButtons();
+    // disableTournamentButtons();
     currentModal = "game";
     const mode = "Tournament - 8 Players";
     const encodedMode = encodeURIComponent(mode);

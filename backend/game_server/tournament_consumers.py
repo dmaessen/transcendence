@@ -30,20 +30,26 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     initiator = None
 
     async def connect(self):
-        if token:
-            try:
-            # Retrieve the token from the cookies
-                cookies = self.scope.get("headers", [])
-                token = None
-                for header in cookies:
-                    if header[0].decode("utf-8") == "cookie":
-                        cookie_header = header[1].decode("utf-8")
-                        cookies_dict = {k.strip(): v.strip() for k, v in (cookie.split("=") for cookie in cookie_header.split(";"))}
-                        token = cookies_dict.get("access_token")
-                        break
+        # Retrieve the token from the cookies
+        cookies = self.scope.get("headers", [])
+        token = None
+        for header in cookies:
+            if header[0].decode("utf-8") == "cookie":
+                cookie_header = header[1].decode("utf-8")
+                cookies_dict = {k.strip(): v.strip() for k, v in (cookie.split("=") for cookie in cookie_header.split(";"))}
+                token = cookies_dict.get("access_token")
+                break
 
-                # Fetch the user from the database based on the user_id
+        if token:
+            # Validate the JWT token
+            access_token = AccessToken(token)
+            logger.info(f"----access token: {access_token}\n\n")
+            user_id = access_token["user_id"]
+            logger.info(f"----userid: {user_id}\n\n")
+            # Fetch the user from the database based on the user_id
+            try:
                 user = await sync_to_async(CustomUser.objects.get)(id=user_id)
+                logger.info(f"username: {user.username}")
                 self.scope["user"] = user
                 logger.info(f"Authenticated user {user.username} connected via WebSocket.")
             except ObjectDoesNotExist:
@@ -57,7 +63,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         else:
             logger.warning("No token provided.")
             await self.close()  # Close if no token is provided
-        # If the user is authenticated, mark them as online
+        #If the user is authenticated, mark them as online
         if self.scope["user"].is_authenticated:
             try:
                 user = self.scope["user"]
@@ -82,8 +88,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         if hasattr(self, 'match_name'):
             await self.channel_layer.group_discard(self.match_name, self.channel_name)
-
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
+        if hasattr(self, 'room_name'):
+            await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
         if self.tournament and not self.tournament.running and self.player_id in self.tournament.players:
             self.tournament.players.remove(self.player_id)
@@ -103,7 +109,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             cache.delete("tournament_state")
             cache.set("tournament_state", state_serializable)
 
-        print(f"WebSocket fully disconnected for player {self.player_id}", flush=True)
+        print(f"WebSocket fully disconnected", flush=True)
     
     async def receive(self, text_data):
         data = json.loads(text_data)
