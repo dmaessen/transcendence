@@ -23,7 +23,7 @@ RUN pip install rich
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-# The host machine makes a request to localhost:8000.
+# The host machine makes a request to https://tranceanddance.local/.
 # Docker intercepts that request and forwards it to the container on port 8000.
     #because we mapped host machine's port 8000 to container's 8000 in docker-compose
 # The container is listening on 0.0.0.0:8000, so it handles the request and serves the response.

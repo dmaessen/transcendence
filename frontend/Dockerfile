@@ -10,7 +10,7 @@ RUN apk add --no-cache nss-tools \
     && chmod +x /usr/local/bin/mkcert \
     && mkcert -install \
     && mkdir -p /etc/nginx/certs \
-    && mkcert -cert-file /etc/nginx/certs/fullchain.pem -key-file /etc/nginx/certs/privkey.pem tranceanddance.local
+    && mkcert -cert-file /etc/nginx/certs/fullchain.pem -key-file /etc/nginx/certs/privkey.pem tranceanddance.com
 
 # RUN mkdir /etc/nginx/certs \
 #     && openssl req -x509 -nodes -days 365 -newkey rsa:2048 \

@@ -137,7 +137,7 @@ async function refreshAccessToken() {
             return null;
         }
         console.log("Access token refreshed.");
-        return true;
+        return data.access_token;
     } catch (error) {
         console.error("Error refreshing token", error);
         return null;
@@ -323,13 +323,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const googleButtonRegister = document.getElementById("googleButtonRegister");
                     if (googleButtonRegister) {
                         googleButtonRegister.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://tranceanddance.com/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                     const googleButtonLogin = document.getElementById("googleButtonLogin");
                     if (googleButtonLogin) {
                         googleButtonLogin.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://tranceanddance.com/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                 }
@@ -357,14 +357,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (registerForm) {
             registerForm.addEventListener("submit", async function (e) {
-                // e.preventDefault();
+                e.preventDefault();
                 const name = document.getElementById("registerName").value;
                 const username = document.getElementById("registerUsername").value;
                 const email = document.getElementById("registerEmail").value;
                 const password = document.getElementById("registerPassword").value;
                 const enable2FA = document.getElementById("enable2FAonRegister")?.checked;
+                
+                console.log("enable 2fa: ", enable2FA);
+                let registerData
                 try {
-                    const registerData = await fetch(`${baseUrl}register/`, {
+                        registerData = await fetch(`${baseUrl}register/`, {
                         method: "POST",
                         credentials: "include",
                         headers: {
@@ -373,21 +376,35 @@ document.addEventListener("DOMContentLoaded", async function () {
                         },
                         body: JSON.stringify({ username, name, email, password }),
                     });
-                } catch {
+                } catch (err) {
                         console.error("error trying to register", err);
-                        console.error("registerData: ", registerData);
-                    }
+                        return
+                }
                 try {
                     // const registrationDataResponse = await registerData.json();
                     if (!registerData.ok) {
-                        if (registerData.status == 400) {
-                            alert("registration failed, user may already exist")
-                        } else {
-                            alert(`Registration failed: ${JSON.stringify(registerData)}`);
+                        let errorMsg = `Error ${registerData.status}`;
+                        try {
+                            const errorJson = await registerData.json();
+                            errorMsg += `: ${errorJson.error || JSON.stringify(errorJson)}`;
+                        } catch (err) {
+                            const errorText = await registerData.text();
+                            errorMsg += `: ${errorText}`;
                         }
+                        alert(`Registration failed: ${errorMsg}`);
                         return;
                     }
+                    
+                    // if (!registerData.ok) {
+                    //     if (registerData.status === 400) {
+                    //         alert("registration failed, user may already exist")
+                    //     } else {
+                    //         alert(`Registration failed: ${registerData}`);
+                    //     }
+                    //     return;
+                    // }
                     alert("Registration successful! You will now be logged in automatically");
+                    window.location.href = "/";
                     // const accessToken = registrationDataResponse.access;
                     // const refreshToken = registrationDataResponse.refresh;
                     // if (!accessToken || !refreshToken) {
@@ -402,14 +419,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                     // }
                     // scheduleTokenRefresh()
                     if (enable2FA) {
+                        console.log("2fa clicked")
+                        alert("2fa clicked")
                         let refreshedToken = await refreshAccessToken();
-                        const tokenToUse = refreshedToken || accessToken;
+                        // const tokenToUse = refreshedToken || accessToken;
+                        const tokenToUse = refreshedToken;
                         const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                             method: "POST",
                             credentials: "include",
                             headers: {
                                 "Content-Type": "application/json",
-                                "Authorization": `Bearer ${tokenToUse}`,
                             },
                         });
                         const twoFAData = await twoFAResponse.json();
@@ -432,7 +451,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     }, 30);
                     
                 } catch (error) {
-                    console.error("Error:", error);
+                    console.error("Error in registration flow:", error);
                     alert("An error occurred. Check the console.");
                 }
             });

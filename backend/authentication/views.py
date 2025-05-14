@@ -144,7 +144,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-	# @csrf_exempt
+	@csrf_exempt
 	def post(self, request):
 		email = request.data.get('email')
 		password = request.data.get('password')
@@ -363,7 +363,7 @@ def google_login(request):
 		refresh = RefreshToken.for_user(user)
 		access_token = refresh.access_token
 
-		response = redirect("https://localhost/")
+		response = redirect("https://tranceanddance.com/")
 		response.set_cookie(
 			key="access_token",
 			value=str(access_token),
@@ -425,6 +425,12 @@ def login_42_callback(request):
 		"redirect_uri": settings.FT_REDIRECT_URI,
 	})
 
+	# print("CLIENT_ID:", settings.FT_CLIENT_ID)
+	# print("CLIENT_SECRET:", settings.FT_CLIENT_SECRET)
+	# print("REDIRECT_URI:", settings.FT_REDIRECT_URI)
+	# print("Token response status code:", token_response.status_code)
+	# print("Token response content:", token_response.content)
+
 	token_data = token_response.json() 
 	access_token = token_data.get("access_token")
 	print(f"42 receive access token: ", access_token)
@@ -476,7 +482,7 @@ def google_callback(request):
 		return JsonResponse({"error": "Missing authorization code"}, status=400)
 
 	token_url = "https://oauth2.googleapis.com/token"
-	redirect_uri = "https://localhost/api/authentication/google/callback/"  # Must match your registered redirect URI
+	redirect_uri = "https://tranceanddance.com/api/authentication/google/callback/"  # Must match your registered redirect URI
 	client_id = settings.GOOGLE_CLIENT_ID
 	client_secret = settings.GOOGLE_CLIENT_SECRET
 
@@ -519,7 +525,7 @@ def google_callback(request):
 		# response = JsonResponse({
 		# 	'message': 'Login successful'
 		# })
-		response = redirect("https://localhost/")
+		response = redirect("https://tranceanddance.com//")
 		response.set_cookie(
 			key="access_token",
 			value=str(access),
