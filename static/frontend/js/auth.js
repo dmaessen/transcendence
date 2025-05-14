@@ -116,15 +116,19 @@ async function fetchUserData() {
 
 function getCSRFToken() {
     console.log("Getting CSRF token...");
+    console.log("Cookies:", document.cookie);
     const cookies = document.cookie.split(';');
+    console.log("Cookies:", cookies);
     for (let cookie of cookies) {
+        console.log("Cookie:", cookie);
         const [name, value] = cookie.trim().split('=');
         if (name === 'csrftoken') {
+            console.log("CSRF token found:", value);
             return decodeURIComponent(value);
         }
     }
     console.warn("CSRF token not found in cookies.");
-    return "";
+    return ""; // Return an empty string if the token is not found
 }
 
 async function refreshAccessToken() {

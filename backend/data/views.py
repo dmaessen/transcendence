@@ -155,7 +155,8 @@ def get_all_user_tournaments(request):
 @permission_classes([IsAuthenticated])
 def edit_user_data(request):
     logger.info("Changing user data \n")
-    
+    logging.info(f"!>!>!>!>!>!Request Cookies edit: {request.COOKIES}")
+
     newUsername = request.POST.get('newUsername')
     newMail = request.POST.get('newMail')
     newAvatar = request.FILES.get('newAvatar')

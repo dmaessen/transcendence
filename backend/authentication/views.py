@@ -290,10 +290,11 @@ def disable_2fa(request):
 
 class RefreshTokenView(APIView):
 	def post(self, request):
-		logging.info(f"!!!!!!Cookies: {request.COOKIES}")
-		logging.info(f"!!!!!!CSRF Token: {request.META.get('HTTP_X_CSRFTOKEN')}")
+		logging.info(f"!>!>!>!>!>!Request Cookies: {request.COOKIES}")
+		# logging.info(f"!>!>!>!>!>!CSRF Token: {request.META}")
 
 		refresh_token = request.COOKIES.get('refresh_token')
+		logging.info(f"!>!>!>!>!>!Refresh token: {refresh_token}")
 		if not refresh_token:
 			raise AuthenticationFailed("No refresh token in cookies")
 		try:

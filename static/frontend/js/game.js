@@ -231,7 +231,7 @@ function applyPreferredLanguageAfterLogin() {
                 },
                 body: `language=${data.preferred_language}&next=/`
             }).then(() => {
-                // location.reload();
+                location.reload();
             });
         } else {
             // gameMenuFirst.show();
