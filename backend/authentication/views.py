@@ -67,18 +67,11 @@ def register_2fa(request):
 		else:
 			otp_secret = device.key
 		
-		# print("[DEBUG] All TOTP devices for user(in registration):")
 		for d in CustomTOTPDevice.objects.filter(customUser=user):
 			print(f"  - name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
-		# print(f"[DEBUG] Generated secret: {otp_secret}")
-		# print(f"[DEBUG] Device key saved: {device.key}")
-		# print(f"Stored OTP Secret: {otp_secret}") 
 
 		if not isinstance(otp_secret, str) or len(otp_secret) < 16:
 			return JsonResponse({"error": "Invalid OTP secret generated"}, status=500)
-
-
-		# device = CustomTOTPDevice.objects.filter(customUser=user).first()
 
 		totp = pyotp.TOTP(device.key)
 		otp_uri = totp.provisioning_uri(name=user.email, issuer_name="transcendence")
@@ -90,7 +83,6 @@ def register_2fa(request):
 
 		return JsonResponse({"qr_code": f"data:image/png;base64,{qr_data}", "otp_secret": otp_secret})
 	except Exception as e:
-		# print(f"Error in register_2fa: {str(e)}")  # Debugging output
 		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
 
 class RegisterView(APIView):

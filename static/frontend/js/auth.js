@@ -394,43 +394,35 @@ document.addEventListener("DOMContentLoaded", async function () {
                         alert(`Registration failed: ${errorMsg}`);
                         return;
                     }
-                    
-                    // if (!registerData.ok) {
-                    //     if (registerData.status === 400) {
-                    //         alert("registration failed, user may already exist")
-                    //     } else {
-                    //         alert(`Registration failed: ${registerData}`);
-                    //     }
-                    //     return;
-                    // }
                     alert("Registration successful! You will now be logged in automatically");
-                    window.location.href = "/";
-                    // const accessToken = registrationDataResponse.access;
-                    // const refreshToken = registrationDataResponse.refresh;
-                    // if (!accessToken || !refreshToken) {
-                    //     alert("Registration successful, but failed to retrieve tokens.");
-                    //     return;
-                    // }
-                    // localStorage.setItem("access_token", accessToken);
-                    // localStorage.setItem("refresh_token", refreshToken);
-                    // if (!localStorage.getItem("access_token") || !localStorage.getItem("refresh_token")) {
-                    //     alert("Login failed somehow");
-                    //     return;
-                    // }
-                    // scheduleTokenRefresh()
+                    // Wait briefly to let browser store cookies
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Refresh the token to ensure it's ready for use
+                    const refreshedToken = await refreshAccessToken();
+                    if (!refreshedToken) {
+                        alert("Could not refresh access token. Please log in again.");
+                        return;
+                    }
                     if (enable2FA) {
                         console.log("2fa clicked")
                         alert("2fa clicked")
                         let refreshedToken = await refreshAccessToken();
                         // const tokenToUse = refreshedToken || accessToken;
                         const tokenToUse = refreshedToken;
-                        const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
-                            method: "POST",
-                            credentials: "include",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                        });
+                        try {
+                            const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
+                                method: "POST",
+                                credentials: "include",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                            });
+                        } catch (err) {
+                            console.error("error trying to register using 2fa", err);
+                            alert ("2fa register issue")
+                            return
+                        }
                         const twoFAData = await twoFAResponse.json();
                         if (!twoFAResponse.ok) {
                             alert(`2FA Setup Failed: ${JSON.stringify(twoFAData)}`);

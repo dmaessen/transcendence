@@ -160,6 +160,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "https://localhost:8000",
     "https://tranceanddance.com",
+    "10.15.178.211"
+    "*.codam.nl"
+    
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -168,6 +171,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "https://localhost:8000",
     "https://tranceanddance.com",
+    "10.15.178.211"
+    "*.codam.nl"
 ]
 
 
@@ -326,7 +331,6 @@ USE_TZ = True
 #google api settings
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_SECRET")
-
 
 # 42 api settings
 FT_CLIENT_ID = os.getenv("42_UID")
