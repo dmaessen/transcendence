@@ -88,8 +88,6 @@ const editCloseBtn = document.getElementById("editCloseBtn")
 if(editCloseBtn){
     editCloseBtn.addEventListener("click", function (){
         console.log("profile close clicked");
-
-        editProfileModal.hide();
-        profileModal.show();
+        history.back();
     });
 }

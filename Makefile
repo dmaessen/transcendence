@@ -22,7 +22,7 @@ down kill:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) $@
 
 buildclean:
-	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) build --no-cache
+	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) build 
 
 updetach:
 	$(DOCK_COMPOSE_CMD) -f $(DOCK_COMPOSE_FILE) up -d

@@ -201,45 +201,32 @@ tournamentBanner.addEventListener("click", async(event) => {
     }
 });
 
-window.addEventListener("load", async () => {
-    loggedin = await checkLoginStatus();
-    console.log("loggedin: ", loggedin);
-
-    //get token to check if user is logged, if it is, open main menu if not login modal
-    if (loggedin) {
-        if (!loginsocket || loginsocket.readyState !== WebSocket.OPEN) {
-            await loginWebSocket();
-        }
-        currentModal = "gameMenuFirst";
-        // applyPreferredLanguageAfterLogin(gameMenuFirst);
-        gameMenuFirst.show();
-        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
-        try {
-            const bracketElement = document.getElementById("tournamentBracket");
-            bracketElement.style.display = "none";
-            const data = await fetchData("/tournament-status/");
-            console.log("Fetched tournament status:", data);
-            if (data.remaining_spots > 0 && data.players_in != 0) {
-                showTournamentAdBanner(data.players_in, data.players_in + data.remaining_spots);
-            }
-        } catch (error) {
-            console.error("Error fetching tournament status:", error);
-        }
-    } else {
-        SignInMenu.show();
-    }
+// When the user selects from the dropdown
+document.getElementById("languageDropdown").addEventListener("change", (e) => {
+    localStorage.setItem("manualLangSelection", true);
 });
 
+
 function applyPreferredLanguageAfterLogin() {
+    const manuallySelected = localStorage.getItem("manualLangSelection");
+    if (manuallySelected) {
+        if (manuallySelected === true) {
+            localStorage.setItem("manualLangSelection", false);
+            return ;
+        } else if (manuallySelected === false) {
+            getUserPreferredLanguage(); // from server or cookie
+        }
+    } else {
+        getUserPreferredLanguage(); // from server or cookie
+    }
+}
+
+
+function getUserPreferredLanguage() {
     console.log("GETTING HERE AFTER LOGIN -- GAME.JS"); // to rm
-
-    const gameMenuFirst = document.getElementById("gameMenuFirst");
-
+    // Check if the page has already been reloaded for language change
     fetch('/data/api/get_profile/', {
         credentials: 'include',
-        // headers: {
-        //     "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-        // }
     })
     .then(response => {
         if (!response.ok) throw new Error("Failed to fetch user profile");
@@ -247,13 +234,21 @@ function applyPreferredLanguageAfterLogin() {
     })
     .then(data => {
         if (data.preferred_language) {
+            const currentLanguage = document.documentElement.lang; // Get current language from <html lang="...">
+            console.log("Current language:", currentLanguage);
+            console.log("Preferred language:", data.preferred_language);
+            if (currentLanguage === data.preferred_language) {
+                console.log("Preferred language already applied, skipping reload.");
+                return;
+            }
             console.log("Applying preferred language via set_language:", data.preferred_language);
+            
             return fetch("/i18n/setlang/", {
                 method: "POST",
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
-                    // "X-CSRFToken": getCSRFToken(),
+                    "X-CSRFToken": getCSRFToken(),
                 },
                 body: `language=${data.preferred_language}&next=/`
             }).then(() => {
@@ -446,24 +441,3 @@ setInterval(() => {
         websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
 }, 1000 / 60);
-
-window.addEventListener("beforeunload", () => {
-    if (socket && socket.readyState === WebSocket.OPEN && socket !== loginsocket) {
-        console.log("Closing WebSocket before page unload.");
-        gameState.running = false;
-        stopTimer();
-        instructions1.style.display = "none";
-        instructions2.style.display = "none";
-        gameCanvas.style.display = "none";
-        gameTitle.style.display = "none";
-        socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-        socket.close();
-    }
-    if (checkLoginStatus) {
-        SignInMenu.show();
-    } else {
-        currentModal = "gameMenuFirst";
-        gameMenuFirst.show();
-        history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
-    }
-});

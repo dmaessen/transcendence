@@ -141,7 +141,7 @@ class LoginView(APIView):
 		email = request.data.get('email')
 		password = request.data.get('password')
 		otp_token = request.data.get('otp_token', None)
-
+		logging.info(f"login data received: {request.data}")
 		if not email or not password:
 			return JsonResponse({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -289,8 +289,11 @@ def disable_2fa(request):
 
 class RefreshTokenView(APIView):
 	def post(self, request):
+		logging.info(f"!>!>!>!>!>!Request Cookies: {request.COOKIES}")
+		# logging.info(f"!>!>!>!>!>!CSRF Token: {request.META}")
 
 		refresh_token = request.COOKIES.get('refresh_token')
+		logging.info(f"!>!>!>!>!>!Refresh token: {refresh_token}")
 		if not refresh_token:
 			return JsonResponse({"error": "no refresh token"})
 			# raise AuthenticationFailed("No refresh token in cookies")

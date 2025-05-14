@@ -25,8 +25,17 @@ games = {}  # games[game.id] = game ----game is Game()
 player_queue = [] # player_id s int
 
 class GameConsumer(AsyncWebsocketConsumer):
-    async def connect(self, request):
-        token = request.COOKIES.get("access_token")
+    async def connect(self):
+        # Retrieve the token from the cookies
+        cookies = self.scope.get("headers", [])
+        token = None
+        for header in cookies:
+            if header[0].decode("utf-8") == "cookie":
+                cookie_header = header[1].decode("utf-8")
+                cookies_dict = {k.strip(): v.strip() for k, v in (cookie.split("=") for cookie in cookie_header.split(";"))}
+                token = cookies_dict.get("access_token")
+                break
+
         if token:
             # Validate the JWT token
             access_token = AccessToken(token)

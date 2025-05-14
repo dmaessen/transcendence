@@ -16,8 +16,7 @@
 <body>
 
   <!-- Language selector for index.html -->
-  <form action="{% url 'set_language' %}" method="post" class="position-fixed top-0 end-0 me-3" style="margin-top: 4.0rem; z-index: 1100;">
-    {% csrf_token %}
+  <form action="{% url 'set_language' %}" method="post" id="languageDropdown" class="position-fixed top-0 end-0 me-3" style="margin-top: 4.0rem; z-index: 1100;">{% csrf_token %}
     <input type="hidden" name="next" value="{{ request.path }}">
     <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
       <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
@@ -92,6 +91,7 @@
     <script src="{% static 'frontend/js/tournaments.js' %}"></script>
     <script src="{% static 'frontend/js/add_friends.js' %}"></script>
     <script src="{% static 'frontend/js/edit_profile.js' %}"></script>
+    <script src="{% static 'frontend/js/window_management.js' %}"></script>
     <script src="{% static 'frontend/js/websocket_handler.js' %}"></script>
 
 </body>
