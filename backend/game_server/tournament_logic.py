@@ -9,7 +9,7 @@ class TournamentLogic:
     def __init__(self, mode):
         self.mode = mode
         self.num_players = int(mode)
-        self.players = []  # player IDs and usernames
+        self.players = []  # player IDs and usernames -> list of dict, check line 22 to see the format
         self.matches = []  # ongoing matches
         self.bracket = {}  # matchups for each round -- THIS SEND TO LAURA
         self.current_round = 1
@@ -95,6 +95,11 @@ class TournamentLogic:
     async def register_match_result(self, game_id, winner_username):
         print(f"Registering match result: Game {game_id}, Winner {winner_username}", flush=True)
         
+        if not any(m[0] == game_id for m in self.matches):
+            #logger.info(f"Game {game_id} already processed or not in active matches list.")
+            print(f"Game {game_id} already processed or not in active matches list.")
+            return
+
         match_indices = [i for i, (g_id, p1, p2) in enumerate(self.matches) if g_id == game_id]
         if not match_indices:
             print(f"Game {game_id} not found in matches", flush=True)
