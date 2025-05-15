@@ -93,9 +93,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
         #FIXX
-        if self.tournament and not self.tournament.running and self.player_id in self.tournament.players:
-            if any(player["id"] == self.player_id for player in self.tournament.players):
-                self.tournament.players.remove(player)
+        if self.tournament and not self.tournament.running and any(player["id"] == self.player_id for player in self.tournament.players):
+            self.tournament.players.remove(player)
             await self.broadcast_tournament_state()
 
         # Final cleanup if this was the last player and the tournament is over
