@@ -110,12 +110,6 @@ async function fetchUserData() {
     }
 }
 
-
-// function getCSRFToken() {
-//     const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']");
-//     return csrfToken ? csrfToken.value : "";
-// }
-
 function getCSRFToken() {
     // console.log("Getting CSRF token...");
     const match = document.cookie.match(/csrftoken=([^;]+)/);
@@ -591,22 +585,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (enable2FAButton) {
             enable2FAButton.addEventListener("click", async function () {
-                let accessToken = localStorage.getItem("access_token");
-                if (!accessToken) {
-                    accessToken = await refreshAccessToken();
-                    if (!accessToken) {
-                        alert("You are not logged in, please do so now.");
-                        window.location.href = "/game_server/";
-                        return;
-                    }
-                }
+                // let accessToken = localStorage.getItem("access_token");
+                // if (!accessToken) {
+                //     accessToken = await refreshAccessToken();
+                //     if (!accessToken) {
+                //         alert("You are not logged in, please do so now.");make 
+                //         window.location.href = "/game_server/";
+                //         return;
+                //     }
+                // }
+                // await refreshAccessToken();
                 try {
                     const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                         method: "POST",
                         credentials: "include",
                         headers: {
                             "Content-Type": "application/json",
-                            "Authorization": `Bearer ${accessToken}`,
+                            // "Authorization": `Bearer ${accessToken}`,
                         },
                     });
                     const twoFAData = await twoFAResponse.json();
@@ -657,13 +652,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (disable2FA) {
             disable2FA.addEventListener("click", async function () {
-                if (!access_token) {
-                    access_token = await refreshAccessToken();
-                    if (!access_token) {
-                        alert("you are not logged in, please do so now");
-                        return;
-                    }
-                }
+                // if (!access_token) {
+                //     access_token = await refreshAccessToken();
+                //     if (!access_token) {
+                //         alert("you are not logged in, please do so now");
+                //         return;
+                //     }
+                // }
                 await fetch(`${baseUrl}disable-2fa/`, {
                     method: "POST",
                     credentials: "include",
