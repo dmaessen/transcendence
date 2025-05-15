@@ -110,12 +110,6 @@ async function fetchUserData() {
     }
 }
 
-
-// function getCSRFToken() {
-//     const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']");
-//     return csrfToken ? csrfToken.value : "";
-// }
-
 function getCSRFToken() {
     // console.log("Getting CSRF token...");
     const match = document.cookie.match(/csrftoken=([^;]+)/);
@@ -128,7 +122,10 @@ async function refreshAccessToken() {
         const response = await fetch(`${baseUrl}refresh/`, {
             method: "POST",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
         });
         const data = await response.json();
         if (!response.ok) {
@@ -307,10 +304,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 if (result.ok) {
                                     alert("google login successful")
                                     window.location.href = "/";
-                                    // if (signInMenu) {
-                                    //     const signInModal = bootstrap.Modal.getInstance(signInMenu);
-                                    //     if (signInModal) signInModal.hide();
-                                    // }
                                 } else {
                                     alert("Google login failed: " + (data.error || JSON.stringify(data)));
                                 }
@@ -380,6 +373,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         console.error("error trying to register", err);
                         return
                 }
+                console.log("registerdata: ", registerData);
                 try {
                     // const registrationDataResponse = await registerData.json();
                     if (!registerData.ok) {
@@ -397,13 +391,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                     alert("Registration successful! You will now be logged in automatically");
                     // Wait briefly to let browser store cookies
                     await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    
 
-                    // Refresh the token to ensure it's ready for use
-                    const refreshedToken = await refreshAccessToken();
-                    if (!refreshedToken) {
-                        alert("Could not refresh access token. Please log in again.");
-                        return;
-                    }
                     if (enable2FA) {
                         console.log("2fa clicked")
                         alert("2fa clicked")
@@ -595,17 +585,19 @@ document.addEventListener("DOMContentLoaded", async function () {
                 // if (!accessToken) {
                 //     accessToken = await refreshAccessToken();
                 //     if (!accessToken) {
-                //         alert("You are not logged in, please do so now.");
+                //         alert("You are not logged in, please do so now.");make 
                 //         window.location.href = "/game_server/";
                 //         return;
                 //     }
                 // }
+                // await refreshAccessToken();
                 try {
                     const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                         method: "POST",
                         credentials: "include",
                         headers: {
                             "Content-Type": "application/json",
+                            // "Authorization": `Bearer ${accessToken}`,
                         },
                     });
                     const twoFAData = await twoFAResponse.json();
@@ -656,13 +648,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (disable2FA) {
             disable2FA.addEventListener("click", async function () {
-                if (!access_token) {
-                    access_token = await refreshAccessToken();
-                    if (!access_token) {
-                        alert("you are not logged in, please do so now");
-                        return;
-                    }
-                }
+                // if (!access_token) {
+                //     access_token = await refreshAccessToken();
+                //     if (!access_token) {
+                //         alert("you are not logged in, please do so now");
+                //         return;
+                //     }
+                // }
                 await fetch(`${baseUrl}disable-2fa/`, {
                     method: "POST",
                     credentials: "include",

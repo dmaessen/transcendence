@@ -56,7 +56,7 @@ DEBUG = True
 
 # Controls which hostnames can make requests to your Django server.
 # ensures only recognized hosts can serve your app
-ALLOWED_HOSTS = ['tranceanddance.com', 'localhost']
+ALLOWED_HOSTS = ['tranceanddance.com', 'localhost', '10.15.178.211']
 
 # Application definition
 
@@ -161,8 +161,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:8000",
     "https://tranceanddance.com",
     "https://10.15.178.211",
-    "https://*.codam.nl",
-
+    "http://10.15.178.211",
+    "https://*.codam.nl"
     
 ]
 
@@ -173,7 +173,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://localhost:8000",
     "https://tranceanddance.com",
     "https://10.15.178.211",
-    "https://*.codam.nl",
+    "http://10.15.178.211",
+    "https://*.codam.nl"
 ]
 
 
@@ -209,11 +210,11 @@ CORS_ALLOW_HEADERS = [
 #CSRF settings for production   
 CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = 'lax'
 CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SAMESITE = 'lax'
+SESSION_COOKIE_HTTPONLY = True
 
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
@@ -270,7 +271,6 @@ AUTHENTICATION_BACKENDS = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 ASGI_APPLICATION = "backend.asgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -284,7 +284,6 @@ DATABASES = {
         'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -324,8 +323,6 @@ LOCALE_PATHS = [
 
 USE_I18N = True
 USE_L10N = True
-
-
 
 TIME_ZONE = 'UTC'
 USE_TZ = True
@@ -412,11 +409,11 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    "SIGNING_KEY": "PqKojHe8YmKwtgm538bq6cWKep82PwOj", # generate a key and replace me
+    "SIGNING_KEY": "PqKojHe8YmKwtgm538bq6cWKep82PwOj",
     "ALGORITHM": "HS512",
     "AUTH_COOKIE": "access_token",
     "AUTH_COOKIE_REFRESH": "refresh_token",
-    "AUTH_COOKIE_SECURE": True,
+    "AUTH_COOKIE_SECURE": False,
     "AUTH_COOKIE_HTTP_ONLY": True,
     "AUTH_COOKIE_PATH": "/",
     "AUTH_COOKIE_SAMESITE": "None",

@@ -86,10 +86,11 @@ def register_2fa(request):
 		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
 
 class RegisterView(APIView):
-	# @csrf_exempt
+	@csrf_exempt
 	def post(self, request, *args, **kwargs):
 		print(f"[DEBUG] register view")
 		serializer = UserSerializer(data=request.data)
+		print(f"[DEBUG] post serializer")
 		if serializer.is_valid():
 			user = serializer.save()
 
@@ -100,8 +101,6 @@ class RegisterView(APIView):
 			#return token
 			refresh = RefreshToken.for_user(user)
 			access_token = refresh.access_token
-			logging.info(f"[DEBUG] made access token: ", access_token)
-			print(f"[DEBUG] going to return access token: ", access_token)
 			response = JsonResponse({
 				'message': 'Login successful'
 			})
@@ -109,7 +108,7 @@ class RegisterView(APIView):
 				key="access_token",
 				value=str(access_token),
 				httponly=True,
-				samesite='lax',
+				samesite='Lax',
 				secure=False,  # [FLIP]set to True in production
 				max_age=300
 			)
@@ -124,15 +123,6 @@ class RegisterView(APIView):
 			print("register response: ", response)
 			return response
 		return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class UserTOTPDevice(TOTPDevice):
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
-#     def save(self, *args, **kwargs):
-#         super().save(*args, **kwargs)
-#         if not self.user.two_factor_enabled:
-#             self.user.two_factor_enabled = True
-#             self.user.save(update_fields=["two_factor_enabled"])
 
 
 class LoginView(APIView):
