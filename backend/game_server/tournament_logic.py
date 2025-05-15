@@ -16,6 +16,7 @@ class TournamentLogic:
         self.running = False
         self.winners = []  # players who won their matches
         self.final_winner = None
+        self.current_match_queue = []
 
     def add_player(self, player_id, username):
         if len(self.players) < self.num_players:
@@ -100,6 +101,20 @@ class TournamentLogic:
 
         for player1, player2 in self.bracket[self.current_round]:
             self.current_match_queue.append((player1["player"]["id"], player2["player"]["id"]))
+            self.matches.append((None, player1["player"]["username"], player2["player"]["username"]))
+        
+        channel_layer = get_channel_layer()
+        state = self.get_tournament_state()
+        serialized = msgspec.json.encode(state).decode("utf-8")
+        await channel_layer.group_send(
+            "tournament_lobby",
+            {
+                "type": "force.cache.update",
+                "state": serialized,
+
+            }
+        )
+        await asyncio.sleep(5)
 
         print(f"Match queue for round {self.current_round}: {self.current_match_queue}", flush=True)
 
@@ -170,13 +185,15 @@ class TournamentLogic:
         # rm previous matches 
         self.matches = [(g_id, p1, p2) for g_id, p1, p2 in self.matches if g_id != game_id]
         
-        await asyncio.sleep(15)
+        await asyncio.sleep(5)
 
-        if len(self.matches) == 0:
+        if len(self.matches) == 0 and len(self.current_match_queue) == 0:
             await self._advance_to_next_round()
 
     async def _advance_to_next_round(self):
         print(f"WINNERS BEFORE ADVANCE: {self.winners}", flush=True)
+        print(f"WINNERS BEFORE ADVANCE: {self.current_match_queue}", flush=True)
+        print(f"WINNERS BEFORE ADVANCE: {self.matches}", flush=True)
 
         # share with frontend 
         channel_layer = get_channel_layer()

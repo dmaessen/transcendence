@@ -415,7 +415,7 @@ document.addEventListener("keydown", (event) => {
         if (!gameState.running && websocket && websocket.readyState === WebSocket.OPEN) {
             console.log("Key pressed. Starting the game...");
             gameState.running = true;
-            websocket.send(JSON.stringify({ action: "start", mode: gameState.mode }));
+            websocket.send(JSON.stringify({ action: "start", mode: gameState.mode, game_id: gameState.gameId }));
             startTimer();
         }
     }
