@@ -175,20 +175,41 @@ class Game:
         else:
             return False
 
-    def _check_collision(self, paddle):
-        # predictive collision detection based on ball's direction
-        next_x = self.ball["x"] + self.ball["dir_x"]
-        next_y = self.ball["y"] + self.ball["dir_y"]
+    # def _check_collision(self, paddle):
+    #     # predictive collision detection based on ball's direction
+    #     next_x = self.ball["x"] + self.ball["dir_x"]
+    #     next_y = self.ball["y"] + self.ball["dir_y"]
 
-        if (
-            next_x + self.ball["radius"] >= paddle["x"]  # Ball will be at or past left edge of paddle
-            and next_x - self.ball["radius"] <= paddle["x"] + paddle["width"]  # Ball will be at or before right edge
-            and next_y + self.ball["radius"] >= paddle["y"]  # Ball will be at or below top edge of paddle
-            and next_y - self.ball["radius"] <= paddle["y"] + paddle["height"]  # Ball will be at or above bottom edge
-        ):
-            if (self.ball["dir_x"] > 0 and self.ball["x"] < paddle["x"]) or (self.ball["dir_x"] < 0 and self.ball["x"] > paddle["x"] + paddle["width"]):
-                return True
+    #     if (
+    #         next_x + self.ball["radius"] >= paddle["x"]  # Ball will be at or past left edge of paddle
+    #         and next_x - self.ball["radius"] <= paddle["x"] + paddle["width"]  # Ball will be at or before right edge
+    #         and next_y + self.ball["radius"] >= paddle["y"]  # Ball will be at or below top edge of paddle
+    #         and next_y - self.ball["radius"] <= paddle["y"] + paddle["height"]  # Ball will be at or above bottom edge
+    #     ):
+    #         if (self.ball["dir_x"] > 0 and self.ball["x"] < paddle["x"]) or (self.ball["dir_x"] < 0 and self.ball["x"] > paddle["x"] + paddle["width"]):
+    #             return True
+    #         return False
+    def _check_collision(self, paddle):
+        # Check if ball is moving toward the paddle
+        if (self.ball["dir_x"] > 0 and paddle["x"] < self.ball["x"]) or \
+        (self.ball["dir_x"] < 0 and paddle["x"] > self.ball["x"]):
             return False
+
+        # Check collision with paddle rectangle
+        ball_left = self.ball["x"] - self.ball["radius"]
+        ball_right = self.ball["x"] + self.ball["radius"]
+        ball_top = self.ball["y"] - self.ball["radius"]
+        ball_bottom = self.ball["y"] + self.ball["radius"]
+
+        paddle_left = paddle["x"]
+        paddle_right = paddle["x"] + paddle["width"]
+        paddle_top = paddle["y"]
+        paddle_bottom = paddle["y"] + paddle["height"]
+
+        return (ball_right >= paddle_left and
+                ball_left <= paddle_right and
+                ball_bottom >= paddle_top and
+                ball_top <= paddle_bottom)
 
     def _increase_ball_speed(self):
         max_speed = 18
@@ -197,15 +218,33 @@ class Game:
         self.ball["dir_x"] = max(-max_speed, min(max_speed, self.ball["dir_x"] * speedup))
         self.ball["dir_y"] = max(-max_speed, min(max_speed, self.ball["dir_y"] * speedup))
 
+    # def _reset_ball(self, direction):
+    #     self.ball["x"] = self.width // 2
+    #     self.ball["y"] = random.randint(200, self.height // 2)
+    #     angle = random.uniform(0.2, 0.8)
+    #     self.ball["speed"] *= 1.3
+    #     self.ball["speed"] = min(self.ball["speed"], MAX_BALL_SPEED) # capping the ball speed to a certain limit
+        
+    #     self.ball["dir_x"] = direction * (self.ball["speed"]) * angle
+    #     self.ball["dir_y"] = (self.ball["speed"]) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
+
     def _reset_ball(self, direction):
         self.ball["x"] = self.width // 2
         self.ball["y"] = random.randint(200, self.height // 2)
-        angle = random.uniform(0.2, 0.8)
-        self.ball["speed"] *= 1.3
-        self.ball["speed"] = min(self.ball["speed"], MAX_BALL_SPEED) # capping the ball speed to a certain limit
         
-        self.ball["dir_x"] = direction * (self.ball["speed"]) * angle
-        self.ball["dir_y"] = (self.ball["speed"]) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
+        # Ensure minimum speed
+        min_speed = 3.0
+        angle = random.uniform(0.2, 0.8)
+        self.ball["speed"] = max(min_speed, min(MAX_BALL_SPEED, self.ball["speed"] * 1.3))
+        
+        self.ball["dir_x"] = direction * self.ball["speed"] * angle
+        self.ball["dir_y"] = self.ball["speed"] * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
+        
+        # Ensure minimum movement in both directions
+        if abs(self.ball["dir_x"]) < 0.5:
+            self.ball["dir_x"] = 0.5 * (1 if self.ball["dir_x"] >= 0 else -1)
+        if abs(self.ball["dir_y"]) < 0.5:
+            self.ball["dir_y"] = 0.5 * (1 if self.ball["dir_y"] >= 0 else -1)
 
     def _move_ai(self):
         opponent = None

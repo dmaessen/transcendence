@@ -28,6 +28,7 @@ games = {}
 class TournamentConsumer(AsyncWebsocketConsumer):
     tournament = None  # keeps track of the tournament instance
     initiator = None
+    connected_players = set()
 
     async def connect(self):
         # Retrieve the token from the cookies
@@ -91,8 +92,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if hasattr(self, 'room_name'):
             await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
+        #FIXX
         if self.tournament and not self.tournament.running and self.player_id in self.tournament.players:
-            self.tournament.players.remove(self.player_id)
+            if any(player["id"] == self.player_id for player in self.tournament.players):
+                self.tournament.players.remove(player)
             await self.broadcast_tournament_state()
 
         # Final cleanup if this was the last player and the tournament is over
@@ -353,18 +356,20 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 cache.delete("tournament_state")
                 cache.set("tournament_state", state_serializable)
 
+    #FIXX
     async def handle_player_leave(self):
         if self.tournament and not self.tournament.running:
-            if self.player_id in self.tournament.players:
-                self.tournament.players.remove(self.player_id)
+            if any(player["id"] == self.player_id for player in self.tournament.players):
+                self.tournament.players.remove(player)
                 await self.broadcast_tournament_state()
 
         game_id = getattr(self, "game_id", None)
         # if self.game_id in games:
         if game_id and game_id in games:
             game = games[self.game_id]
-            if self.player_id in game.players:
-                game.remove_player(self.player_id)
+            #FIXX
+            if any(player["id"] == self.player_id for player in self.tournament.players):
+                self.tournament.players.remove(player)
                 if not game.players:
                     game.stop_game("No players")
                     del games[self.game_id]

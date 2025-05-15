@@ -9,7 +9,7 @@ class TournamentLogic:
     def __init__(self, mode):
         self.mode = mode
         self.num_players = int(mode)
-        self.players = []  # player IDs and usernames
+        self.players = []  # player IDs and usernames -> list of dict, check line 22 to see the format
         self.matches = []  # ongoing matches
         self.bracket = {}  # matchups for each round -- THIS SEND TO LAURA
         self.current_round = 1
