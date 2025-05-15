@@ -109,12 +109,12 @@ document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => {
     history.pushState({ modalID: "twoPlayersRemote", gameMode: mode }, "", `?modal=twoPlayersRemote&type=${encodedMode}`);
 });
 
-document.getElementById("tournamentBtn").addEventListener("click", () => {
-    gameMenuTournament.show();
-    gameMenu.hide();
-    currentModal = "gameMenuTournament";
-    history.pushState({ modalID: "gameMenuTournament" }, "", "?modal=gameMenuTournament");
-});
+// document.getElementById("tournamentBtn").addEventListener("click", () => {
+//     gameMenuTournament.show();
+//     gameMenu.hide();
+//     currentModal = "gameMenuTournament";
+//     history.pushState({ modalID: "gameMenuTournament" }, "", "?modal=gameMenuTournament");
+// });
 
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
