@@ -86,10 +86,11 @@ def register_2fa(request):
 		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
 
 class RegisterView(APIView):
-	# @csrf_exempt
+	@csrf_exempt
 	def post(self, request, *args, **kwargs):
 		print(f"[DEBUG] register view")
 		serializer = UserSerializer(data=request.data)
+		print(f"[DEBUG] post serializer")
 		if serializer.is_valid():
 			user = serializer.save()
 

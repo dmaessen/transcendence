@@ -122,7 +122,10 @@ async function refreshAccessToken() {
         const response = await fetch(`${baseUrl}refresh/`, {
             method: "POST",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
         });
         const data = await response.json();
         if (!response.ok) {
@@ -301,10 +304,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 if (result.ok) {
                                     alert("google login successful")
                                     window.location.href = "/";
-                                    // if (signInMenu) {
-                                    //     const signInModal = bootstrap.Modal.getInstance(signInMenu);
-                                    //     if (signInModal) signInModal.hide();
-                                    // }
                                 } else {
                                     alert("Google login failed: " + (data.error || JSON.stringify(data)));
                                 }
@@ -374,6 +373,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         console.error("error trying to register", err);
                         return
                 }
+                console.log("registerdata: ", registerData);
                 try {
                     // const registrationDataResponse = await registerData.json();
                     if (!registerData.ok) {
@@ -391,13 +391,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                     alert("Registration successful! You will now be logged in automatically");
                     // Wait briefly to let browser store cookies
                     await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    
 
-                    // Refresh the token to ensure it's ready for use
-                    const refreshedToken = await refreshAccessToken();
-                    if (!refreshedToken) {
-                        alert("Could not refresh access token. Please log in again.");
-                        return;
-                    }
                     if (enable2FA) {
                         console.log("2fa clicked")
                         alert("2fa clicked")
