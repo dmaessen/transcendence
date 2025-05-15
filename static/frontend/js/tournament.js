@@ -156,7 +156,8 @@ async function updateBracket(mode) {
         winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
         if (winner_final.length === 1) {
             playerElem = document.getElementById(`Player${13}_`);
-            if (playerElem && playerElem.textContent.trim() === winner_final) {
+            const winnerName = winner_final[0];
+            if (playerElem && playerElem.textContent.trim() === winnerName) {
                 resultElem = document.getElementById(`Result${13}_`);
                 if (resultElem) {
                     resultElem.innerHTML = "&nbsp;&nbsp;👑";
@@ -235,8 +236,9 @@ async function updateBracket(mode) {
 
         winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
         if (winner_final.length === 1) {
+            const winnerName = winner_final[0];
             playerElem = document.getElementById(`Player${13}`);
-            if (playerElem && playerElem.textContent.trim() === winner_final) {
+            if (playerElem && playerElem.textContent.trim() === winnerName) {
                 resultElem = document.getElementById(`Result${13}`);
                 if (resultElem) {
                     resultElem.innerHTML = "&nbsp;&nbsp;👑";
