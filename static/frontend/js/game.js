@@ -118,7 +118,7 @@ document.getElementById("tournamentBtn").addEventListener("click", () => {
 
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    disableTournamentButtons();
+    // disableTournamentButtons();
     currentModal = "game";
     const mode = "Tournament - 4 Players";
     const encodedMode = encodeURIComponent(mode);
@@ -127,7 +127,7 @@ document.getElementById("fourPlayersTournamentBtn").addEventListener("click", ()
 
 document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 8 Players");
-    disableTournamentButtons();
+    // disableTournamentButtons();
     currentModal = "game";
     const mode = "Tournament - 8 Players";
     const encodedMode = encodeURIComponent(mode);
@@ -202,25 +202,37 @@ tournamentBanner.addEventListener("click", async(event) => {
 });
 
 // When the user selects from the dropdown
-document.getElementById("languageDropdown").addEventListener("change", (e) => {
-    localStorage.setItem("manualLangSelection", true);
+document.getElementById("languageDropdown").addEventListener("change", async (e) => {
+    e.preventDefault(); // prevent default form submission
+    const loggedin = await checkLoginStatus();
+    if (loggedin === true) {
+        localStorage.setItem("manualLangSelection", "true");
+        console.log("ITS TRUE I AM LOGGED IN");
+    }
+
+    // Submit the form *after* localStorage is set
+    document.getElementById("language-switch-form").submit();
 });
 
 
 function applyPreferredLanguageAfterLogin() {
     const manuallySelected = localStorage.getItem("manualLangSelection");
+    console.log("HEEEEEY ", manuallySelected);
     if (manuallySelected) {
-        if (manuallySelected === true) {
-            localStorage.setItem("manualLangSelection", false);
+        console.log("LAAAAAAA");
+        if (manuallySelected === "true") {
+            console.log("LOOOOOOO");
+            localStorage.setItem("manualLangSelection", "false");
             return ;
-        } else if (manuallySelected === false) {
+        } else if (manuallySelected === "false") {
+            console.log("LIIIIIII");
             getUserPreferredLanguage(); // from server or cookie
         }
     } else {
+        console.log("LEEEEEEEE");
         getUserPreferredLanguage(); // from server or cookie
     }
 }
-
 
 function getUserPreferredLanguage() {
     console.log("GETTING HERE AFTER LOGIN -- GAME.JS"); // to rm
