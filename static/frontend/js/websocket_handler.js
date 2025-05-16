@@ -64,6 +64,8 @@ function connectWebSocket(mode) {
     
         websocket.onclose = () => {
             console.log(`Disconnected from the game server: ${gameState.playerId}`);
+            history.back();
+            window.location.href = "/"
             reconnecting = false;
         };
     

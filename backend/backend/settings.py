@@ -56,7 +56,7 @@ DEBUG = True
 
 # Controls which hostnames can make requests to your Django server.
 # ensures only recognized hosts can serve your app
-ALLOWED_HOSTS = ['tranceanddance.com', 'localhost', '10.15.178.211']
+ALLOWED_HOSTS = ['tranceanddance.com', 'localhost', '10.15.178.211', '10.15.185.221']
 
 # Application definition
 
@@ -162,6 +162,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://tranceanddance.com",
     "https://10.15.178.211",
     "http://10.15.178.211",
+    "https://10.15.185.221",
     "https://*.codam.nl"
     
 ]
@@ -173,6 +174,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://localhost:8000",
     "https://tranceanddance.com",
     "https://10.15.178.211",
+    "https://10.15.185.221",
     "http://10.15.178.211",
     "https://*.codam.nl"
 ]

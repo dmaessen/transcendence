@@ -1,13 +1,11 @@
 window.addEventListener("popstate", (event) => {
     const state = event.state;
     if (!state) return;
-
     // Close all currently open modals
     document.querySelectorAll(".modal.show").forEach(modalEl => {
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
     });
-    
     const gameMode = state.gameMode;
     console.log("Game mode from state:", gameMode);
     // Clean canvas leftovers
@@ -20,18 +18,15 @@ window.addEventListener("popstate", (event) => {
         if (websocket && websocket.readyState === WebSocket.OPEN) {
             if (gameState.mode != "Tournament - 4 Players" && gameState.mode != "Tournament - 8 Players" && gameState.mode != "4" && gameState.mode != "8")
                 websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-            else 
+            else
                 websocket.send(JSON.stringify({ action: "disconnect"}));
             websocket.close();
         }
     }
-
     // Remove leftover backdrop
     document.body.classList.remove("modal-open");
     document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
-
     console.log('Pop:', state.modalID);
-
     switch(state.modalID) {
         case "profileModal":
             loadProfile(state.userID, true, false);
@@ -56,7 +51,12 @@ window.addEventListener("popstate", (event) => {
             gameMenu.show();
             break;
         case "gameMenuTournament":
+            console.log("Tournament menu case");
+            gameMenu.hide();
             gameMenuTournament.show();
+            break;
+        case "tournament":
+            // joinTournament(data);
             break;
         case "gameMenuFirst":
             gameMenuFirst.show();
@@ -76,5 +76,3 @@ window.addEventListener("popstate", (event) => {
             break;
     }
 });
-//TODO not go back further than the main menu if logged 
-//TODO go back from game logic outside modal

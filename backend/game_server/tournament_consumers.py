@@ -98,11 +98,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         #FIXX
         if self.tournament and not self.tournament.running:
-            for player in self.tournament.players:
-                if player["id"] == self.player_id:
-                    self.tournament.players.remove(player)
-                    break
-                await self.broadcast_tournament_state()
+            self.tournament.players = [p for p in self.tournament.players if p["id"] != self.player_id]
+            # for player in self.tournament.players:
+            #     if player["id"] == self.player_id:
+            #         self.tournament.players.remove(player)
+            #         break
+            #await self.broadcast_tournament_state()
 
         # Final cleanup if this was the last player and the tournament is over
         if self.tournament and not self.tournament.running and self.tournament.final_winner is not None:
@@ -110,7 +111,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 TournamentConsumer.tournament = None
                 TournamentConsumer.initiator = None
 
-            await self.send_json({"type": "end_tournament"})
+            #await self.send_json({"type": "end_tournament"})
+            try:
+                if self.connected:  # Only send if still connected
+                    await self.send_json({"type": "end_tournament"})
+            except:
+                pass
 
             # Reset tournament cache
             state = default_tournament_state.copy()
@@ -584,7 +590,14 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def tournament_update(self, event):
         """Receives the tournament state update and sends it to the frontend"""
-        await self.send_json(event["data"])
+        #await self.send_json(event["data"])
+        if not self.connected:  # Add this check
+            return
+        try:
+            await self.send_json(event["data"])
+        except Exception as e:
+            logger.error(f"Error sending tournament update: {e}")
+            self.connected = False
 
     async def send_game_state(self, game):
         game_state = game.get_state()

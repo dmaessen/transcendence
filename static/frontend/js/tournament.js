@@ -6,6 +6,8 @@ let winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
 let tournamentInterval = null;
 
 async function selectTournamentBtn() {
+    let mode;
+    const tournamentBtn  = document.getElementById("tournamentBtn");
     try{
         const data = await fetchData(`/tournament-status/`, {
         });
@@ -13,10 +15,7 @@ async function selectTournamentBtn() {
             console.log("data: ", data);
             if (data.players_in > 0 && !data.running) {
                 document.getElementById("tournamentBtn").textContent = "Join tournament";
-                document.getElementById("tournamentBtn").addEventListener("click", () => {
-                    gameMenuTournament.hide();
-                    joinTournament(data);
-                });
+                mode = "join";
             }
             else if (data.running) {
                 console.log("tournament is running atm");
@@ -24,11 +23,24 @@ async function selectTournamentBtn() {
             }
             else {
                 document.getElementById("tournamentBtn").textContent = "Start new tournament";
-                document.getElementById("tournamentBtn").addEventListener("click", () => {
-                    gameMenuTournament.show();
-                    gameMenu.hide();});
+                mode = "start";
             }
         }
+        tournamentBtn.addEventListener("click", () => {
+            console.log("Tournament button clicked");
+            if (mode == "join"){
+                currentmodal = "game";
+                gameMenuTournament.hide();
+                joinTournament(data);
+                history.pushState({ modalID: "tournament", gameMode: mode }, "", `?modal=tournament`);
+            }
+            else if (mode == "start") {
+                currentmodal = "gameMenuTournament";
+                gameMenu.hide();
+                gameMenuTournament.show();
+                history.pushState({ modalID: "gameMenuTournament" }, "", "?modal=gameMenuTournament");
+            }
+        });
     } catch (error){
         console.log("Error while fetching tournament data: ", error);
     }
@@ -144,7 +156,8 @@ async function updateBracket(mode) {
         winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
         if (winner_final.length === 1) {
             playerElem = document.getElementById(`Player${13}_`);
-            if (playerElem && playerElem.textContent.trim() === winner_final) {
+            const winnerName = winner_final[0];
+            if (playerElem && playerElem.textContent.trim() === winnerName) {
                 resultElem = document.getElementById(`Result${13}_`);
                 if (resultElem) {
                     resultElem.innerHTML = "&nbsp;&nbsp;👑";
@@ -223,8 +236,9 @@ async function updateBracket(mode) {
 
         winner_final = JSON.parse(localStorage.getItem("winner_final")) || [];
         if (winner_final.length === 1) {
+            const winnerName = winner_final[0];
             playerElem = document.getElementById(`Player${13}`);
-            if (playerElem && playerElem.textContent.trim() === winner_final) {
+            if (playerElem && playerElem.textContent.trim() === winnerName) {
                 resultElem = document.getElementById(`Result${13}`);
                 if (resultElem) {
                     resultElem.innerHTML = "&nbsp;&nbsp;👑";
