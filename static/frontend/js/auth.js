@@ -397,11 +397,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                         return;
                     }
                     alert("Registration successful! You will now be logged in automatically");
-                    
-                    // Wait briefly to let browser store cookies
-                    // setTimeout(() => {
-                    //     window.location.href = "/";
-                    // }, 30);
                     if (enable2FACheck) {
                         let twoFAResponse;
                         try {
@@ -435,13 +430,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                         }
                         if (otpKey) otpKey.innerText = twoFAData.otp_secret;
                     }
-                    // setTimeout(() => {
-                    //     window.location.href = "/";
-                    // }, 30);
+                    window.location.href = "/";
                 } catch (error) {
                     console.error("Error in registration flow:", error);
                     alert("An error occurred. Check the console.");
                 }
+                window.location.href = "/";
             });
         }
         function saveLoginCredentials(email, password) {
@@ -483,9 +477,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                     alert("logged in succesfully")
                     // applyPreferredLanguageAfterLogin();
                     window.location.href = "/";
-                    setTimeout(() => {
-                        window.location.href = "/";
-                    }, 30);
                     // Optionally: open websocket here after refreshing token
                     // await loginWebSocket();
                 } else if (response.status === 403 && data.detail?.includes("CSRF")) {
