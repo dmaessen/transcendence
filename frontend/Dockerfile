@@ -23,7 +23,7 @@ COPY ../media /usr/share/nginx/html/media/
 
 RUN chmod -R 755 /usr/share/nginx/html
 
-EXPOSE 443
+# EXPOSE 443
 
 CMD ["nginx", "-g", "daemon off;"]
 
