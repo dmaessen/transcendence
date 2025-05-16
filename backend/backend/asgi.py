@@ -26,65 +26,9 @@ django_asgi_app = get_asgi_application()
 #application = get_asgi_application()
 
 application = ProtocolTypeRouter({
-    #"http": django_asgi_app,
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(websocket_urlpatterns)
-        # URLRouter({
-        #     "game_server/": GameConsumer.as_asgi(),
-        #     path("ws/game_server/", GameConsumer.as_asgi()),
-        # })
+
     ),
 })
-
-
-
-# from django.core.asgi import get_asgi_application
-# from django.urls import re_path
-
-# # Initialize Django ASGI application early to ensure the AppRegistry
-# # is populated before importing code that may import ORM models.
-# django_asgi_app = get_asgi_application()
-
-# from channels.routing import ProtocolTypeRouter, URLRouter
-# from channels.auth import AuthMiddlewareStack
-# from channels.security.websocket import AllowedHostsOriginValidator
-
-# application = ProtocolTypeRouter({
-#     "http": django_asgi_app,
-#     "websocket": AllowedHostsOriginValidator(
-#         AuthMiddlewareStack(
-#             URLRouter([
-#                 re_path(r"^front(end)/$", consumers.AsyncChatConsumer.as_asgi()),
-#             ])
-#         )
-#     ),
-# })
-
-#Channels introduces the idea of a channel layer, a low-level abstraction around a set of transports
-# that allow you to send information between different processes.
-# Each application instance has a unique channel name, and can join groups, allowing both point-to-point and broadcast messaging.
-
-
-
-# from django.core.asgi import get_asgi_application
-# from django.urls import re_path
-
-# # Initialize Django ASGI application early to ensure the AppRegistry
-# # is populated before importing code that may import ORM models.
-# django_asgi_app = get_asgi_application()
-
-# from channels.routing import ProtocolTypeRouter, URLRouter
-# from channels.auth import AuthMiddlewareStack
-# from channels.security.websocket import AllowedHostsOriginValidator
-
-# application = ProtocolTypeRouter({
-#     "http": django_asgi_app,
-#     "websocket": AllowedHostsOriginValidator(
-#         AuthMiddlewareStack(
-#             URLRouter([
-#                 re_path(r"^front(end)/$", consumers.AsyncChatConsumer.as_asgi()),
-#             ])
-#         )
-#     ),
-# })

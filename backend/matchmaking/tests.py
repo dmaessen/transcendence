@@ -17,15 +17,6 @@ class MatchViewTest(TestCase):
         self.user1 = CustomUser.objects.create_user(email="user1@example.com", password="password123", name="User1")
         self.user2 = CustomUser.objects.create_user(email="user2@example.com", password="password123", name="User2")
 
-        # Match.objects.create(
-        #     player_1=self.user1,
-        #     player_2=self.user2,
-        #     player_1_points=3,
-        #     player_2_points=5,
-        #     match_time=timedelta(minutes=2),
-        #     winner=self.user2
-        # )
-
     def test_create_a_match(self):
         self.client.force_authenticate(user=self.user1)
         self.client.force_authenticate(user=self.user2)
@@ -89,28 +80,6 @@ class MatchViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(CustomUser.objects.count(), 3)
-
-    # def test_list_matches(self):
-    #     #add 2 more player to test db
-    #     self.client.force_authenticate(user=self.user1)
-    #     self.client.force_authenticate(user=self.user2)
-        
-    #     user5 = User.objects.create_user(email="user5@example.com", password="password123", name="User5")
-    #     user6 = User.objects.create_user(email="user6@example.com", password="password123", name="User6")
-        
-    #     self.client.force_authenticate(user=user5)
-    #     self.client.force_authenticate(user=user6)
-
-    #     self.assertEqual(User.objects.count(), 4)
-        
-    #     self.client.post(reverse('create_matches'), {}, format='json')
-
-    #     response = self.client.get(reverse('matches'), format='json')
-
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(Match.objects.count(), 2)
-
-<<<<<<< HEAD
         self.assertEqual(PlayerQueue.objects.filter(player_id="player4").exists(), True)
 
     def test_list_matches(self):
@@ -125,7 +94,3 @@ class MatchViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Match.objects.count(), 2)
-
-
-=======
->>>>>>> ws-game

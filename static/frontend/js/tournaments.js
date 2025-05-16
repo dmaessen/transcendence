@@ -26,8 +26,6 @@ function populateAllTournament(data) {
     thead.appendChild(headerRow);
 
     data.forEach(item => {
-        // console.log("tournament winer: ", item.winner);
-        // console.log("tournamente winnerID: ", item.winnerID);
         console.log("tournament userWon: ", item.userWon);
         const row = document.createElement("tr");
 
@@ -40,12 +38,10 @@ function populateAllTournament(data) {
             const winnerLink = document.createElement("span");
             winnerLink.textContent = item.winner;
             winnerLink.dataset.userID = item.winnerID;
-            winnerLink.style.cursor = "pointer"; // Make it look clickable
-            winnerLink.style.color = "gray"; // Make it look like a link
+            winnerLink.style.cursor = "pointer";
+            winnerLink.style.color = "gray";
 
             winnerLink.addEventListener("click", function(){
-                // const allTournamentsModalElement = document.getElementById("allTournamentsModal");
-                // const allTournamentsModal = bootstrap.Modal.getInstance(allTournamentsModalElement);
                 allTournamentsModal.hide();
                 loadProfile(winnerLink.dataset.userID);
             });
@@ -61,8 +57,6 @@ function populateAllTournament(data) {
 
 async function loadAllTournaments(userID, push = true) {
     try {
-        // const allTournamentsModalElement = document.getElementById("allTournamentsModal");
-        // const allTournamentsModal = new bootstrap.Modal(allTournamentsModalElement);
         allTournamentsModal.show();
         const response = await fetch(`/data/api/userAllTournaments/?userID=${userID}`, {
             method: "GET",

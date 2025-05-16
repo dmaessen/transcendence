@@ -6,9 +6,6 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils import translation
 
-# def index(request):
-#     return render(request, 'index.html')
-
 def index(request):
     current_language = translation.get_language()
     

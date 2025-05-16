@@ -1,5 +1,4 @@
 .bracket-container {
-    /* display: grid !important; */
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* Creates 3 equal columns */
     grid-template-rows: repeat(7, auto);
@@ -7,13 +6,11 @@
     padding: 5px;
     justify-content: center;
     align-items: start;
-    /* background-color: #c33a3a; Temporary background color for debugging */
     width: 800px; /* Enforce width */
     height: 600px; /* Enforce height */
 }
 
 #tournamentBracket4 .bracket-container4 {
-    /* display: grid !important; */
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* Creates 3 equal columns */
     grid-template-rows: repeat(3, auto);
@@ -21,7 +18,6 @@
     padding: 5px;
     justify-content: center;
     align-items: start;
-    /* background-color: #c33a3a; Temporary background color for debugging */
     width: 800px; /* Enforce width */
     height: 600px; /* Enforce height */
 }

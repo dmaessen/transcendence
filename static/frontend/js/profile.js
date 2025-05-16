@@ -2,7 +2,6 @@ const profileModalElement = document.getElementById("profileModal");
 const profileModal = new bootstrap.Modal(profileModalElement);
 
 async function addFriend(userID) {
-    // console.log("addFriend userID: ", userID);
     try {
         const response = await fetch(`/data/api/addFriend/`, {
             method: "POST",
@@ -56,7 +55,6 @@ async function deleteFriend(userID) {
 }
 
 function populateTournament(data) {
-    // console.log("populateTournaments data: ", data);
     if (!Array.isArray(data)) {
         console.error("Provided data is not an array:", data);
         return;
@@ -80,9 +78,6 @@ function populateTournament(data) {
     thead.appendChild(headerRow);
 
     data.forEach(item => {
-        // console.log("tournament winer: ", item.winner);
-        // console.log("tournamente winnerID: ", item.winnerID);
-        // console.log("tournament userWon: ", item.userWon);
         const row = document.createElement("tr");
 
         const dateCell = document.createElement("td");
@@ -96,8 +91,8 @@ function populateTournament(data) {
             const winnerLink = document.createElement("span");
             winnerLink.textContent = item.winner;
             winnerLink.dataset.userID = item.winnerID;
-            winnerLink.style.cursor = "pointer"; // Make it look clickable
-            winnerLink.style.color = "gray"; // Make it look like a link
+            winnerLink.style.cursor = "pointer";
+            winnerLink.style.color = "gray";
 
             winnerLink.addEventListener("click", function(){
                 loadProfile(winnerLink.dataset.userID);
@@ -113,7 +108,6 @@ function populateTournament(data) {
 }
 
 function populateMatches(data) {
-    // console.log("populateMatches data: ", data);
     if (!Array.isArray(data)) {
         console.error("Provided data is not an array:", data);
         return;
@@ -132,7 +126,6 @@ function populateMatches(data) {
     const mText = document.getElementById("text_match_date").textContent.trim();
     const wText = document.getElementById("text_winner").textContent.trim();
     const oText = document.getElementById("text_opponent").textContent.trim();
-    // headerRow.innerHTML = "<th>Match date</th><th>Winner</th><th>Opponent</th>";
     headerRow.innerHTML =
         "<th>" + mText + "</th>" +
         "<th>" + wText + "</th>" +
@@ -155,8 +148,8 @@ function populateMatches(data) {
                 const winnerLink = document.createElement("span");
                 winnerLink.textContent = item.winner_name;
                 winnerLink.dataset.userID = item.opponentID;
-                winnerLink.style.cursor = "pointer"; // Make it look clickable
-                winnerLink.style.color = "gray"; // Make it look like a link
+                winnerLink.style.cursor = "pointer";
+                winnerLink.style.color = "gray";
     
                 winnerLink.addEventListener("click", function(){
                     loadProfile(winnerLink.dataset.userID);
@@ -175,8 +168,8 @@ function populateMatches(data) {
             const opponentLink = document.createElement("span");
             opponentLink.textContent = item.opponent;
             opponentLink.dataset.userID = item.opponentID;
-            opponentLink.style.cursor = "pointer"; // Make it look clickable
-            opponentLink.style.color = "gray"; // Make it look like a link
+            opponentLink.style.cursor = "pointer";
+            opponentLink.style.color = "gray";
             opponentLink.addEventListener("click", function(){
                 loadProfile(opponentLink.dataset.userID);
             });
@@ -189,7 +182,6 @@ function populateMatches(data) {
 }
 
 async function loadUserData(userID) {
-    // console.log("loadProfile userID: ", userID);
     try {
         const response = await fetch(`/data/api/userData/?userID=${userID}`, {
             method: "GET",
@@ -202,7 +194,6 @@ async function loadUserData(userID) {
         }
 
         const data = await response.json();
-        // console.log("loadProfile user data:", data);
 
         document.getElementById("userAvatar").src = data.avatar;
         document.getElementById("username").textContent = data.username;
@@ -251,14 +242,7 @@ function loadEditProfileData() {
         }
     })
     .then(response => response.json())
-    .then(data => {
-        console.log("Loading user data for edit:", data);
-        
-        // Fill in form fields with current values
-        // document.getElementById("newUsername").value = data.username || '';
-        // document.getElementById("newMail").value = data.email || '';
-        
-        // Set preferred language dropdown
+    .then(data => {        
         const langSelect = document.getElementById("preferredLanguage");
         if (data.preferred_language) {
             console.log("Setting preferred language to:", data.preferred_language);
@@ -288,9 +272,6 @@ async function loadMatchesData(userID) {
         }
 
         const data = await response.json();
-        // console.log("Raw response:", data);
-        // console.log("Matches:", data.matches);
-
         if (Array.isArray(data.matches)) {
             populateMatches(data.matches);
         } else {
@@ -316,8 +297,6 @@ async function loadTournametsData(userID) {
         }
 
         const data = await response.json();
-        // console.log("Raw response:", data);
-        // console.log("Tournaments:", data.tournaments);
 
         if (Array.isArray(data.tournaments)) {
             populateTournament(data.tournaments);
@@ -331,8 +310,6 @@ async function loadTournametsData(userID) {
 
 async function loadProfile(userID, openModal = true, push = true) {
     try {
-        //Avoid black backgroud
-        // const profileModalElement = document.getElementById("profileModal");
         const existingModal = bootstrap.Modal.getInstance(profileModalElement);
         if (existingModal) {
             existingModal.hide();
@@ -371,7 +348,6 @@ if (profileBtn) {
 const profileCloseButton = document.getElementById("profileCloseButton");
 if(profileCloseButton){
     profileCloseButton.addEventListener("click", function() {
-        // console.log("profile close clicked");
         history.back();
     });
 }

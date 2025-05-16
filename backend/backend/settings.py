@@ -45,20 +45,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # MEDIA_URL = os.getenv('MEDIA_PATH', '/media/')
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-)co%lac8eq8ki4lv9!&-t0&#%=(_y#(&=13b#nbilgk58rf&uz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# Controls which hostnames can make requests to your Django server.
-# ensures only recognized hosts can serve your app
 
 # Application definition
-
 INSTALLED_APPS = [
     'data.apps.DataConfig',
     'daphne',
@@ -86,10 +80,7 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     "django_otp.plugins.otp_static",
     'qrcode',
-    # 'google-auth',
     'oauth2',
-    #'game_server',
-
     'matchmaking.apps.MatchmakingConfig',
     'game_server.apps.GameServerConfig',
     'authentication.apps.AuthenticationConfig'
@@ -110,48 +101,6 @@ MIDDLEWARE = [
     'django_otp.middleware.OTPMiddleware',
 ]
 
-# governs whether your server accepts requests from different origins (domains, subdomains, or ports)
-# allows your backend to accept cross-origin requests from specific frontends. (browser thingys, not the server)
-# CORS_ALLOWED_ORIGINS = [
-#     "http://frontend:8080",
-#     "http://localhost:8080",  # for local development, later change it
-#     "http://localhost:8000", 
-#     # "http://localhost:80",
-#     "https://localhost",
-# ]
-
-# CORS_ALLOW_METHODS = [
-#     "GET",
-#     "POST",
-#     "PUT",
-#     "PATCH",
-#     "DELETE",
-# ]
-
-# CORS_ALLOW_HEADERS = [
-#     "authorization",
-#     "Content-Type",
-#     "X-CSRFToken",
-# ]
-
-# #TODO remove this for production  
-# SECURE_CROSS_ORIGIN_OPENER_POLICY = None
-
-# CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_ALL_ORIGINS = False
-
-# CSRF_TRUSTED_ORIGINS = [
-#     "https://localhost",
-#     "http://localhost:8080",
-#     "https://localhost:8080",  # optional, if applicable
-# ]
-
-# CSRF_COOKIE_SECURE = False
-# SESSION_COOKIE_SECURE = False
-# CSRF_COOKIE_HTTPONLY = False
-# CSRF_COOKIE_SAMESITE = 'Lax'  #change to strict for production
-# SESSION_COOKIE_SAMESITE = 'Lax'  #change to strict for production
-
 ALLOWED_HOSTS = [
     'tranceanddance.com',
     'localhost',
@@ -170,8 +119,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://10.11.3.1:8443",
     "https://10.11.3.1",
     "https://10.15.185.221",
-    "https://*.codam.nl"
-    
+    "https://*.codam.nl",
+    "https://localhost:8443"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -184,7 +133,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://10.15.185.221",
     "https://10.11.3.1",
     "https://10.11.3.1:8443",
-    "https://*.codam.nl"
+    "https://*.codam.nl",
+    "https://localhost:8443"
 ]
 
 
@@ -205,9 +155,6 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-requested-with",
 ]
-
-# DO NOT include this if you're using credentials
-# CORS_ALLOW_ALL_ORIGINS = True
 
 # CSRF settings for development
 # CORS_ALLOW_CREDENTIALS = True
@@ -235,27 +182,19 @@ REST_FRAMEWORK = {
         'authentication.authentication.CookieJWTAuthentication',
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'PAGE_SIZE': 10
 }
 
 CHANNEL_LAYERS = {
     "default": {
-        # "BACKEND": "channels.layers.InMemoryChannelLayer",  # For development
-        # Uncomment below for production (requires Redis)
+
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [("redis", 6379)],
-            # "connection_timeout": 10,
         },
     },
 }
 
 ROOT_URLCONF = 'backend.urls'
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 
 TEMPLATES = [
     {
@@ -281,9 +220,6 @@ AUTHENTICATION_BACKENDS = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 ASGI_APPLICATION = "backend.asgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE'),
@@ -294,9 +230,6 @@ DATABASES = {
         'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
-
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -312,9 +245,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en'
 
@@ -344,15 +274,9 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_SECRET")
 # 42 api settings
 FT_CLIENT_ID = os.getenv("42_UID")
 FT_CLIENT_SECRET = os.getenv("42_secret")
-FT_REDIRECT_URI = os.getenv("42_redirect", "https://tranceanddance.com/api/authentication/42/callback/")
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+FT_REDIRECT_URI = os.getenv("42_redirect", "https://localhost:8443/api/authentication/42/callback/")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# LOGGING_DIR = BASE_DIR / 'logs'
 
 LOGGING = {
     'version': 1,
@@ -383,7 +307,6 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': '/var/log/django/django.log',
-            # 'filename': BASE_DIR / 'django.log',
             'formatter': 'verbose',
         },
         'console': {
@@ -445,7 +368,6 @@ REST_AUTH = {
 
 CACHES = {
     'default': {
-        #'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',  # In-memory cache
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://redis:6379/1',  # Redis server address and database number
         'OPTIONS': {
@@ -455,20 +377,3 @@ CACHES = {
 }
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         'SCOPE': [
-#             'profile',
-#             'email',
-#         ],
-#         'AUTH_PARAMS': {
-#             'access_type': 'online',
-#         },
-#         'APP': {
-#             'client_id': os.getenv("GOOGLE_CLIENT_ID"),
-#             'secret': os.getenv("GOOGLE_CLIENT_SECRET"),
-#             'key': ''
-#         }
-#     }
-# }

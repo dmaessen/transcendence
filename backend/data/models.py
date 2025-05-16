@@ -27,18 +27,15 @@ class CustomUserManager(BaseUserManager):
 
         return self.create_user(email, name, password, **extra_fields)
 
-#TODO encrypt name, email, location, avatar
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)  # Unique email for login
-    name = models.CharField(max_length=30)  # Non-unique name field TODO can we remove this one ?
+    name = models.CharField(max_length=30)
     username = models.CharField(unique=True, max_length=30) # Unique as well
     two_factor_enabled = models.BooleanField(default=False)
     avatar = models.ImageField(upload_to='avatars/', default='default.png')
-    # location = models.CharField(max_length=30, blank=True, null=True) # Made for funzies, should we get rid of it ?
     oauth_tokens = models.JSONField(null=True, blank=True)
     tournaments = models.ManyToManyField('Tournament', related_name='players', blank=True)
     friends = models.ManyToManyField('self', through='Friendship', symmetrical=False)
-    # otp_secret = models.CharField(max_length=32, blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -83,16 +80,7 @@ class Match(models.Model):
 
 
 class Tournament(models.Model):
-    # STATUS_CHOICES = [
-    #     ('open', 'Open for Registration'),
-    #     ('ongoing', 'Ongoing'),
-    #     ('completed', 'Completed'),
-    #     ('cancelled', 'Cancelled'),
-    # ]
-
     max_players = models.IntegerField(default=8)  # 4 or 8 players
-    # status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
-    # confirmed_ready = models.ManyToManyField(CustomUser, related_name="ready_players", blank=True)
     
     first_place = models.ForeignKey(CustomUser, related_name="first_place", on_delete=models.SET_NULL, null=True, blank=True)
     second_place = models.ForeignKey(CustomUser, related_name="second_place", on_delete=models.SET_NULL, null=True, blank=True)
@@ -104,70 +92,3 @@ class Tournament(models.Model):
 
     def __str__(self):
         return f"Tournament {self.id}: (Start: {self.start_date})"
-
-    #ADDITIONS FROM GUL:???
-
-# Get all tournaments a player is in:
-# player = User.objects.get(id=x)
-# tournaments = player.tournaments.all()  # All tournaments the player is part of
-
-# Get all players in a specific tournament:
-# tournament = Tournament.objects.get(id=x)
-# players = tournament.players.all()  # All players in this tournament
-
-# Get all matches in a specific tournament:
-# tournament = Tournament.objects.get(id=x)
-# matches = tournament.matches.all()  # All matches in this tournament
-
-
-
-# # ASK LAURA
-# class Tournament(models.Model):
-#     STATUS_CHOICES = [
-#         ('open', 'Open for Registration'),
-#         ('ongoing', 'Ongoing'),
-#         ('completed', 'Completed'),
-#         ('cancelled', 'Cancelled'),
-#     ]
-
-#     max_players = models.IntegerField(default=8)  # 4 or 8 players
-#     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
-
-#     players = models.ManyToManyField(User, related_name="tournaments", blank=True)
-#     confirmed_ready = models.ManyToManyField(User, related_name="ready_players", blank=True)
-
-#     def add_player(self, player):
-#         """
-#         adds a player to the tournament if it's open and not full.
-#         """
-#         if self.status != 'open':
-#             raise ValueError("Cannot join a tournament that is not open.")
-#         if self.players.count() >= self.max_players:
-#             raise ValueError("Tournament is already full.")
-#         self.players.add(player)
-#         self.number_of_players += 1
-#         self.save()
-
-#     def confirm_ready(self, player):
-#         """
-#         player confirms they're ready to play.
-#         """
-#         if player not in self.players.all():
-#             raise ValueError("Player is not part of this tournament.")
-#         self.confirmed_ready.add(player)
-#         self.save()
-
-#     def start_tournament(self):
-#         """
-#         atarts the tournament if enough players are confirmed ready.
-#         """
-#         if self.confirmed_ready.count() != self.max_players:
-#             raise ValueError("Not all players are ready.")
-#         self.status = 'ongoing'
-#         self.start_date = timezone.now()
-#         self.save()
-
-#     def end_tournament(self):
-#         self.status = 'completed'
-#         self.end_date = timezone.now()
-#         self.save()

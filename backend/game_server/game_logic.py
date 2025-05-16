@@ -7,7 +7,6 @@ MAX_BALL_SPEED = 15.0
 
 class Game:
     def __init__(self, mode):
-        #self.id = None
         self.mode = mode
         self.width = 1400
         self.height = 1000
@@ -23,16 +22,12 @@ class Game:
 
     def add_player(self, player_id, username, as_player1):
         if player_id not in self.players:
-            # if len(self.players) == 0: #first player
             if as_player1 is True: # first player as left paddle
                 self.players[player_id] = {"x": 20, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "player", "username": username}
                 print(f"Player {player_id} added as Player 1. With username: {username}", flush=True)
-            # elif len(self.players) == 1: #second player
             elif as_player1 is False: # second player, right paddle
                 self.players[player_id] = {"x": self.width - 40, "y": self.height // 2 - 50, "width": 20, "height": 100, "role": "opponent", "username": username}
                 print(f"Player {player_id} added as Player 2 (opponent). With username: {username}", flush=True)
-            # else:
-            #     print(f"Cannot add more players. Maximum supported is 2.", flush=True)
         
         # automatically add a bot if only one player (in One Player mode)
         if self.mode == "One Player" and len(self.players) == 1:
@@ -175,20 +170,6 @@ class Game:
         else:
             return False
 
-    # def _check_collision(self, paddle):
-    #     # predictive collision detection based on ball's direction
-    #     next_x = self.ball["x"] + self.ball["dir_x"]
-    #     next_y = self.ball["y"] + self.ball["dir_y"]
-
-    #     if (
-    #         next_x + self.ball["radius"] >= paddle["x"]  # Ball will be at or past left edge of paddle
-    #         and next_x - self.ball["radius"] <= paddle["x"] + paddle["width"]  # Ball will be at or before right edge
-    #         and next_y + self.ball["radius"] >= paddle["y"]  # Ball will be at or below top edge of paddle
-    #         and next_y - self.ball["radius"] <= paddle["y"] + paddle["height"]  # Ball will be at or above bottom edge
-    #     ):
-    #         if (self.ball["dir_x"] > 0 and self.ball["x"] < paddle["x"]) or (self.ball["dir_x"] < 0 and self.ball["x"] > paddle["x"] + paddle["width"]):
-    #             return True
-    #         return False
     def _check_collision(self, paddle):
         # Check if ball is moving toward the paddle
         if (self.ball["dir_x"] > 0 and paddle["x"] < self.ball["x"]) or \
@@ -217,16 +198,6 @@ class Game:
 
         self.ball["dir_x"] = max(-max_speed, min(max_speed, self.ball["dir_x"] * speedup))
         self.ball["dir_y"] = max(-max_speed, min(max_speed, self.ball["dir_y"] * speedup))
-
-    # def _reset_ball(self, direction):
-    #     self.ball["x"] = self.width // 2
-    #     self.ball["y"] = random.randint(200, self.height // 2)
-    #     angle = random.uniform(0.2, 0.8)
-    #     self.ball["speed"] *= 1.3
-    #     self.ball["speed"] = min(self.ball["speed"], MAX_BALL_SPEED) # capping the ball speed to a certain limit
-        
-    #     self.ball["dir_x"] = direction * (self.ball["speed"]) * angle
-    #     self.ball["dir_y"] = (self.ball["speed"]) * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
 
     def _reset_ball(self, direction):
         self.ball["x"] = self.width // 2

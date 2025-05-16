@@ -4,12 +4,6 @@ let socket;
 let reconnecting = false; // needed??
 
 function connectWebSocket(mode) {
-    // if (websocket && websocket.readyState === WebwebSocket.OPEN) { // this will go wrong no if we are doing one player then tournament?? dif websocket
-    //     console.log("WebwebSocket already connected.");
-    //     startGameMenu(); // or not
-    //     return;
-    // }
-
     if (reconnecting) {
         console.warn("Reconnection already in progress.");
         return;
@@ -22,12 +16,8 @@ function connectWebSocket(mode) {
         
         if (mode == "4" || mode == "8")
             websocket = new WebSocket(`${protocol}://${window.location.host}/ws/tournament/`);
-            // websocket = new WebSocket(`ws://${window.location.host}/ws/tournament/`);
-            // websocket = new WebSocket(`ws://${window.location.host}?token=${token}`);
         else
             websocket = new WebSocket(`${protocol}://${window.location.host}/ws/game_server/`);
-            // websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/`);
-            // websocket = new WebSocket(`ws://${window.location.host}/ws/game_server/?token=${token}`);
     
         websocket.onopen = async() => {
             console.log("Connected to the game server.");
@@ -85,7 +75,7 @@ function resetGame(mode) {
     }
     gameState.running = false;
 
-    displayStartPrompt(); // check this
+    displayStartPrompt();
 }
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
@@ -118,7 +108,6 @@ const returnToTournamentWaitingRoom = async (message) => {
 }
 
 function addWinnersTournament(message) {
-    console.log(`MADE IT HERE TO ADD_WINNERS ----- V2`); // to rm
     if (gameState.mode == "4") {
         if (message.winners.length === 2) {
             winners4 = JSON.parse(localStorage.getItem("winners4")) || [];
@@ -246,7 +235,5 @@ function handleServerMessage(message) {
         case "add_winners":
             addWinnersTournament(message);
             break;
-        // default:
-        //     console.warn("Unknown message type received:", message.type);
     }
 }

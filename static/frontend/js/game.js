@@ -57,15 +57,15 @@ function startGame(mode) {
     gameCanvas.style.height = gameCanvas.height / 2 + "px";
 
     if (mode === "One Player") {
-        gameTitle.textContent = onePlayerText; // "One Player"
+        gameTitle.textContent = onePlayerText;
         instructions1.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (hot seat)") {
-        gameTitle.textContent = hotseatText; // "Two Players (hot seat)"
+        gameTitle.textContent = hotseatText;
         instructions2.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Two Players (remote)") {
-        gameTitle.textContent = remoteText; // "Two Players (remote)"
+        gameTitle.textContent = remoteText;
         instructions1.style.display = "block";
         connectWebSocket(mode);
     } if (mode === "Tournament - 4 Players" || mode === "Tournament - 8 Players") {
@@ -109,30 +109,17 @@ document.getElementById("twoPlayersRemoteBtn").addEventListener("click", () => {
     history.pushState({ modalID: "twoPlayersRemote", gameMode: mode }, "", `?modal=twoPlayersRemote&type=${encodedMode}`);
 });
 
-// document.getElementById("tournamentBtn").addEventListener("click", () => {
-//     gameMenuTournament.show();
-//     gameMenu.hide();
-//     currentModal = "gameMenuTournament";
-//     history.pushState({ modalID: "gameMenuTournament" }, "", "?modal=gameMenuTournament");
-// });
-
 document.getElementById("fourPlayersTournamentBtn").addEventListener("click", () => {
     startGame("Tournament - 4 Players");
-    // disableTournamentButtons();
     currentModal = "game";
     const mode = "Tournament - 4 Players";
     const encodedMode = encodeURIComponent(mode);
     history.pushState({ modalID: "fourPlayersTournament", gameMode: mode }, "", `?modal=fourPlayersTournament&type=${encodedMode}`);
 });
 
-document.getElementById("eightPlayersTournamentBtn").addEventListener("click", () => {
-    startGame("Tournament - 8 Players");
-    // disableTournamentButtons();
-    currentModal = "game";
-    const mode = "Tournament - 8 Players";
-    const encodedMode = encodeURIComponent(mode);
-    history.pushState({ modalID: "eightPlayersTournament", gameMode: mode }, "", `?modal=eightPlayersTournament&type=${encodedMode}`);
-});
+const eighttournamentButton = document.getElementById("eightPlayersTournamentBtn");
+eighttournamentButton.disable = true;
+eighttournamentButton.style.color = "gray";
 
 document.getElementById("previousBtn").addEventListener("click", () => {
     history.back();
@@ -165,9 +152,6 @@ function exitGame(){
 document.getElementById("exitButton").addEventListener("click", () =>  {
     exitGame();
     history.back();
-    // gameMenuFirst.show();
-    // currentModal = "gameMenuFirst";
-    // history.pushState({ modalID: "gameMenuFirst" }, "", "?modal=gameMenuFirst");
 });
 
 async function joinTournament(data){
@@ -200,81 +184,6 @@ tournamentBanner.addEventListener("click", async(event) => {
         console.error("Error fetching tournament status:", error);
     }
 });
-
-// When the user selects from the dropdown
-document.getElementById("languageDropdown").addEventListener("change", async (e) => {
-    e.preventDefault(); // prevent default form submission
-    const loggedin = await checkLoginStatus();
-    if (loggedin === true) {
-        localStorage.setItem("manualLangSelection", "true");
-        console.log("ITS TRUE I AM LOGGED IN");
-    }
-
-    // Submit the form *after* localStorage is set
-    document.getElementById("language-switch-form").submit();
-});
-
-
-function applyPreferredLanguageAfterLogin() {
-    const manuallySelected = localStorage.getItem("manualLangSelection");
-    console.log("HEEEEEY ", manuallySelected);
-    if (manuallySelected) {
-        console.log("LAAAAAAA");
-        if (manuallySelected === "true") {
-            console.log("LOOOOOOO");
-            localStorage.setItem("manualLangSelection", "false");
-            return ;
-        } else if (manuallySelected === "false") {
-            console.log("LIIIIIII");
-            getUserPreferredLanguage(); // from server or cookie
-        }
-    } else {
-        console.log("LEEEEEEEE");
-        getUserPreferredLanguage(); // from server or cookie
-    }
-}
-
-function getUserPreferredLanguage() {
-    console.log("GETTING HERE AFTER LOGIN -- GAME.JS"); // to rm
-    // Check if the page has already been reloaded for language change
-    fetch('/data/api/get_profile/', {
-        credentials: 'include',
-    })
-    .then(response => {
-        if (!response.ok) throw new Error("Failed to fetch user profile");
-        return response.json();
-    })
-    .then(data => {
-        if (data.preferred_language) {
-            const currentLanguage = document.documentElement.lang; // Get current language from <html lang="...">
-            console.log("Current language:", currentLanguage);
-            console.log("Preferred language:", data.preferred_language);
-            if (currentLanguage === data.preferred_language) {
-                console.log("Preferred language already applied, skipping reload.");
-                return;
-            }
-            console.log("Applying preferred language via set_language:", data.preferred_language);
-            
-            return fetch("/i18n/setlang/", {
-                method: "POST",
-                credentials: 'include',
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": getCSRFToken(),
-                },
-                body: `language=${data.preferred_language}&next=/`
-            }).then(() => {
-                location.reload();
-            });
-        } else {
-            // gameMenuFirst.show();
-        }
-    })
-    .catch(error => {
-        console.error("Error loading preferred language:", error);
-        // gameMenuFirst.show(); // Fall back to showing the modal even on failure
-    });
-}
 
 function showTournamentAdBanner(players_in, total_spots) { // Show banner to promote for other players
     if (players_in < total_spots) {
@@ -350,7 +259,6 @@ function displayStartPrompt() {
     gameContext.fillStyle = "#ffffff";
     gameContext.textAlign = "center";
     gameContext.fillText(startPromptText, gameCanvas.width / 2, gameCanvas.height / 2 + 15);
-    // gameContext.fillText("Press any key twice to start", gameCanvas.width / 2, gameCanvas.height / 2 + 15);
     keyboardEnabled = true;
 }
 
@@ -449,7 +357,7 @@ setInterval(() => {
     }
 
     if (directions.length > 0) {
-        console.log("keys pressed: ", [...pressedKeys]); // to rm
+        console.log("keys pressed: ", [...pressedKeys]);
         websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
 }, 1000 / 60);

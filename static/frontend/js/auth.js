@@ -18,14 +18,11 @@ async function loginWebSocket(){
         loginsocket.onclose = (event) => {
             console.log("onlineSocket closed", event);
             clearInterval(pingInterval);
-            window.location.reload();
-            // logOut(); This is dumb as user can logout in any modal 
-        
+            window.location.reload();        
         };
         loginsocket.onerror = async function(error) {
             console.error("onlineSocket error:", error);
         };
-        // console.log("socket: ", loginsocket);
     } catch (errror) {
         console.log("Error: ", errror);
     }
@@ -112,7 +109,6 @@ async function fetchUserData() {
 }
 
 function getCSRFToken() {
-    // console.log("Getting CSRF token...");
     const match = document.cookie.match(/csrftoken=([^;]+)/);
     return match ? decodeURIComponent(match[1]) : "";
 }
@@ -131,7 +127,6 @@ async function refreshAccessToken() {
         const data = await response.json();
         if (!response.ok) {
             console.error("Refresh token invalid:", data);
-            // alert("Session expired. Please log in again.");
             return null;
         }
         console.log("Access token refreshed.");
@@ -182,7 +177,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             SignInModal.show();
             gameMenuModal.hide();
         } else {
-            // console.log("user data: ", fetchUserData());
             console.log("User already logged in. Hiding SignInMenu");
             SignInModal.hide();
             gameMenuModal.show();
@@ -325,13 +319,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const googleButtonRegister = document.getElementById("googleButtonRegister");
                     if (googleButtonRegister) {
                         googleButtonRegister.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://tranceanddance.com/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost:8443/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                     const googleButtonLogin = document.getElementById("googleButtonLogin");
                     if (googleButtonLogin) {
                         googleButtonLogin.addEventListener('click', () => {
-                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://tranceanddance.com/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
+                            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=https://localhost:8443/api/authentication/google/callback/&response_type=code&scope=openid%20email%20profile`;
                         });
                     }
                 }
@@ -383,7 +377,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
                 console.log("registerdata: ", registerData);
                 try {
-                    // const registrationDataResponse = await registerData.json();
                     if (!registerData.ok) {
                         let errorMsg = `Error ${registerData.status}`;
                         try {
@@ -397,11 +390,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                         return;
                     }
                     alert("Registration successful! You will now be logged in automatically");
-                    
-                    // Wait briefly to let browser store cookies
-                    // setTimeout(() => {
-                    //     window.location.href = "/";
-                    // }, 30);
+                    if (!enable2FACheck)
+                        window.location.href = "/";
                     if (enable2FACheck) {
                         let twoFAResponse;
                         try {
@@ -435,9 +425,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                         }
                         if (otpKey) otpKey.innerText = twoFAData.otp_secret;
                     }
-                    // setTimeout(() => {
-                    //     window.location.href = "/";
-                    // }, 30);
                 } catch (error) {
                     console.error("Error in registration flow:", error);
                     alert("An error occurred. Check the console.");
@@ -478,16 +465,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
             
                 console.log("login response data:", data);
-                // const data = await response.json().catch(() => ({})); // 
                 if (response.ok) {
                     alert("logged in succesfully")
-                    // applyPreferredLanguageAfterLogin();
                     window.location.href = "/";
                     setTimeout(() => {
                         window.location.href = "/";
                     }, 30);
-                    // Optionally: open websocket here after refreshing token
-                    // await loginWebSocket();
                 } else if (response.status === 403 && data.detail?.includes("CSRF")) {
                     alert("CSRF token validation failed. Please refresh the page or check your login security settings.");
                     console.error("CSRF error details:", data);
@@ -585,7 +568,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (enable2FAButton) {
             enable2FAButton.addEventListener("click", async function () {
                 try {
-                    // editProfileModal.hide()
                     const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                         method: "POST",
                         credentials: "include",
@@ -603,7 +585,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                         alert("2FA response missing QR code.");
                         return;
                     }
-                    // if (registerContainer) registerContainer.style.display = "none";
                     if (qrContainerProfile) qrContainerProfile.style.display = "block";
                     if (qrCodeImageProfile) {
                         qrCodeImageProfile.src = `${twoFAData.qr_code}`;
@@ -618,7 +599,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (confirm2FA) {
             confirm2FA.addEventListener("click", async function () {
-                // alert("confirm 2FA clicked")
                 try {
                     const response = await fetch(`${baseUrl}enable-2fa/`, {
                         method: "POST",

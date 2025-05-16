@@ -19,7 +19,7 @@ async function selectTournamentBtn() {
             }
             else if (data.running) {
                 console.log("tournament is running atm");
-                document.getElementById("tournamentBtn").style.display = "none"; // to hide the button
+                document.getElementById("tournamentBtn").style.display = "none";
             }
             else {
                 document.getElementById("tournamentBtn").textContent = "Start new tournament";

@@ -73,7 +73,6 @@ function populateFRequests(data) {
     const uText = document.getElementById("text_username").textContent.trim();
     const aText = document.getElementById("text_accept").textContent.trim();
     const dText = document.getElementById("text_decline").textContent.trim();
-    // headerRow.innerHTML = "<th>Username</th><th>Accept</th><th>Decline</th>";
     headerRow.innerHTML =
         "<th>" + uText + "</th>" +
         "<th>" + aText + "</th>" +
@@ -110,8 +109,8 @@ function populateFRequests(data) {
             const acceptLink = document.createElement("span");
             acceptLink.textContent = "✔️";
             acceptLink.dataset.friendshipID = item.friendship_id;
-            acceptLink.style.cursor = "pointer"; // Make it look clickable
-            acceptLink.style.color = "green"; // Make it look like a link
+            acceptLink.style.cursor = "pointer";
+            acceptLink.style.color = "green";
             acceptLink.addEventListener("click", function(){
             acceptFriend(acceptLink.dataset.friendshipID);
             });
@@ -125,7 +124,7 @@ function populateFRequests(data) {
         const declineLink = document.createElement("span");
         declineLink.textContent = "❌";
         declineLink.dataset.friendshipID = item.friendship_id;
-        declineLink.style.cursor = "pointer"; // Make it look clickable
+        declineLink.style.cursor = "pointer";
         declineLink.addEventListener("click", function(){
            declineFriend(declineLink.dataset.friendshipID);
         });
@@ -213,7 +212,6 @@ if (searchFriendBtn) {
 const addFriendCloseBtn = document.getElementById("addFriendCloseBtn");
 if(addFriendCloseBtn){
     addFriendCloseBtn.addEventListener("click", function() {
-        // console.log("add close clicked");
         history.back();
     });
 }

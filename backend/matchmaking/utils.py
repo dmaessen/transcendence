@@ -58,11 +58,7 @@ async def create_match(self, player_id):
     )
 
     print(f"match id== {match.id}")
-    # return {
-    #     "id": match.id, # or without id??
-    #     "player_1": player1.id, 
-    #     "player_2": player2.id
-    # }
+
     match_data = {
         "id": match.id,
         "player_1": player1.id, 

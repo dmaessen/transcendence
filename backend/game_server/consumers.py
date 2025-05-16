@@ -144,7 +144,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         print("Received WebSocket message:", data, flush=True) # to rm
         action = data.get("action")
-        #game_id = data.get("game_id")
         mode = data.get("mode", "One Player")
         player_id = self.player_id
         user = await get_user_by_id(player_id)
@@ -160,15 +159,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                     print(f"ERROR: Player {player_id} failed matchmaking, re-entering queue!", flush=True)
                     await self.send(text_data=json.dumps({"error": "Matchmaking failed"}))
                     return
-                # await self.send_json({"type": "match_info", "match_name": self.match_name})
 
                 self.game_id = int(self.match_name[6:])
                 print("GAME_ID ", self.game_id)
-
-                # asyncio.create_task(self.trigger_start_game_auto_task())
-
             else:
-                # self.game_id = f"game_{player_id}"
                 self.game_id = f"game_{str(uuid.uuid4())[:6]}"
                 self.match_name = self.game_id
                 await self.send(text_data=json.dumps({
@@ -176,21 +170,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                     'gameId': self.game_id #in old version it was "'gameId': self.player_id" but it didnt make sense now,
                                             # so i made it 'gameId': self.game_id, lmk if that breaks anything
                 }))
-
-                #  THIS COMMENT-OUT VERSION WAS THE REASON OF "KEY ERROR"
-                # match = await sync_to_async(Match.objects.create)(
-                #     player_1=user, 
-                #     match_time=timedelta(minutes=2)
-                # )
-                # self.match_name = self.game_id
-                # await self.send(text_data=json.dumps({
-                #     'action': 'created',
-                #     'gameId': match.id
-                # }))
                 if self.game_id in games:
                     game = games[self.game_id]
-                    # if not game.running:
-                    #     game.reset_game(mode)
                 else:
                     game = Game(mode)
                     games[self.game_id] = game
@@ -201,8 +182,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             game = games[self.game_id]
 
             if len(game.players) == 2 and mode != "One Player" and mode != "Two players (hot seat)": #start game if two players connected  and mode == "Two Players (remote)"
-                    #game.start_game() # this makes them start without having to press on a key
-                    #await self.send_json({"type": "started", "game_id": self.game_id})
                     asyncio.create_task(self.trigger_start_game_auto_task())
                     await self.send_game_state(game)
                     asyncio.create_task(self.broadcast_game_state(self.game_id))
@@ -236,7 +215,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         elif action == "start":
             mode = data.get("mode")
             print("STAAAAART ", player_id)
-            #self.game_id = f"game_{player_id}"
             if self.game_id in games:
                 game = games[self.game_id]
                 game.start_game()
@@ -265,7 +243,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                     await self.send_json({"type": "started", "game_id": self.game_id})
                     await self.send_game_state(game)
                     asyncio.create_task(self.broadcast_game_state(self.game_id))
-                    # game.ready_players.clear()
 
         elif action == "stop":
             if self.game_id in games:
@@ -282,7 +259,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                 game = games[game_id]
                 if self.player_id in game.players:
                     game.remove_player(self.player_id)
-                    # if not game.players or if len(game.players) is 1 and game.mode is "Two Players (hot seat)" or "One Player":
                     if (
                         not game.players or
                         (len(game.players) == 1 and game.mode in ["Two Players (hot seat)", "One Player"])
@@ -312,8 +288,6 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def create_game(self, player_id):
         print(f"Player {self.player_id} entered create_game()", flush=True)
         user = await get_user_by_id(player_id)
-        #game = await sync_to_async(Match.objects.create)(player_1=user) #single player in game
-        # date_match = datetime.now().replace(hour=14, minute=0, second=0, microsecond=0)
         date_match = datetime.now()
 
         match = await sync_to_async(Match.objects.create)(
@@ -327,12 +301,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         }))
 
         game = Game("Two Players (remote)")
-        #game.add_player(player_id)
-        #adding a game to games dict. game by gameid
         games[match.id] = game
         print("MATCH.ID ", match.id)
-        # self.match_name = str(f"match_{match.id}")
-        # await self.channel_layer.group_add(self.match_name, self.channel_name)
         await self.join_game(match, 1, player_id)
 
     async def join_game(self, match, numb_of_players, player_id):
@@ -340,29 +310,18 @@ class GameConsumer(AsyncWebsocketConsumer):
         user = await get_user_by_id(player_id)
         if numb_of_players == 1:
             game = games[match.id]
-            #game.players[user.id] = user
             game.add_player(user.id, self.username, as_player1=True)
             game.status = "waiting"
         else:
             match.player_2 = user
-            #self.match_name = str(f"match_{match.id}")
             await sync_to_async(match.save)()
             print(f"Available games: {list(games.keys())}", flush=True)
             print(f"Trying to access game for match.id={match.id}", flush=True)
             game = games[match.id] #this game represents Game(), not Match model
-            #game.players[user.id] = user
             game.add_player(user.id, self.username, as_player1=False)
             game.status = "started"
-            #self.match_name = str(f"match_{match.id}")
-            #await self.channel_layer.group_add(self.match_name, self.channel_name)
-            #await self.send_game_state(game)
-
-            # asyncio.create_task(self.trigger_start_game_auto_task(match.id))
-
         self.match_name = str(f"match_{match.id}")
         await self.channel_layer.group_add(self.match_name, self.channel_name)
-        #await self.send_game_state(game)
-
         return self.match_name
     
     async def end(self, event):

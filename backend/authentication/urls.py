@@ -1,8 +1,6 @@
 from django.urls import path, include
 from django.urls import re_path
 from django.http import HttpResponse
-# from dj_rest_auth import get_refresh_view
-# from django.contrib.auth import views as auth_views
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import RegisterView, LoginView, RefreshTokenView, google_callback,  login_42_redirect, login_42_callback, me, google_login, register_2fa ,disable_2fa, enable_2fa, login_2fa_required, sign_out, protected_user_data, DeleteAccountView
 from django.http import JsonResponse

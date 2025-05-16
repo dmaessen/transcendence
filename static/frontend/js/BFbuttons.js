@@ -8,13 +8,14 @@ window.addEventListener("popstate", (event) => {
     });
     const gameMode = state.gameMode;
     console.log("Game mode from state:", gameMode);
+
     // Clean canvas leftovers
     if(currentModal = game) {
         gameCanvas.style.display = "none";
         instructions1.style.display = "none";
         instructions2.style.display = "none";
-        document.getElementById("tournamentBracket").style.display = "none"; // this working??
-        document.getElementById("tournamentBracket4").style.display = "none"; // this working??
+        document.getElementById("tournamentBracket").style.display = "none";
+        document.getElementById("tournamentBracket4").style.display = "none";
         if (websocket && websocket.readyState === WebSocket.OPEN) {
             if (gameState.mode != "Tournament - 4 Players" && gameState.mode != "Tournament - 8 Players" && gameState.mode != "4" && gameState.mode != "8")
                 websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
@@ -23,6 +24,7 @@ window.addEventListener("popstate", (event) => {
             websocket.close();
         }
     }
+
     // Remove leftover backdrop
     document.body.classList.remove("modal-open");
     document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
@@ -56,13 +58,12 @@ window.addEventListener("popstate", (event) => {
             gameMenuTournament.show();
             break;
         case "tournament":
-            // joinTournament(data);
             break;
         case "gameMenuFirst":
             gameMenuFirst.show();
             break;
         case "SignInMenu":
-            SignInMenu.show(); // If applicable
+            SignInMenu.show();
             break;
         case "fourPlayersTournament":
         case "eightPlayersTournament":

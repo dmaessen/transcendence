@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_data(request):
-    logger.info(f"Request: {request.user.id}")
+    logger.info(f"[DATA_VIEWS][GET_USER_DATA]Request: {request.user.username}")
     
     profileID = request.GET.get("userID")
     friendshipID = None
@@ -57,7 +57,6 @@ def get_user_data(request):
     matches_won = get_win_cout(user.id)
     matches_lost = matches_played - matches_won
     
-    logging.info(f"btn: {btnType}")
     user_data = {
         "username": user.username,
         "email": user.email,
@@ -70,14 +69,12 @@ def get_user_data(request):
         "user_id": user.id,
         "friendshipID": friendshipID
     }
-    logging.info(f"userdata: {user_data}")
-
     return JsonResponse(user_data, safe=False)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_matches(request):
-    logger.info(f"Request {request}")
+    logger.info(f"[DATA_VIEWS][GET_USER_MATCHES]Request {request.user.username}")
     
     profileID = request.GET.get("userID")
     
@@ -98,6 +95,7 @@ def get_user_matches(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_all_user_matches(request):
+    logging.info(f"[DATA_VIEWS][GET_USER_MATCHES]request: {request.user.username}")
     profileID = request.GET.get("userID")
     
     if profileID == "self" or request.user.id == int(profileID):
@@ -116,6 +114,7 @@ def get_all_user_matches(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_tournaments(request):
+    logging.info(f"[DATA_VIEWS][GET_USER_TOURNAMENTS]request: {request.user.username}")
     profileID = request.GET.get("userID")
     
     if profileID == "self" or request.user.id == int(profileID):
@@ -126,7 +125,6 @@ def get_user_tournaments(request):
         return JsonResponse({"error": "User not found"}, status=404)
     
     tournaments = get_user_3_tournaments(user.id)
-    logging.info(f"!!!!!!!!tournaments: {tournaments}")
     tournaments_data = {
         "tournaments": TournamentSummarySerializer(tournaments, many=True, context={"user": user}).data,
     }
@@ -135,6 +133,7 @@ def get_user_tournaments(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_all_user_tournaments(request):
+    logging.info(f"[DATA_VIEWS][GET_ALL_USER_TOURNAMENTS]request: {request.user.username}")
     profileID = request.GET.get("userID")
     
     if profileID == "self" or request.user.id == int(profileID):
@@ -145,7 +144,6 @@ def get_all_user_tournaments(request):
         return JsonResponse({"error": "User not found"}, status=404)
     
     tournaments = get_all_tournaments(user.id)
-    logging.info(f"!!!!!!!!tournaments: {tournaments}")
     tournaments_data = {
         "tournaments": TournamentSummarySerializer(tournaments, many=True, context={"user": user}).data,
     }
@@ -154,18 +152,13 @@ def get_all_user_tournaments(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def edit_user_data(request):
-    logger.info("Changing user data \n")
-    logging.info(f"!>!>!>!>!>!Request Cookies edit: {request.COOKIES}")
+    logging.info(f"[DATA_VIEWS][EDIT_USER_DATA]request: {request.user.username}")
 
     newUsername = request.POST.get('newUsername')
     newMail = request.POST.get('newMail')
     newAvatar = request.FILES.get('newAvatar')
     preferred_language = request.POST.get('preferred_language')
 
-    logger.info(f"newUsername: {newUsername}")
-    logger.info(f"newMail: {newMail}")
-    logger.info(f"preferred_language: {preferred_language}")
-    
     user = request.user
     
     try:
@@ -205,6 +198,7 @@ def edit_user_data(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_friends(request):
+    logging.info(f"[DATA_VIEWS][GET_USER_FRIENDS]request: {request.user.username}")
     user = request.user
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -214,28 +208,29 @@ def get_user_friends(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_friend(request):
+    logging.info(f"[DATA_VIEWS][ADD_FRIEND]request: {request.user.username}")
     user = request.user
     friendID = request.data.get('userID')
     if friendID is None:
         return JsonResponse({"message": "Missing data"}, status=400)
-    logging.info(f"user id {user.id} and friendID: {friendID}")
     add_new_friend(user.id, friendID)
     return JsonResponse({"success": True, "message": "Friend request sent"}, status=200)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def delete_friend(request):
+    logging.info(f"[DATA_VIEWS][DELETE_FRIEND]request: {request.user.username}")
     user = request.user
     friendID = request.data.get("userID")
     if friendID is None:
         return JsonResponse({"message": "Missing data"}, status=400)
-    logging.info(f"user id {user.id} and friendID: {friendID}")
     remove_friend(user.id, friendID)
     return JsonResponse({"success": True, "message": "Friend removed"}, status=200)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def friends_requests(request):
+    logging.info(f"[DATA_VIEWS][FRIENDS_REQUESTS]request: {request.user.username}")
     user = request.user
     fRequests = get_friendship_requests(user.id)
 
@@ -244,6 +239,7 @@ def friends_requests(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def accept_friendship(request):
+    logging.info(f"[DATA_VIEWS][ACCEPT_FRIENDSHIP]request: {request.user.username}")
     friendship_id = request.data.get("friendshipID")
     accept_friend(friendship_id)
     return JsonResponse({"success": True, "message": "friendship created"}, status=200)
@@ -251,6 +247,7 @@ def accept_friendship(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def cancel_friendship(request):
+    logging.info(f"[DATA_VIEWS][CANCEL_FRIENDSHIP]request: {request.user.username}")
     friendship_id = request.data.get("friendshipID")
     cancel_friend(friendship_id)
     return JsonResponse({"success": True, "message": "friendship canceled"}, status=200)
@@ -258,6 +255,7 @@ def cancel_friendship(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def search_user(request):
+    logging.info(f"[DATA_VIEWS][SEARCH_USER]request: {request.user.username}")
     username = request.GET.get("friendUsername")
     try:
         user = CustomUser.objects.get(username=username)
@@ -269,6 +267,7 @@ def search_user(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_profile(request):
+    logging.info(f"[DATA_VIEWS][GET_PROFILE]request: {request.user.username}")
     try:
         user = request.user
         profile_data = {

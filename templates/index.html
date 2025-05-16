@@ -18,7 +18,6 @@
   <!-- Language selector for index.html -->
   <form action="{% url 'set_language' %}" method="post" id="language-switch-form" class="position-fixed top-0 end-0 me-3" style="margin-top: 4.0rem; z-index: 1100;">{% csrf_token %}
     <input type="hidden" name="next" value="{{ request.path }}">
-    <!-- <select name="language" onchange="this.form.submit()" class="form-select form-select-sm"> -->
     <select name="language" id="languageDropdown" class="form-select form-select-sm">
       <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
       <option value="nl" {% if current_language == 'nl' %}selected{% endif %}>Nederlands</option>
@@ -44,6 +43,7 @@
         <a href="" class="alert-link" id="joinTournamentLink">{% trans "Join now!" %}</a>
     </div>
 <div id="currentUser" data-user-id="" style="display: none;"></div>
+
     <!-- Title and Exit button -->
     <h1 id="gameTitle" class="text-center my-3 display-6">{% trans "Pong Game" %}</h1>
     <button id="exitButton" type="button" class="btn btn-outline-dark position-fixed top-0 end-0 m-3">{% trans "Exit" %}</button>
@@ -88,6 +88,7 @@
     <script src="{% static 'frontend/js/friends.js' %}"></script>
     <script src="{% static 'frontend/js/matches.js' %}"></script>
     <script src="{% static 'frontend/js/BFbuttons.js' %}"></script>
+    <script src="{% static 'frontend/js/languages.js' %}"></script>
     <script src="{% static 'frontend/js/tournament.js' %}"></script>
     <script src="{% static 'frontend/js/tournaments.js' %}"></script>
     <script src="{% static 'frontend/js/add_friends.js' %}"></script>

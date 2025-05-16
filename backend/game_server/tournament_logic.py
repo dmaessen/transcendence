@@ -11,7 +11,7 @@ class TournamentLogic:
         self.num_players = int(mode)
         self.players = []  # player IDs and usernames -> list of dict, check line 22 to see the format
         self.matches = []  # ongoing matches
-        self.bracket = {}  # matchups for each round -- THIS SEND TO LAURA
+        self.bracket = {}
         self.current_round = 1
         self.running = False
         self.winners = []  # players who won their matches
@@ -49,10 +49,6 @@ class TournamentLogic:
         await asyncio.sleep(5)
 
     def _create_bracket(self):
-        # random.shuffle(self.players)
-        # self.bracket[self.current_round] = [
-        #     (self.players[i], self.players[i + 1]) for i in range(0, len(self.players), 2)
-        # ]
         if self.current_round not in self.bracket:
             self.bracket[self.current_round] = []
 
@@ -87,7 +83,6 @@ class TournamentLogic:
                     }
                 )
                 print(f"Sent create.game.tournament message for {player1['player']['username']} vs {player2['player']['username']}", flush=True)
-                # self.matches.append({"player1": player1["id"], "player2": player2["id"]})
 
         print(f"Round {self.current_round} started.", flush=True)
         asyncio.create_task(self._round_timeout_handler(self.current_round, timeout_seconds=300))  # 5 min timeout
@@ -96,7 +91,6 @@ class TournamentLogic:
         print(f"Registering match result: Game {game_id}, Winner {winner_username}", flush=True)
         
         if not any(m[0] == game_id for m in self.matches):
-            #logger.info(f"Game {game_id} already processed or not in active matches list.")
             print(f"Game {game_id} already processed or not in active matches list.")
             return
 
@@ -232,25 +226,3 @@ class TournamentLogic:
             self.matches = state["matches"]
         if "winners" in state:
             self.winners = state["winners"]
-
-    # def reset_tournament(self, mode):
-    #     self.mode = 4
-    #     self.players = {}
-    #     self.ready_players.clear()
-    #     self.ball = {"x": self.width // 2, "y": self.height // 2, "radius": 15, "dir_x": 5, "dir_y": 4, "speed": 4}
-    #     self.net = {"x": self.width // 2 - 1, "y": 0, "width": 5, "height": 10, "gap": 7}
-    #     self.score = {"player": 0, "opponent": 0}
-    #     self.running = False
-    #     self.partOfTournament = False
-    #     self.mode = mode
-    #     self.num_players = int(mode)
-    #     self.players = []  # player IDs and usernames
-    #     self.matches = []  # ongoing matches
-    #     self.bracket = {}  # matchups for each round -- THIS SEND TO LAURA
-    #     self.current_round = 1
-    #     self.running = False
-    #     self.winners = []  # players who won their matches
-    #     self.final_winner = None
-    #     # self.room_name = None # for channel layer comm
-    #     self._initialized = True
-

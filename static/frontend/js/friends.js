@@ -19,7 +19,6 @@ function populateFriends(data) {
     let headerRow = document.createElement("tr");
     const fText = document.getElementById("text_friend").textContent.trim();
     const sText = document.getElementById("text_status").textContent.trim();
-    // headerRow.innerHTML = "<th>Friend</th><th>Status</th>";
     headerRow.innerHTML =
         "<th>" + fText + "</th>" +
         "<th>" + sText + "</th>";
@@ -32,8 +31,8 @@ function populateFriends(data) {
         const nameLink = document.createElement("span");
         nameLink.textContent = item.friend;
         nameLink.dataset.userID = item.friend_id;
-        nameLink.style.cursor = "pointer"; // Make it look clickable
-        nameLink.style.color = "gray"; // Make it look like a link
+        nameLink.style.cursor = "pointer";
+        nameLink.style.color = "gray";
 
         nameLink.addEventListener("click", function() {
             const friendsModalElement = document.getElementById("friendsModal");
@@ -58,8 +57,6 @@ function populateFriends(data) {
 
 async function loadFriends(push = true) {
     try{
-        // const friendsModalElement = document.getElementById("friendsModal");
-        // const friendsModal = new bootstrap.Modal(friendsModalElement);
         friendsModal.show();
         const response = await fetch(`/data/api/getFriends`, {
             method: "GET",
@@ -71,7 +68,6 @@ async function loadFriends(push = true) {
             throw new Error(`Error, status: ${response.status}`);
         }
         const data = await response.json();
-        // console.log("response: ", data);
         populateFriends(data);
         if(push)
             history.pushState({ modalID: "friendsModal" }, "", "?modal=friendsModal");
@@ -91,7 +87,6 @@ if (friendsBtn) {
 const closeFriendsBtn = document.getElementById("closeFriendsBtn");
 if(closeFriendsBtn){
     closeFriendsBtn.addEventListener("click", function() {
-        console.log("profile close clicked");
         history.back();
     });
 }

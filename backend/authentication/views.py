@@ -7,27 +7,21 @@ from .forms import LoginForm, RegisterForm
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from .serializers import UserSerializer
 from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
-# from django.contrib.auth.decorators import login_required
-# from django_otp.plugins.otp_totp.models import TOTPDevice
 from authentication.models import CustomTOTPDevice
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.exceptions import InvalidToken
-# from google.oauth2 import id_token as google_id_token
-# from google.auth.transport import requests as google_requests
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 import google.oauth2.id_token as google_id_token
 import google.auth.transport.requests
 from django.views.decorators.csrf import ensure_csrf_cookie
 from urllib.parse import urlencode
-# import google.oauth2 
 import json
 import requests
 import qrcode
@@ -68,14 +62,13 @@ def register_2fa(request):
 			otp_secret = device.key
 		
 		for d in CustomTOTPDevice.objects.filter(customUser=user):
-			print(f"  - name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
+			logging.info(f"[AUTH_VIEWS]- name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
 
 		if not isinstance(otp_secret, str) or len(otp_secret) < 16:
 			return JsonResponse({"error": "Invalid OTP secret generated"}, status=500)
 
 		totp = pyotp.TOTP(device.key)
 		otp_uri = totp.provisioning_uri(name=user.email, issuer_name="transcendence")
-		# print("OTP URI:", otp_uri)
 		qr = qrcode.make(otp_uri)
 		stream = io.BytesIO()
 		qr.save(stream, format="PNG")
@@ -117,7 +110,7 @@ class RegisterView(APIView):
 				secure=True, # [FLIP]set to True in production
 				max_age=86400
 			)
-			print("register response: ", response)
+			logging.info("[AUTH_VIEWS]register response: ", response)
 			return response
 		return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -131,7 +124,7 @@ class LoginView(APIView):
 		if not email or not password:
 			return JsonResponse({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-		print(f"login data received: {request.data}", flush=True)
+		logging.info(f"[AUTH_VIEWS]login data received: {request.data}")
 		try:
 			user = CustomUser.objects.get(email=email)
 		except CustomUser.DoesNotExist:
@@ -143,7 +136,7 @@ class LoginView(APIView):
 		device = CustomTOTPDevice.objects.filter(customUser=user).first()
 
 		if user.two_factor_enabled:
-			print("[DEBUG] All TOTP devices for user(in login):")
+			logging.info("[AUTH_VIEWS] All TOTP devices for user(in login):")
 			for d in CustomTOTPDevice.objects.filter(customUser=user):
 				print(f"  - name: {d.name}, key: {d.key}, confirmed: {d.confirmed}")
 			if not device:
@@ -157,13 +150,13 @@ class LoginView(APIView):
 				return JsonResponse({'error': 'Invalid 2FA code'}, status=status.HTTP_401_UNAUTHORIZED)
 		try:
 			user = CustomUser.objects.get(email=email)
-			print(f"[DEBUG] Found user: {user.email}")
+			logging.info(f"[AUTH_VIEWS] Found user: {user.email}")
 		except CustomUser.DoesNotExist:
-			print(f"[DEBUG] User not found: {email}")
+			logging.info(f"[AUTH_VIEWS] User not found: {email}")
 			return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 		if not user.check_password(password):
-			print(f"[DEBUG] Password check failed for user: {email}")
+			logging.info(f"[AUTH_VIEWS] Password check failed for user: {email}")
 			return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 		try:
 			refresh = RefreshToken.for_user(user)
@@ -226,7 +219,6 @@ def perform_logout(request):
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def sign_out(request):
-	# print(f">>>>>>>>>User: {request.user}")
 	user = request.user
 	perform_logout(request)
 	messages.success(request, 'You have been logged out')
@@ -234,7 +226,6 @@ def sign_out(request):
 	response.delete_cookie("access_token")
 	response.delete_cookie("refresh_token")
 	return response
-	# return redirect('sign_in')
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -268,14 +259,9 @@ def disable_2fa(request):
 
 class RefreshTokenView(APIView):
 	def post(self, request):
-		logging.info(f"!>!>!>!>!>!Request Cookies: {request.COOKIES}")
-		# logging.info(f"!>!>!>!>!>!CSRF Token: {request.META}")
-
 		refresh_token = request.COOKIES.get('refresh_token')
-		logging.info(f"!>!>!>!>!>!Refresh token: {refresh_token}")
 		if not refresh_token:
 			return JsonResponse({"error": "no refresh token"})
-			# raise AuthenticationFailed("No refresh token in cookies")
 		try:
 			token = RefreshToken(refresh_token)
 			access_token = token.access_token
@@ -331,7 +317,7 @@ def google_login(request):
 		refresh = RefreshToken.for_user(user)
 		access_token = refresh.access_token
 
-		response = redirect("https://tranceanddance.com/")
+		response = redirect("https://localhost:8443")
 		response.set_cookie(
 			key="access_token",
 			value=str(access_token),
@@ -357,14 +343,12 @@ def google_login(request):
 def me(request):
 	user = request.user
 	print("[DEBUG] me(user):", user, flush= True)
-	# if (user.is_authenticated):
 	return Response({
 		"id": user.id,
 		"username": user.username,
 		"email": user.email,
 		"two_factor_enabled": CustomTOTPDevice.objects.filter(customUser=user, confirmed=True).exists(),
 	})
-	# return Response({"error": "user not logged in"})
 
 def login_42_redirect(request):
 	base_url = "https://api.intra.42.fr/oauth/authorize"
@@ -392,12 +376,6 @@ def login_42_callback(request):
 		"code": code,
 		"redirect_uri": settings.FT_REDIRECT_URI,
 	})
-
-	# print("CLIENT_ID:", settings.FT_CLIENT_ID)
-	# print("CLIENT_SECRET:", settings.FT_CLIENT_SECRET)
-	# print("REDIRECT_URI:", settings.FT_REDIRECT_URI)
-	# print("Token response status code:", token_response.status_code)
-	# print("Token response content:", token_response.content)
 
 	token_data = token_response.json() 
 	access_token = token_data.get("access_token")
@@ -451,7 +429,7 @@ def google_callback(request):
 		return JsonResponse({"error": "Missing authorization code"}, status=400)
 
 	token_url = "https://oauth2.googleapis.com/token"
-	redirect_uri = "https://tranceanddance.com/api/authentication/google/callback/"  # Must match your registered redirect URI
+	redirect_uri = "https://localhost:8443/api/authentication/google/callback/"  # Must match your registered redirect URI
 	client_id = settings.GOOGLE_CLIENT_ID
 	client_secret = settings.GOOGLE_CLIENT_SECRET
 
@@ -490,11 +468,7 @@ def google_callback(request):
 		refresh = RefreshToken.for_user(user)
 		access = refresh.access_token
 
-		# print(f"[DEBUG] going to return access token: ", access_token)
-		# response = JsonResponse({
-		# 	'message': 'Login successful'
-		# })
-		response = redirect("https://tranceanddance.com//")
+		response = redirect("https://localhost:8443/")
 		response.set_cookie(
 			key="access_token",
 			value=str(access),
@@ -516,12 +490,6 @@ def google_callback(request):
 	except Exception as e:
 		return JsonResponse({"error": "Failed to authenticate with Google", "details": str(e)}, status=500)
 
-# @ensure_csrf_cookie
-# def home(request):
-# 	csrf_token = get_token(request)
-# 	logging.info(f">>>>>>>>>>>>>>>>>>>>>>>CSRF Token: {csrf_token}")
-# 	return render(request, 'base.html')
-
 @ensure_csrf_cookie
 def index(request):
     return render(request, 'index.html')
@@ -537,21 +505,5 @@ def protected_user_data(request):
 			"username": user.username,
 			"email": user.email,
 			"id": user.id,
-			# "avatar": user.avatar,
 			"is_active": user.is_active,
 		})
-
-
-# @api_view(['GET'])
-# def me(request):
-# 	user = request.user
-# 	print("[DEBUG] me(user):", user, flush= True)
-# 	if (user.is_authenticated):
-# 		return Response({
-# 			"username": user.username,
-# 			"email": user.email,
-# 			"id": user.id,
-# 			# "avatar": user.avatar,
-# 			"is_active": user.is_active,
-# 		})
-# 	return Response({"error": "User not Authenticated"})

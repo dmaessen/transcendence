@@ -56,7 +56,6 @@ if (saveChangesBtn) {
                 document.getElementById("userAvatar").src = data.avatar_url; // Assuming API returns the new image URL
             }
             if (preferredLanguage) {
-                //location.reload();
                 await fetch("/i18n/setlang/", {
                     method: "POST",
                     credentials: 'include',
@@ -68,13 +67,7 @@ if (saveChangesBtn) {
                 });
                 location.reload(); // Now reload in the new language
             }
-
-            // Close edit modal
-            // let editProfileModalElement = document.getElementById("editProfileModal");
-            // let editProfileModal = bootstrap.Modal.getInstance(editProfileModalElement);
             editProfileModal.hide();
-
-            // let modal = new bootstrap.Modal(document.getElementById("profileModal"));
             profileModal.show();
             loadProfile("self");
 

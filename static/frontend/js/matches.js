@@ -2,7 +2,6 @@ const allMatchesModalElement = document.getElementById("allMatchesModal");
 const allMatchesModal = new bootstrap.Modal(allMatchesModalElement);
 
 function populateAllMatches(data) {
-    // console.log("populateMatches data: ", data);
     if (!Array.isArray(data)) {
         console.error("Provided data is not an array:", data);
         return;
@@ -21,7 +20,6 @@ function populateAllMatches(data) {
     const mText = document.getElementById("text_match_date").textContent.trim();
     const wText = document.getElementById("text_winner").textContent.trim();
     const oText = document.getElementById("text_opponent").textContent.trim();
-    // headerRow.innerHTML = "<th>Match date</th><th>Winner</th><th>Opponent</th>";
     headerRow.innerHTML =
         "<th>" + mText + "</th>" +
         "<th>" + wText + "</th>" +
@@ -41,12 +39,10 @@ function populateAllMatches(data) {
             const winnerLink = document.createElement("span");
             winnerLink.textContent = item.winner_name;
             winnerLink.dataset.userID = item.opponentID;
-            winnerLink.style.cursor = "pointer"; // Make it look clickable
-            winnerLink.style.color = "gray"; // Make it look like a link
+            winnerLink.style.cursor = "pointer";
+            winnerLink.style.color = "gray";
 
             winnerLink.addEventListener("click", function(){
-                // const allMatchesModalElement = document.getElementById("allMatchesModal");
-                // const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
                 allMatchesModal.hide();
                 loadProfile(winnerLink.dataset.userID);
             });
@@ -60,12 +56,10 @@ function populateAllMatches(data) {
         const opponentLink = document.createElement("span");
         opponentLink.textContent = item.opponent;
         opponentLink.dataset.userID = item.opponentID;
-        opponentLink.style.cursor = "pointer"; // Make it look clickable
-        opponentLink.style.color = "gray"; // Make it look like a link
+        opponentLink.style.cursor = "pointer";
+        opponentLink.style.color = "gray";
 
         opponentLink.addEventListener("click", function(){
-            // const allMatchesModalElement = document.getElementById("allMatchesModal");
-            // const allMatchesModal = bootstrap.Modal.getInstance(allMatchesModalElement);
             allMatchesModal.hide();
             loadProfile(opponentLink.dataset.userID);
         });
@@ -78,8 +72,6 @@ function populateAllMatches(data) {
 
 async function loadAllMatches(userID, push = true) {
     try {
-        // const allMatchesModalElement = document.getElementById("allMatchesModal");
-        // const allMatchesModal = new bootstrap.Modal(allMatchesModalElement);
         allMatchesModal.show();
         const response = await fetch(`/data/api/allUserMatches/?userID=${userID}`, {
             method: "GET",

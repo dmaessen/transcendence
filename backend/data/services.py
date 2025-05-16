@@ -33,7 +33,6 @@ def get_tournament_data(tournament_id):
 def get_win_cout(user_id):
     wins = Match.objects.filter(winner=user_id)
     win_count = wins.count()
-    # logging.info(f">>>>>>>>>>>>>>>>>>win count = {win_count}")
     return win_count
 
 def get_matches_count(user_id):
@@ -153,6 +152,3 @@ def change_email(req, user_id):
 def delete_account(user_id):
     user = CustomUser.objects.get(user_id)
     user.delete()
-
-
-#TODO set of functions to set data after a match and a tournament 

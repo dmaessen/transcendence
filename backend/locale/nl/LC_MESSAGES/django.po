@@ -219,8 +219,8 @@ msgstr "Aantal spelers"
 msgid "4 Players"
 msgstr "4 Spelers"
 
-msgid "8 Players"
-msgstr "8 Spelers"
+msgid "8 Players (Coming soon!)"
+msgstr "8 Spelers (Coming soon!)"
 
 msgid "User Tournaments"
 msgstr "Gebruikers Toernooien"

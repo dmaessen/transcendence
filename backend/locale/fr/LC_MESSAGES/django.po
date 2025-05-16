@@ -310,8 +310,8 @@ msgid "4 Players"
 msgstr "4 joueurs"
 
 #: static/templates/modals/tournament_modal.html:12
-msgid "8 Players"
-msgstr "8 joueurs"
+msgid "8 Players (Coming soon!)"
+msgstr "8 joueurs (bientot disponible!)"
 
 #: static/templates/modals/tournaments_modal.html:6
 msgid "User Tournaments"

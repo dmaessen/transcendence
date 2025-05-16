@@ -13,7 +13,6 @@ async function fetchData(url, options = {}) {
         return data;
     } catch (error) {
         console.error("Error fetching data:", error);
-        //throw error; // rethrow the error after logging it
     }
 }
-//TODO check what it does 
+ 
