@@ -618,6 +618,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (confirm2FA) {
             confirm2FA.addEventListener("click", async function () {
+                // alert("confirm 2FA clicked")
                 try {
                     const response = await fetch(`${baseUrl}enable-2fa/`, {
                         method: "POST",
@@ -642,7 +643,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
         }
         if (confirm2FAProfile) {
-            confirm2FA.addEventListener("click", async function () {
+            confirm2FAProfile.addEventListener("click", async function () {
                 try {
                     const response = await fetch(`${baseUrl}enable-2fa/`, {
                         method: "POST",
