@@ -82,6 +82,7 @@ async function fetchUserData() {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
             },
         });
 
@@ -154,24 +155,26 @@ document.addEventListener("DOMContentLoaded", async function () {
         const backToMain1 = document.getElementById("backToMain1");
         const backToMain2 = document.getElementById("backToMain2");
         const qrBack = document.getElementById("QR_back");
+        const qrBackProfile = document.getElementById("QR_backProfile");
         const confirm2FA = document.getElementById("confirm2FA");
+        const confirm2FAProfile = document.getElementById("confirm2FAProfile");
         const disable2FA = document.getElementById("disable2FA");
         const submitOTP = document.getElementById("submitOTPButton");
         const returnOTP = document.getElementById("returnToLogin");
         const logoutButton = document.getElementById("logoutBtn");
         const deleteAccountBtn = document.getElementById("deleteAccount");
-        const enable2FAButton = document.getElementById("enable2FA");
         const qrCodeImage = document.getElementById("qrCodeImage");
         const otpKey = document.getElementById("otpKey");
         const otpInputContainer = document.getElementById("otpContainer");
         const otpInput = document.getElementById("otpToken");
         const loginForm = document.getElementById("loginForm");
         const registerForm = document.getElementById("registerForm");
-        const gameMenu = document.getElementById("gameMenuFirst")
+        const gameMenu = document.getElementById("gameMenuFirst");
+        const qrContainerProfile = document.getElementById("qrContainerProfile");
+        const enable2FAButton = document.getElementById("enable2FA");
 
         const SignInModal = bootstrap.Modal.getOrCreateInstance(signInMenu);
         const gameMenuModal = bootstrap.Modal.getOrCreateInstance(gameMenu);
-        // console.log("csrf token: ", getCSRFToken());
 
         let user_logged = await checkLoginStatus();
         if (!user_logged) {
@@ -192,14 +195,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             showLogin.addEventListener("click", function () {
                 mainMenuContainer.style.display = "none";
                 loginContainer.style.display = "block";
-                //add this to the stack
             });
         }
         if (showRegister) {
             showRegister.addEventListener("click", function () {
                 mainMenuContainer.style.display = "none";
                 loginContainer.style.display = "block";
-                //add this to stack 
             });
         }
         if (showLogin && loginContainer && registerContainer) {
@@ -226,9 +227,17 @@ document.addEventListener("DOMContentLoaded", async function () {
                 mainMenuContainer.style.display = "block";
             });
         }
+
         if (qrBack && qrContainer) {
             qrBack.addEventListener("click", function () {
                 qrContainer.style.display = "none";
+                registerContainer.style.display = "block";
+            });
+        }
+
+        if (qrBackProfile && qrContainerProfile) {
+            qrBackProfile.addEventListener("click", function () {
+                qrContainerProfile.style.display = "none";
             });
         }
 
@@ -355,9 +364,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const username = document.getElementById("registerUsername").value;
                 const email = document.getElementById("registerEmail").value;
                 const password = document.getElementById("registerPassword").value;
-                const enable2FA = document.getElementById("enable2FAonRegister")?.checked;
+                const enable2FACheck = document.getElementById("enable2FAonRegister")?.checked;
                 
-                console.log("enable 2fa: ", enable2FA);
                 let registerData
                 try {
                         registerData = await fetch(`${baseUrl}register/`, {
@@ -389,29 +397,26 @@ document.addEventListener("DOMContentLoaded", async function () {
                         return;
                     }
                     alert("Registration successful! You will now be logged in automatically");
+                    
                     // Wait briefly to let browser store cookies
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    
-
-                    if (enable2FA) {
-                        console.log("2fa clicked")
-                        alert("2fa clicked")
-                        let refreshedToken = await refreshAccessToken();
-                        // const tokenToUse = refreshedToken || accessToken;
-                        const tokenToUse = refreshedToken;
+                    // setTimeout(() => {
+                    //     window.location.href = "/";
+                    // }, 30);
+                    if (enable2FACheck) {
+                        let twoFAResponse;
                         try {
-                            const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
+                            twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                                 method: "POST",
                                 credentials: "include",
                                 headers: {
                                     "Content-Type": "application/json",
+                                    "X-CSRFToken": getCSRFToken(),
                                 },
                             });
                         } catch (err) {
                             console.error("error trying to register using 2fa", err);
-                            alert ("2fa register issue")
-                            return
+                            alert ("2fa register issue");
+                            return;
                         }
                         const twoFAData = await twoFAResponse.json();
                         if (!twoFAResponse.ok) {
@@ -422,23 +427,23 @@ document.addEventListener("DOMContentLoaded", async function () {
                             alert("2FA response missing QR code.");
                             return;
                         }
-                        registerContainer.style.display = "none";
-                        qrContainer.style.display = "block";
-                        qrCodeImage.src = `${twoFAData.qr_code}`;
-                        qrCodeImage.style.display = "block";
-                        otpKey.innerText = twoFAData.otp_secret;
+                        if (registerContainer) registerContainer.style.display = "none";
+                        if (qrContainer) qrContainer.style.display = "block";
+                        if (qrCodeImage) {
+                            qrCodeImage.src = `${twoFAData.qr_code}`;
+                            qrCodeImage.style.display = "block";
+                        }
+                        if (otpKey) otpKey.innerText = twoFAData.otp_secret;
                     }
-                    setTimeout(() => {
-                        window.location.href = "/";
-                    }, 30);
-                    
+                    // setTimeout(() => {
+                    //     window.location.href = "/";
+                    // }, 30);
                 } catch (error) {
                     console.error("Error in registration flow:", error);
                     alert("An error occurred. Check the console.");
                 }
             });
         }
-
         function saveLoginCredentials(email, password) {
             sessionStorage.setItem("loginEmail", email);
             sessionStorage.setItem("loginPassword", password);
@@ -488,7 +493,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                     console.error("CSRF error details:", data);
                     return;
                 }
-                // const data = await response.json();
                 else if (response.status === 403) {
                     otpInputContainer.style.display = "block";
                     loginForm.style.display = "none";
@@ -529,7 +533,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 await loginRequest(email, password, otp_token);
             });
         }
-
         if (logoutButton) {
             logoutButton.addEventListener("click", async function () {
                 try {
@@ -581,23 +584,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (enable2FAButton) {
             enable2FAButton.addEventListener("click", async function () {
-                // let accessToken = localStorage.getItem("access_token");
-                // if (!accessToken) {
-                //     accessToken = await refreshAccessToken();
-                //     if (!accessToken) {
-                //         alert("You are not logged in, please do so now.");make 
-                //         window.location.href = "/game_server/";
-                //         return;
-                //     }
-                // }
-                // await refreshAccessToken();
                 try {
+                    // editProfileModal.hide()
                     const twoFAResponse = await fetch(`${baseUrl}register-2fa/`, {
                         method: "POST",
                         credentials: "include",
                         headers: {
                             "Content-Type": "application/json",
-                            // "Authorization": `Bearer ${accessToken}`,
+                            "X-CSRFToken": getCSRFToken(),
                         },
                     });
                     const twoFAData = await twoFAResponse.json();
@@ -609,20 +603,20 @@ document.addEventListener("DOMContentLoaded", async function () {
                         alert("2FA response missing QR code.");
                         return;
                     }
-                    if (registerContainer) registerContainer.style.display = "none";
-                    if (qrContainer) qrContainer.style.display = "block";
-                    if (qrCodeImage) {
-                        qrCodeImage.src = `${twoFAData.qr_code}`;
-                        qrCodeImage.style.display = "block";
+                    // if (registerContainer) registerContainer.style.display = "none";
+                    if (qrContainerProfile) qrContainerProfile.style.display = "block";
+                    if (qrCodeImageProfile) {
+                        qrCodeImageProfile.src = `${twoFAData.qr_code}`;
+                        qrCodeImageProfile.style.display = "block";
                     }
-                    if (otpKey) otpKey.innerText = twoFAData.otp_secret;
+                    if (otpKey) otpKeyProfile.innerText = twoFAData.otp_secret;
                 } catch (error) {
                     console.error("Error registering 2FA:", error);
                     alert("there have been issues, please start panicking!");
                 }
             });
         }
-        if (confirm2FA && qrContainer) {
+        if (confirm2FA) {
             confirm2FA.addEventListener("click", async function () {
                 try {
                     const response = await fetch(`${baseUrl}enable-2fa/`, {
@@ -636,6 +630,32 @@ document.addEventListener("DOMContentLoaded", async function () {
                     if (response.ok) {
                         alert("2FA enabled!");
                         qrContainer.style.display = "none";
+                        window.location.href = "/"
+                    } else if (response.status === 500) {
+                        alert("there was an issue generating the otp code");
+                    } else {
+                        alert("2FA failure :(");
+                    }
+                } catch (error) {
+                    console.error("Error confirming 2FA :(", error);
+                }
+            });
+        }
+        if (confirm2FAProfile) {
+            confirm2FA.addEventListener("click", async function () {
+                try {
+                    const response = await fetch(`${baseUrl}enable-2fa/`, {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": getCSRFToken(),
+                        },
+                    });
+                    if (response.ok) {
+                        alert("2FA enabled!");
+                        qrContainerProfile.style.display = "none";
+                        window.location.href = "/"
                     } else if (response.status === 500) {
                         alert("there was an issue generating the otp code");
                     } else {
@@ -648,13 +668,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (disable2FA) {
             disable2FA.addEventListener("click", async function () {
-                // if (!access_token) {
-                //     access_token = await refreshAccessToken();
-                //     if (!access_token) {
-                //         alert("you are not logged in, please do so now");
-                //         return;
-                //     }
-                // }
                 await fetch(`${baseUrl}disable-2fa/`, {
                     method: "POST",
                     credentials: "include",

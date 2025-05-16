@@ -33,13 +33,13 @@
               </form>
               <button id="enable2FA" class="btn btn-outline-dark w-100 mb-2">{% trans "Enable 2FA" %}</button>
               <button id="disable2FA" class="btn btn-outline-dark w-100 mb-2">{% trans "Disable 2FA" %}</button>
-              <div id="qrContainer" class="overlay-form" style="display: none;">
+              <div id="qrContainerProfile" class="overlay-form" style="display: none;">
                   <h2>{% trans "Here is the QR code for you to scan" %}</h2>
-                  <img id="qrCodeImage" src="" alt="{% trans 'QR Code' %}" style="display: none; max-width: 100%; height: auto;">
+                  <img id="qrCodeImageProfile" src="" alt="{% trans 'QR Code' %}" style="display: none; max-width: 100%; height: auto;">
                   <p>{% trans "Or enter this code manually, if you must..." %}</p>
-                  <code id="otpKey"></code> 
-                  <button id="confirm2FA" class="btn btn-success">{% trans "Confirm 2FA" %}</button>
-                  <button id="QR_back" class="btn btn-secondary">{% trans "Back" %}</button>
+                  <code id="otpKeyProfile"></code> 
+                  <button id="confirm2FAProfile" class="btn btn-success">{% trans "Confirm 2FA" %}</button>
+                  <button id="QR_backProfile" class="btn btn-secondary">{% trans "Back" %}</button>
               </div>
               <button id="deleteAccount" class="btn btn-danger">{% trans "Remove Account" %}</button>
             </div>

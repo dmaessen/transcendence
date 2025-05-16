@@ -28,7 +28,7 @@ div {
     border: 1px solid #ccc;
 }
 
-#qrContainer{
+#qrContainer1{
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -42,13 +42,13 @@ div {
     text-align: center; 
 }
 
-#qrContainer img {
+#qrContainer1 img {
     max-width:100%;
     max-height: 100%;
     height: auto;
     width: auto;
 }
 
-#qrContainer button{
+#qrContainer1 button{
     margin-top: 10px;
 }

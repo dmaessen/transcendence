@@ -75,7 +75,7 @@ def register_2fa(request):
 
 		totp = pyotp.TOTP(device.key)
 		otp_uri = totp.provisioning_uri(name=user.email, issuer_name="transcendence")
-		print("OTP URI:", otp_uri)
+		# print("OTP URI:", otp_uri)
 		qr = qrcode.make(otp_uri)
 		stream = io.BytesIO()
 		qr.save(stream, format="PNG")
@@ -86,11 +86,8 @@ def register_2fa(request):
 		return JsonResponse({"error": "Failed to register 2FA", "details": str(e)}, status=400)
 
 class RegisterView(APIView):
-	@csrf_exempt
 	def post(self, request, *args, **kwargs):
-		print(f"[DEBUG] register view")
 		serializer = UserSerializer(data=request.data)
-		print(f"[DEBUG] post serializer")
 		if serializer.is_valid():
 			user = serializer.save()
 
@@ -109,7 +106,7 @@ class RegisterView(APIView):
 				value=str(access_token),
 				httponly=True,
 				samesite='Lax',
-				secure=False,  # [FLIP]set to True in production
+				secure=True,  # [FLIP]set to True in production
 				max_age=300
 			)
 			response.set_cookie(
@@ -117,7 +114,7 @@ class RegisterView(APIView):
 				value=str(refresh),
 				httponly=True,
 				samesite='lax',
-				secure=False, # [FLIP]set to True in production
+				secure=True, # [FLIP]set to True in production
 				max_age=86400
 			)
 			print("register response: ", response)
@@ -126,7 +123,6 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-	@csrf_exempt
 	def post(self, request):
 		email = request.data.get('email')
 		password = request.data.get('password')
@@ -185,7 +181,7 @@ class LoginView(APIView):
 			value=str(access_token),
 			httponly=True,
 			samesite='Lax',
-			secure=False,  # [FLIP]set to True in production
+			secure=True,  # [FLIP]set to True in production
 			max_age=300
 		)
 		response.set_cookie(
@@ -193,7 +189,7 @@ class LoginView(APIView):
 			value=str(refresh),
 			httponly=True,
 			samesite='Lax',
-			secure=False, # [FLIP]set to True in production
+			secure=True, # [FLIP]set to True in production
 			max_age=86400
 		)
 		return response
@@ -204,23 +200,16 @@ class DeleteAccountView(APIView):
 	def delete(self, request):
 		user = request.user
 		try:
-			# Count devices before deletion
-			initial_count = CustomTOTPDevice.objects.filter(customUser=user).count()
-			print(f"Initial device count: {initial_count}")
-
 			with transaction.atomic():
 				# Delete all devices associated with the user
 				deleted_count, _ = CustomTOTPDevice.objects.filter(customUser=user).delete()
 				print(f"Deleted {deleted_count} device(s).")
 
-				# Count devices after deletion
-				final_count = CustomTOTPDevice.objects.filter(customUser=user).count()
-				print(f"Final device count: {final_count}")
-
-				# Optionally, delete the user account
 				user.delete()
-
-			return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+			response = JsonResponse({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+			response.delete_cookie("access_token")
+			response.delete_cookie("refresh_token")
+			return response
 		except Exception as e:
 			print(f"Error deleting account: {str(e)}")  # Debugging line
 			return Response({"error": "Failed to delete account", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -302,16 +291,10 @@ class RefreshTokenView(APIView):
 			value=str(access_token),
 			httponly=True,
 			samesite="Lax",
-			secure=False,
+			secure=True,
 			max_age=300
 		)
 		return response
-
-@ensure_csrf_cookie
-def home(request):
-	csrf_token = get_token(request)
-	logging.info(f">>>>>>>>>>>>>>>>>>>>>>>CSRF Token: {csrf_token}")
-	return render(request, 'base.html')
 
 # @csrf_exempt
 @api_view(["POST"])
@@ -354,7 +337,7 @@ def google_login(request):
 			value=str(access_token),
 			httponly=True,
 			samesite='Lax',
-			secure=False,  # [FLIP]set to True in production
+			secure=True,  # [FLIP]set to True in production
 			max_age=300
 		)
 		response.set_cookie(
@@ -362,7 +345,7 @@ def google_login(request):
 			value=str(refresh),
 			httponly=True,
 			samesite='Lax',
-			secure=False, # [FLIP]set to True in production
+			secure=True, # [FLIP]set to True in production
 			max_age=86400
 		)
 		return response
@@ -391,7 +374,7 @@ def login_42_redirect(request):
 		f"&response_type=code"
 	)
 
-@csrf_exempt
+# @csrf_exempt
 def login_42_callback(request):
 	if request.method == "POST":
 		body = json.loads(request.body)
@@ -447,7 +430,7 @@ def login_42_callback(request):
 		value=str(access),
 		httponly=True,
 		samesite='Lax',
-		secure=False,  # [FLIP]set to True in production
+		secure=True,  # [FLIP]set to True in production
 		max_age=300
 	)
 	response.set_cookie(
@@ -455,12 +438,13 @@ def login_42_callback(request):
 		value=str(refresh),
 		httponly=True,
 		samesite='Lax',
-		secure=False, # [FLIP]set to True in production
+		secure=True, # [FLIP]set to True in production
 		max_age=86400
 	)
 	return response
 
-@csrf_exempt
+
+# @csrf_exempt
 def google_callback(request):
 	code = request.GET.get('code')
 	if not code:
@@ -516,7 +500,7 @@ def google_callback(request):
 			value=str(access),
 			httponly=True,
 			samesite='Lax',
-			secure=False,  # [FLIP]set to True in production
+			secure=True,  # [FLIP]set to True in production
 			max_age=300
 		)
 		response.set_cookie(
@@ -524,13 +508,19 @@ def google_callback(request):
 			value=str(refresh),
 			httponly=True,
 			samesite='Lax',
-			secure=False, # [FLIP]set to True in production
+			secure=True, # [FLIP]set to True in production
 			max_age=86400
 		)
 		return response
 
 	except Exception as e:
 		return JsonResponse({"error": "Failed to authenticate with Google", "details": str(e)}, status=500)
+
+# @ensure_csrf_cookie
+# def home(request):
+# 	csrf_token = get_token(request)
+# 	logging.info(f">>>>>>>>>>>>>>>>>>>>>>>CSRF Token: {csrf_token}")
+# 	return render(request, 'base.html')
 
 @ensure_csrf_cookie
 def index(request):
