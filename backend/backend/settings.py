@@ -29,17 +29,16 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # Static files during development
 ]
 
-# # Media files to serve Ngnix
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
 #static files settings to serve with django
 # STATIC_URL = os.getenv('STATIC_PATH', '/static/')
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic in production
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, 'static'),  # Static files during development
 # ]
+
+# # Media files to serve Ngnix
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Media files settings to serve with django
 # MEDIA_URL = os.getenv('MEDIA_PATH', '/media/')
@@ -102,11 +101,9 @@ MIDDLEWARE = [
 ]
 
 ALLOWED_HOSTS = [
-    'tranceanddance.com',
     'localhost',
-    '10.15.178.211',
-    '10.15.185.221',
-    '10.11.3.1']
+    os.getenv('HOST_ID'),
+    ]
 
 # Django CORS settings
 CORS_ALLOWED_ORIGINS = [
@@ -114,29 +111,20 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost",
     "http://localhost:8000",
     "https://localhost:8000",
-    "https://tranceanddance.com",
-    "https://10.15.178.211",
-    "https://10.11.3.1:8443",
-    "https://10.11.3.1",
-    "https://10.15.185.221",
-    "https://*.codam.nl",
-    "https://localhost:8443"
+    "https://localhost:8443",
+    os.path.join('https://', os.getenv('HOST_ID')),
+    os.path.join('https://', os.getenv('HOST_ID'), ':', os.getenv('FRONT_PORT')),
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://localhost",
     "http://localhost",
+    "https://localhost",
     "http://localhost:8000",
     "https://localhost:8000",
-    "https://tranceanddance.com",
-    "https://10.15.178.211",
-    "https://10.15.185.221",
-    "https://10.11.3.1",
-    "https://10.11.3.1:8443",
-    "https://*.codam.nl",
-    "https://localhost:8443"
+    "https://localhost:8443",
+    os.path.join('https://', os.getenv('HOST_ID')),
+    os.path.join('https://', os.getenv('HOST_ID'), ':', os.getenv('FRONT_PORT')),
 ]
-
 
 CORS_ALLOW_METHODS = [
     "GET",

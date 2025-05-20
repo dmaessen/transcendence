@@ -141,7 +141,7 @@ GitHub.sublime-settings
 pgdata/
 myvenv/
 media/avatars/
-
+monitoring/secrets/*
 *.token
 *.crt
 *.key
