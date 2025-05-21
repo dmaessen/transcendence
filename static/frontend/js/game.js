@@ -273,7 +273,7 @@ function showEndMenu(reason) {
     keyboardEnabled = false;
     gameState.running = false;
     stopTimer();
-    document.getElementById("timer").innerHTML = "Game Over!"; // needed? or just maybe hide timer?
+    document.getElementById("timer").innerHTML = "Game Over!";
 
     gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     gameContext.font = "50px Courier New";
@@ -357,7 +357,7 @@ setInterval(() => {
     }
 
     if (directions.length > 0) {
-        console.log("keys pressed: ", [...pressedKeys]);
+        // console.log("keys pressed: ", [...pressedKeys]);
         websocket.send(JSON.stringify({ action: "move", direction: directions, game_id: gameState.gameId }));
     }
 }, 1000 / 60);
