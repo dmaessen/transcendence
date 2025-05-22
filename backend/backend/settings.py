@@ -113,7 +113,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:8000",
     "https://localhost:8443",
     os.path.join('https://', os.getenv('HOST_ID')),
-    os.path.join('https://', os.getenv('HOST_ID'), ':', os.getenv('FRONT_PORT')),
+    # os.path.join('https://', os.getenv('HOST_ID'), ':', os.getenv('FRONT_PORT')),
+    os.path.join('https://', os.getenv('HOST_ID_PORT')),
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -123,7 +124,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://localhost:8000",
     "https://localhost:8443",
     os.path.join('https://', os.getenv('HOST_ID')),
-    os.path.join('https://', os.getenv('HOST_ID'), ':', os.getenv('FRONT_PORT')),
+    # os.path.join('https://', os.getenv('HOST_ID'), ':', os.getenv('FRONT_PORT')),
+    os.path.join('https://', os.getenv('HOST_ID_PORT')),
 ]
 
 CORS_ALLOW_METHODS = [
