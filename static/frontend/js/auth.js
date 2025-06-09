@@ -18,7 +18,7 @@ async function loginWebSocket(){
         loginsocket.onclose = (event) => {
             console.log("onlineSocket closed", event);
             clearInterval(pingInterval);
-            window.location.reload();        
+            // window.location.reload();        
         };
         loginsocket.onerror = async function(error) {
             console.error("onlineSocket error:", error);

@@ -32,7 +32,7 @@ class UserStatusConsumer(AsyncWebsocketConsumer):
                 
                 # Fetch the user from the database based on the user_id
                 user = await sync_to_async(CustomUser.objects.get)(id=user_id)
-                logger.info(f"[AUTH_CONSUMER]userna: {user.username}")
+                logger.info(f"[AUTH_CONSUMER]username: {user.username}")
                 self.scope["user"] = user  # Assign the user to the scope 
             else:
                 logger.warning("[AUTH_CONSUMER]No token provided.")

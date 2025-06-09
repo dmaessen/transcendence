@@ -10,7 +10,7 @@ modals.forEach(modal => {
 });
 
 window.addEventListener("beforeunload", () => {
-    if (socket && socket.readyState === WebSocket.OPEN && socket !== loginsocket) {
+    if (websocket && websocket.readyState === WebSocket.OPEN && websocket !== loginsocket) {
         console.log("Closing WebSocket before page unload.");
         gameState.running = false;
         stopTimer();
@@ -18,8 +18,8 @@ window.addEventListener("beforeunload", () => {
         instructions2.style.display = "none";
         gameCanvas.style.display = "none";
         gameTitle.style.display = "none";
-        socket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
-        socket.close()
+        websocket.send(JSON.stringify({ action: "disconnect", mode: gameState.mode, game_id: gameState.gameId }));
+        websocket.close()
     }
     if (checkLoginStatus) {
         SignInMenu.show();

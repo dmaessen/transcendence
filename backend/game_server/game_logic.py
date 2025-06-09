@@ -3,7 +3,7 @@ import random
 import math
 from django.utils.translation import gettext as _
 
-MAX_BALL_SPEED = 15.0
+MAX_BALL_SPEED = 20.0
 
 class Game:
     def __init__(self, mode):
@@ -85,14 +85,9 @@ class Game:
                     self.ball["dir_x"] = -abs(self.ball["dir_x"])
 
                 # increment bounce, count and check for speed increase
-                if self.partOfTournament:
-                    self.bounce_count += 1
-                    if self.bounce_count % 7 == 0:
-                        self._increase_ball_speed()
-                else:
-                    self.bounce_count += 1
-                    if self.bounce_count % 5 == 0:
-                        self._increase_ball_speed()
+                self.bounce_count += 1
+                if self.bounce_count % 2 == 0:
+                    self._increase_ball_speed()
 
         # Ball out of bounds
         if self.ball["x"] < 0:
@@ -193,29 +188,33 @@ class Game:
                 ball_top <= paddle_bottom)
 
     def _increase_ball_speed(self):
-        max_speed = 18
         speedup = 1.3
+        self.ball["speed"] = min(self.ball["speed"] * speedup, MAX_BALL_SPEED)
 
-        self.ball["dir_x"] = max(-max_speed, min(max_speed, self.ball["dir_x"] * speedup))
-        self.ball["dir_y"] = max(-max_speed, min(max_speed, self.ball["dir_y"] * speedup))
+        # recalculate direction with new speed
+        total = abs(self.ball["dir_x"]) + abs(self.ball["dir_y"])
+        if total == 0:
+            angle = random.uniform(0.3, 0.7)
+        else:
+            angle = abs(self.ball["dir_x"]) / total  # preserve current angle
+
+        x_sign = 1 if self.ball["dir_x"] >= 0 else -1
+        y_sign = 1 if self.ball["dir_y"] >= 0 else -1
+
+        self.ball["dir_x"] = x_sign * self.ball["speed"] * angle
+        self.ball["dir_y"] = y_sign * self.ball["speed"] * (1 - angle)
 
     def _reset_ball(self, direction):
         self.ball["x"] = self.width // 2
         self.ball["y"] = random.randint(200, self.height // 2)
-        
-        # Ensure minimum speed
-        min_speed = 3.0
-        angle = random.uniform(0.2, 0.8)
-        self.ball["speed"] = max(min_speed, min(MAX_BALL_SPEED, self.ball["speed"] * 1.3))
-        
+
+        angle = random.uniform(0.3, 0.7)
+        self.ball["speed"] *= 1.3
+        self.ball["speed"] = min(self.ball["speed"], MAX_BALL_SPEED) # capping the ball speed to a certain limit
+
         self.ball["dir_x"] = direction * self.ball["speed"] * angle
-        self.ball["dir_y"] = self.ball["speed"] * (1 - angle if random.choice([True, False]) else -1 * (1 - angle))
-        
-        # Ensure minimum movement in both directions
-        if abs(self.ball["dir_x"]) < 0.5:
-            self.ball["dir_x"] = 0.5 * (1 if self.ball["dir_x"] >= 0 else -1)
-        if abs(self.ball["dir_y"]) < 0.5:
-            self.ball["dir_y"] = 0.5 * (1 if self.ball["dir_y"] >= 0 else -1)
+        y_sign = random.choice([-1, 1])
+        self.ball["dir_y"] = y_sign * self.ball["speed"] * (1 - angle)
 
     def _move_ai(self):
         opponent = None

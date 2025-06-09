@@ -1,7 +1,5 @@
 let websocket;
-
-let socket;
-let reconnecting = false; // needed??
+let reconnecting = false;
 
 function connectWebSocket(mode) {
     if (reconnecting) {
@@ -177,8 +175,6 @@ const returnToStartMenuAfterTournament = async () => {
 }
 
 function handleServerMessage(message) {
-    console.log(`(FRONTEND) message.type here is: ${message.type}`);
-
     switch (message.type) {
         case "started":
             gameState.running = true;
@@ -191,7 +187,6 @@ function handleServerMessage(message) {
             break;
         case "reset":
             gameState.gameId = message.game_id;
-            console.log(`Game in reset with ID: ${gameState.gameId}`);
             break;
         case "update":
             updateGameState(message.data);
@@ -213,21 +208,12 @@ function handleServerMessage(message) {
             else
                 returnToTournamentWaitingRoom();
             break;
-        case "match_found":
-            console.log("(FRONTEND) Match found:", message.game_id);
-            break;
         case 'match_start':
             document.getElementById("tournamentBracket").style.display = "none";
             document.getElementById("tournamentBracket4").style.display = "none";
             instructions3.style.display = "block";
             gameState.running = false;
             startGameMenu();
-            break;
-        case "tournament_update":
-            break;
-        case "update_tournament":
-            console.log(`Players in tournament: ${message.players_in}`);
-            console.log(`Remaining spots: ${message.remaining_spots}`);
             break;
         case "end_tournament":
             returnToStartMenuAfterTournament();

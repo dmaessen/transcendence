@@ -22,7 +22,7 @@ from django.utils.translation import gettext as _
 logger = logging.getLogger(__name__)
 
 games = {}  # games[game.id] = game ----game is Game()
-player_queue = [] # player_id s int
+player_queue = [] # player_id is int
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -306,19 +306,27 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.join_game(match, 1, player_id)
 
     async def join_game(self, match, numb_of_players, player_id):
-        print(f"Player {self.player_id} entered join_game()", flush=True)
+        print(f"Player {player_id} entered join_game()", flush=True)
         user = await get_user_by_id(player_id)
         if numb_of_players == 1:
             game = games[match.id]
-            game.add_player(user.id, self.username, as_player1=True)
             game.status = "waiting"
         else:
             match.player_2 = user
             await sync_to_async(match.save)()
-            print(f"Available games: {list(games.keys())}", flush=True)
-            print(f"Trying to access game for match.id={match.id}", flush=True)
+
             game = games[match.id] #this game represents Game(), not Match model
-            game.add_player(user.id, self.username, as_player1=False)
+            db_player1 = await sync_to_async(lambda: match.player_1)()
+            db_player2 = await sync_to_async(lambda: match.player_2)()
+
+            if db_player1.id < db_player2.id:
+                left_player, right_player = db_player1, db_player2
+            else:
+                left_player, right_player = db_player2, db_player1
+
+            game.add_player(left_player.id, left_player.username, as_player1=True)
+            game.add_player(right_player.id, right_player.username, as_player1=False)
+
             game.status = "started"
         self.match_name = str(f"match_{match.id}")
         await self.channel_layer.group_add(self.match_name, self.channel_name)
@@ -356,7 +364,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 match = await sync_to_async(
                     lambda: Match.objects.select_related("player_1", "player_2").get(id=self.game_id)
                 )()
-                logger.info(f"Match id: {match.id}, players: {match.player_1.username} vs {match.player_2.username}")
+                logger.info(f"Match id: {match.id}, players: {match.player_1.username} vs {match.player_2.username} and winner is {winner_username}")
                 if match.player_1.username == winner_username:
                     match.winner = match.player_1
                     match.player_1_points = game.score["player"]
@@ -373,6 +381,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 logger.error(f"Error processing game result: {e}")
 
             game.clear_game()
+            if self.game_id in games:
+                del games[self.game_id]
 
     async def trigger_start_game_auto_task(self, duration=70):
         print(f"Game {self.game_id} in trigger_start_game_auto_task", flush=True)
@@ -411,13 +421,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                     if self.player_id in game.players:
                         game.remove_player(self.player_id)
                         if not game.players: # meaning this player was the last one standing
-                            game.stop_game({self.username})
-                            del games[self.game_id]
+                            game.stop_game(self.username)
 
                     print(f"Winner determined by default (due to disconnection): {self.username}", flush=True)
                     reason = _("Game Over: %(winner)s wins") % {'winner': self.username}
                     await self.send_json({"type": "end", "reason": reason, "winner": self.username})
-                    await self.end_twoplayers({self.username})
+                    await self.end_twoplayers(self.username)
                     break
 
                 if not game.running:
@@ -452,11 +461,10 @@ class GameConsumer(AsyncWebsocketConsumer):
 
                 await asyncio.sleep(0.05)
 
-#TODO this functions exist on data 
 async def get_all_matches_count():
     return await sync_to_async(Match.objects.all().count)()
 
-async  def get_user_by_id(user_id):
+async def get_user_by_id(user_id):
     return await sync_to_async(CustomUser.objects.get)(id=user_id)
 
 async def get_user_matches(user_id):
